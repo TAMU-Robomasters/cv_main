@@ -62,13 +62,13 @@ class VideoStream(threading.Thread):
         self.show_img_flag = show_img_flag
         self.debug_mode = debug_mode
         self.frames = None
+        self.align = rs.align(rs.stream.color)
+        self.pipeline.start(self.config)
 
     def run(self):
         """
         Continuously read and save current input from camera
         """
-        self.pipeline.start(self.config)
-        align = rs.align(rs.stream.color)
         try:
             last_time = 0
             while True:
@@ -76,7 +76,7 @@ class VideoStream(threading.Thread):
                 frames = self.pipeline.wait_for_frames()
 
                 if frames.get_color_frame() and frames.get_depth_frame():
-                    self.frames = align.process(frames)
+                    self.frames = self.align.process(frames)
                 else:
                     continue
 
@@ -103,8 +103,12 @@ class VideoStream(threading.Thread):
         Process and return color and depth frames.
         :return: a list containing color image and depth image in numpy array format.
         """
-        color_frame = self.frames.get_color_frame()
-        depth_frame = self.frames.get_depth_frame()
-        color_image = np.asanyarray(color_frame.get_data())
-        depth_image = np.asanyarray(depth_frame.get_data())  # in 0.1mm
-        return [color_image, depth_image]
+        if self.frames is not None:
+            color_frame = self.frames.get_color_frame()
+            depth_frame = self.frames.get_depth_frame()
+            color_image = np.asanyarray(color_frame.get_data())
+            depth_image = np.asanyarray(depth_frame.get_data())  # in 0.1mm
+            return [color_image, depth_image]
+        else:
+            print('frames is empty')
+            return None
