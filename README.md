@@ -3,3 +3,5 @@ cap = cv2.VideoCapture("nvcamerasrc ! video/x-raw(memory:NVMM), width=(int)1280,
 https://github.com/AlexeyAB/darknet
 
 https://github.com/douglasrizzo/detection_util_scripts
+
+https://drive.google.com/drive/folders/1ITp7XOL7LQEifCzZAZ5yOOXDhRHw2tkN?usp=sharing
