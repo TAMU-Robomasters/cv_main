@@ -1,11 +1,14 @@
 # import the necessary packages
 import numpy as np
-import tracker
+#import tracker
 import argparse
 import time
 import cv2
 import os
 from datetime import datetime
+from PIL import Image
+#import numpy as np
+
 # python yolo_video.py -i test.avi -o out.avi -y v3t1k -c 0.8
 
 #D:\workspace\pythonWorkspace\darknet\v3t1k
@@ -88,6 +91,7 @@ def modeling(inputpath,ioutput,yolo,iconfidence,ithreshold):
         # and associated probabilities
         blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (416, 416),
             swapRB=True, crop=False)
+
         net.setInput(blob)
         start = time.time()
         layerOutputs = net.forward(ln)
@@ -134,19 +138,20 @@ def modeling(inputpath,ioutput,yolo,iconfidence,ithreshold):
                 # apply non-maxima suppression to suppress weak, overlapping
         # bounding boxes
         idxs = cv2.dnn.NMSBoxes(boxes, confidences, iconfidence,ithreshold)
-
+        #temp = frame
         # ensure at least one detection exists
         if len(idxs) > 0:
             # loop over the indexes we are keeping
             for i in idxs.flatten():
                 # extract the bounding box coordinates
+                
                 (x, y) = (boxes[i][0], boxes[i][1])
                 (w, h) = (boxes[i][2], boxes[i][3])
                 # draw a bounding box rectangle and label on the frame
-                color = [int(c) for c in COLORS[classIDs[i]]]
-                cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
-                text = "{}: {:.4f}".format(LABELS[classIDs[i]],confidences[i])
-                cv2.putText(frame, text, (x, y - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                #color = [int(c) for c in COLORS[classIDs[i]]]
+                #cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
+                #text = "{}: {:.4f}".format(LABELS[classIDs[i]],confidences[i])
+                #cv2.putText(frame, text, (x, y - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
         # check if the video writer is None
         if writer is None:
             # initialize our video writer
@@ -161,10 +166,13 @@ def modeling(inputpath,ioutput,yolo,iconfidence,ithreshold):
         timenow = datetime.now()
         current_time = timenow.strftime("%H:%M:%S")
         print(current_time)
+        #print(frame,"\n")
+        img = Image.fromarray(frame, 'RGB')
+        #img.show()
         counter +=1
         print(counter)
         print(boxes,"\n")
-        print(tracker.init(frame,bboxes))
+        print(tracker.init(img,boxes))
 
         # write the output frame to disk
         writer.write(frame)
