@@ -22,7 +22,7 @@ def init(image, bboxes, video = []):
     center = (image.shape[1] / 2, image.shape[0] / 2)
 
     # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
-    bboxes = {bbox: distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in bboxes}
+    bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in bboxes}
 
     # Finds the centermost bounding box
     bbox = min(bboxes, key=bboxes.get)
