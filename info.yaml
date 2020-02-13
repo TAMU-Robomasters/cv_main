@@ -1,0 +1,27 @@
+(using_atk_version): 1.1.0
+(project):
+    name: CV Main
+    description: The Master Control repo of the TAMU RoboMaster 2020 team
+    
+    (commands):
+        run: echo 'yeah... I'm not sure how to run this thing yet'
+        (setup): ruby scripts/(setup).rb
+        # docker stuff
+        build: ruby scripts/build.rb
+        run: ruby scripts/run.rb
+        edit: ruby scripts/edit.rb
+        remove: ruby scripts/remove.rb
+        convert_name: ruby scripts/convert_name.rb
+    
+    (paths):
+        project_root: ./
+        # system
+        project_bin: ./project_bin
+        dockerfiles: ./project_bin/dockerfiles/
+        project_dir_file: ./project_dir.nosync.txt  # dont change unless you also change the project/bin exec
+        # tools
+        ruby_tools: ./toolbox/tools.rb
+        python_tools: ./toolbox/tools.py
+
+parameters:
+    example_param: "you can access this value in python"
