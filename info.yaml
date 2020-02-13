@@ -5,7 +5,7 @@
     
     (commands):
         run: echo 'yeah... I'm not sure how to run this thing yet'
-        (setup): ruby scripts/(setup).rb
+        (setup): ruby 'scripts/(setup).rb'
         # docker stuff
         build: ruby scripts/build.rb
         run: ruby scripts/run.rb

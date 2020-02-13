@@ -10,7 +10,9 @@ FS.write(project_path, to: $paths["project_dir_file"])
 # build all the docker images
 # 
 for each in FS.list_files($paths["dockerfiles"])
-    puts "Building docker file: #{each.to_s.green}"
+    puts ""
+    puts "Building docker file: #{FS.basename(each).to_s.green}"
+    puts ""
     *folders, name, ext = FS.path_pieces(each)
     # build each dockerfile
     LocalDocker.new(name).build(
