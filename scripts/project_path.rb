@@ -1,1 +1,0 @@
-puts File.absolute_path(__dir__)
