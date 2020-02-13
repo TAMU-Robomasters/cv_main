@@ -8,7 +8,7 @@ shift
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # TODO: there's probably a more elegant solution than this
-PROJECT_PATH="$(cat "$SCRIPT_DIR/../project_dir.nosync.txt")"
+PROJECT_PATH="$(cat "$SCRIPT_DIR/../.project_dir.nosync.txt")"
 
 psub () {
     perl -0pe 's/'"$1"'/'"$2"'/g'

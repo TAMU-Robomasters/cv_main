@@ -18,7 +18,7 @@
         # system
         project_bin: ./project_bin
         dockerfiles: ./project_bin/dockerfiles/
-        project_dir_file: ./project_dir.nosync.txt  # dont change unless you also change the project/bin exec
+        project_dir_file: ./.project_dir.nosync.txt  # dont change unless you also change the project/bin exec
         # tools
         ruby_tools: ./toolbox/tools.rb
         python_tools: ./toolbox/tools.py
