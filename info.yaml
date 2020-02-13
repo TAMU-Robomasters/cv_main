@@ -1,4 +1,9 @@
 (using_atk_version): 1.1.0
+
+todo:
+    - change the main.DockerFile into a slimed down version:
+        - only have python and its dependencies basically
+
 (project):
     name: CV Main
     description: The Master Control repo of the TAMU RoboMaster 2020 team
