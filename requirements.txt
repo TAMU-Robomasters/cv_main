@@ -6,7 +6,7 @@ opencv-contrib-python==4.1.2.30
 opencv-python==4.1.2.30
 matplotlib==3.1.1
 argparse==1.4.0
-Pillow==5.4.1
+Pillow==6.2.0
 # scikit-image==0.14.1
 # scikit-learn==0.22.1
 # scipy==1.2.1
