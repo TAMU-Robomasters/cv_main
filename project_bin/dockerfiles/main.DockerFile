@@ -25,23 +25,11 @@ RUN apt install -y cmake
 RUN apt update && \
     apt install -y python3-pip && \
     pip3 install --upgrade pip
-
-<<<<<<< Updated upstream
-# install dlib as its own layer since it takes so long
-RUN pip3 install dlib
-=======
->>>>>>> Stashed changes
+    
 # install all the python packages
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
-<<<<<<< Updated upstream
-# install all the needed ruby modules
-COPY Gemfile Gemfile
-RUN bundle install
-
-=======
->>>>>>> Stashed changes
 # install caffe
 RUN apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 886DDD89 && \
     add-apt-repository "deb http://ftp2.cn.debian.org/debian sid main contrib non-free" && \
