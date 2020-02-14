@@ -16,40 +16,36 @@ def main():
     # Configuration 
     # 
     # 
-    inputpath = "test.avi"
-    output = "output.avi"
+    input_path = "test.avi"
     yolo = "./v3t1k/"
-    confidence = 0.5
-    threshold = 0.3
     weights_fname='v3t.weights'
     cfg_fname='v3t.cfg'
     classes_fname='v3t.names'
+    confidence = 0.5
+    threshold = 0.3
 
     # construct the argument parse and parse the arguments
 
     # load the COCO class labels our YOLO model was trained on
-    labelsPath = os.path.sep.join([yolo, classes_fname])
-    LABELS = open(labelsPath).read().strip().split("\n")
+    labels_path = os.path.sep.join([yolo, classes_fname])
+    LABELS = open(labels_path).read().strip().split("\n")
 
     # initialize a list of colors to represent each possible class label
     np.random.seed(42)
     COLORS = np.random.randint(0, 255, size=(len(LABELS), 3), dtype="uint8")
 
     # derive the paths to the YOLO weights and model configuration
-    weightsPath = os.path.sep.join([yolo, weights_fname])
-    configPath = os.path.sep.join([yolo, cfg_fname])
+    weights_path = os.path.sep.join([yolo, weights_fname])
+    config_path = os.path.sep.join([yolo, cfg_fname])
 
     # load our YOLO object detector trained on COCO dataset (80 classes)
     # and determine only the *output* layer names that we need from YOLO
     print("[INFO] loading YOLO from disk...")
-    net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
+    net = cv2.dnn.readNetFromDarknet(config_path, weights_path)
     ln = net.getLayerNames()
     ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
-    # initialize the video stream, pointer to output video file, and
-    # frame dimensions
-
-    vs = cv2.VideoCapture(inputpath)
+    vs = cv2.VideoCapture(input_path)
 
     writer = None
     (W, H) = (None, None)
