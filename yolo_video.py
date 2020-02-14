@@ -95,8 +95,7 @@ def model(frame, net, yolo, iconfidence, ithreshold):
     current_time = timenow.strftime("%H:%M:%S")
     print(current_time)
     img = Image.fromarray(frame, 'RGB')
-    img.save('my.png')
-    path = 'my.png'
+    img.save('test.nosync.png')
     img.show()
     
     return boxes
