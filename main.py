@@ -4,11 +4,11 @@ Created on Tue Jan 28 19:43:04 2020
 
 @author: xyf11
 """
-import numpy as np
 import tracker
 import cv2
 import os
-import yolo_video_timetest
+from itertools import count
+from yolo_video import model
 
 def main():
     # 
@@ -24,16 +24,6 @@ def main():
     confidence = 0.5
     threshold = 0.3
 
-    # construct the argument parse and parse the arguments
-
-    # load the COCO class labels our YOLO model was trained on
-    labels_path = os.path.sep.join([yolo, classes_fname])
-    LABELS = open(labels_path).read().strip().split("\n")
-
-    # initialize a list of colors to represent each possible class label
-    np.random.seed(42)
-    COLORS = np.random.randint(0, 255, size=(len(LABELS), 3), dtype="uint8")
-
     # derive the paths to the YOLO weights and model configuration
     weights_path = os.path.sep.join([yolo, weights_fname])
     config_path = os.path.sep.join([yolo, cfg_fname])
@@ -43,38 +33,34 @@ def main():
     print("[INFO] loading YOLO from disk...")
     net = cv2.dnn.readNetFromDarknet(config_path, weights_path)
     ln = net.getLayerNames()
-    ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+    ln = [ ln[each_layer[0] - 1] for each_layer in net.getUnconnectedOutLayers() ]
+    video_stream = cv2.VideoCapture(input_path)
 
-    vs = cv2.VideoCapture(input_path)
-
-    writer = None
-    (W, H) = (None, None)
-
-    counter = 0
-    
     # 
     # 
     # main loop
     # 
     # 
-    while True:
-        grabbed, frame = vs.read()
+    for counter in count(start=0, step=1): # counts up infinitely starting at 0
+        
+        grabbed, frame = video_stream.read()
 
         if counter % 100 == 0:
+            # 
             # call model
-            boxes = yolo_video_timetest.model(frame,net,yolo,confidence,threshold)
+            # 
+            boxes = model(frame,net,yolo,confidence,threshold)
             tracker.init(frame,boxes)
         else:
+            # 
             # call tracker
+            # 
             frame = tracker.draw(frame)
             cv2.imshow('frame',frame)
 
-        # wait for each keyframe
+        # wait for a keypress on each frame
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-
-        # read the next frame from the file
-        counter += 1
 
 if __name__ == '__main__':
     main()
