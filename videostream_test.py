@@ -2,6 +2,10 @@ import pyrealsense2 as rs
 import numpy as np
 import cv2
 import pdb,time
+
+# parameters
+SHOW_IMAGES = False
+
 # Configure depth and color streams
 pipeline = rs.pipeline()
 config = rs.config()
@@ -10,10 +14,11 @@ config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 60)
 profile=pipeline.start(config)
 depth_scale = profile.get_device().first_depth_sensor().get_depth_scale()
 print(depth_scale)
+
 # Start streaming
 try:
     while True:
-        start_t=time.time()
+        start_t = time.time()
         # Wait for a coherent pair of frames: depth and color
         frames = pipeline.wait_for_frames()
         color_frame = frames.get_color_frame()
@@ -37,7 +42,8 @@ try:
         images = np.hstack((color_image, depth_colormap))
 
         # Show images
-        #cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
+        if SHOW_IMAGES:
+            cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
 
         cv2.imshow('RealSense', images)
         cv2.waitKey(1)

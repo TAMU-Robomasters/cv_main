@@ -43,7 +43,7 @@ class VideoStream(threading.Thread):
             ok, frame = cam.read()
             self.frame=frame
             print(self.frame.shape)
-            # cv2.imshow('VideoStream Output', frame)
+            
             cv2.waitKey(1)
             if self.debug_mode:
                 current_time = time.time()

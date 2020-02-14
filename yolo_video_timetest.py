@@ -1,61 +1,11 @@
-# import the necessary packages
 import numpy as np
-import tracker
-import argparse
 import time
 import cv2
 import os
 from datetime import datetime
 from PIL import Image
-#import numpy as np
 
-# python yolo_video.py -i test.avi -o out.avi -y v3t1k -c 0.8
-
-#D:\workspace\pythonWorkspace\darknet\v3t1k
-def modeling(inputpath,ioutput,yolo):
-    weights_fname='v3t.weights'
-    cfg_fname='v3t.cfg'
-    classes_fname='v3t.names'
-
-
-    # construct the argument parse and parse the arguments
-#    ap = argparse.ArgumentParser()
-#    ap.add_argument("-i", "--input", required=True,
-#    	help="path to input video")
-#    ap.add_argument("-o", "--output", required=True,
-#    	help="path to output video")
-#    ap.add_argument("-y", "--yolo", required=True,
-#    	help="base path to YOLO directory")
-#    ap.add_argument("-c", "--confidence", type=float, default=0.5,
-#    	help="minimum probability to filter weak detections")
-#    ap.add_argument("-t", "--threshold", type=float, default=0.3,
-#    	help="threshold when applyong non-maxima suppression")
-#    args = vars(ap.parse_args())
-#
-    # load the COCO class labels our YOLO model was trained on
-    labelsPath = os.path.sep.join([yolo, classes_fname])
-    LABELS = open(labelsPath).read().strip().split("\n")
-
-    # initialize a list of colors to represent each possible class label
-    np.random.seed(42)
-    COLORS = np.random.randint(0, 255, size=(len(LABELS), 3),
-        dtype="uint8")
-
-    # derive the paths to the YOLO weights and model configuration
-    weightsPath = os.path.sep.join([yolo, weights_fname])
-    configPath = os.path.sep.join([yolo, cfg_fname])
-
-    # load our YOLO object detector trained on COCO dataset (80 classes)
-    # and determine only the *output* layer names that we need from YOLO
-    print("[INFO] loading YOLO from disk...")
-    net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
-    ln = net.getLayerNames()
-    ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
-    vs = cv2.VideoCapture(inputpath)
-    # initialize the video stream, pointer to output video file, and
-    # frame dimensions
-    return net
-def model(frame,net,yolo,iconfidence,ithreshold):
+def model(frame, net, yolo, iconfidence, ithreshold):
     
     classes_fname='v3t.names'
     labelsPath = os.path.sep.join([yolo, classes_fname])
@@ -63,45 +13,21 @@ def model(frame,net,yolo,iconfidence,ithreshold):
 
     # initialize a list of colors to represent each possible class label
     np.random.seed(42)
-    COLORS = np.random.randint(0, 255, size=(len(LABELS), 3),
-        dtype="uint8")
+    COLORS = np.random.randint(0, 255, size=(len(LABELS), 3), dtype="uint8")
 
     writer = None
     (W, H) = (None, None)
     ln = net.getLayerNames()
     ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
-    # try to determine the total number of frames in the video file
-#    try:
-#        #prop = cv2.cv.CV_CAP_PROP_FRAME_COUNT if imutils.is_cv2() else cv2.CAP_PROP_FRAME_COUNT
-#        total = int(vs.get(cv2.CV_CAP_PROP_FRAME_COUNT))
-#        print("[INFO] {} total frames in video".format(total))
-#
-#    # an error occurred while trying to determine the total
-#    # number of frames in the video file
-#    except:
-#        print("[INFO] could not determine # of frames in video")
-#        print("[INFO] no approx. completion time can be provided")
-#        total = -1
-
-    # loop over frames from the video file stream
-    counter = 0
-    #while True:
-    # read the next frame from the file
-#    (grabbed, frame) = vs.read()
-
-    # if the frame was not grabbed, then we have reached the end
-    # of the stream
-#    if not grabbed:
-#        break
 
     # if the frame dimensions are empty, grab them
     if W is None or H is None:
         (H, W) = frame.shape[:2]
-        # construct a blob from the input frame and then perform a forward
+    
+    # construct a blob from the input frame and then perform a forward
     # pass of the YOLO object detector, giving us our bounding boxes
     # and associated probabilities
-    blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (416, 416),
-        swapRB=True, crop=False)
+    blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (416, 416), swapRB=True, crop=False)
 
     net.setInput(blob)
     start = time.time()
@@ -113,7 +39,8 @@ def model(frame,net,yolo,iconfidence,ithreshold):
     boxes = []
     confidences = []
     classIDs = []
-        # loop over each of the layer outputs
+    
+    # loop over each of the layer outputs
     for output in layerOutputs:
         # loop over each of the detections
         for detection in output:
@@ -146,10 +73,10 @@ def model(frame,net,yolo,iconfidence,ithreshold):
                 confidences.append(float(confidence))
                 classIDs.append(classID)
 
-            # apply non-maxima suppression to suppress weak, overlapping
+    # apply non-maxima suppression to suppress weak, overlapping
     # bounding boxes
     idxs = cv2.dnn.NMSBoxes(boxes, confidences, iconfidence,ithreshold)
-    #temp = frame
+
     # ensure at least one detection exists
     if len(idxs) > 0:
         # loop over the indexes we are keeping
@@ -163,36 +90,13 @@ def model(frame,net,yolo,iconfidence,ithreshold):
             cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
             text = "{}: {:.4f}".format(LABELS[classIDs[i]],confidences[i])
             cv2.putText(frame, text, (x, y - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-    # check if the video writer is None
-#        if writer is None:
-#            # initialize our video writer
-#            fourcc = cv2.VideoWriter_fourcc(*"MJPG")
-#            writer = cv2.VideoWriter(ioutput, fourcc, 30, (frame.shape[1], frame.shape[0]), True)
-#
-#            # some information on processing single frame
-#            if total > 0:
-#                elap = (end - start)
-#                print("[INFO] single frame took {:.4f} seconds".format(elap))
-#                print("[INFO] estimated total time to finish: {:.4f}".format(elap * total))
+
     timenow = datetime.now()
     current_time = timenow.strftime("%H:%M:%S")
     print(current_time)
-    #print(frame,"\n")
     img = Image.fromarray(frame, 'RGB')
     img.save('my.png')
     path = 'my.png'
     img.show()
-    counter +=1
-    #print(counter)
-    a = [[1,1,1,1],[1,1,1,1]]
-
-    #print(boxes,"\n")
-    #tracker.init(frame,boxes)
-    #print(frame)
-    # write the output frame to disk
-    #writer.write(frame)
+    
     return boxes
-    # release the file pointers
-#    print("[INFO] cleaning up...")
-#    writer.release()
-#    vs.release()
