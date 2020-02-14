@@ -105,7 +105,7 @@ class LocalDocker
         ]
         options.push(@@options[:interactive]) if interactive
         
-        Console.run("docker run #{options.join(" ")} #{self.image_name} "+Console.make_arguments_appendable(arguments))
+        Console.run("#{"sudo " if OS.is?(:linux)} docker run #{options.join(" ")} #{self.image_name} "+Console.make_arguments_appendable(arguments))
     end
     
     def edit
@@ -119,7 +119,7 @@ class LocalDocker
             "-v #{@@volume}", # access_to_current_enviornment
         ]
         
-        command = "docker run #{options.join(" ")} #{self.image_name} #{@@options[:infinite_process_arguments]}"
+        command = "#{"sudo " if OS.is?(:linux)} docker run #{options.join(" ")} #{self.image_name} #{@@options[:infinite_process_arguments]}"
         # start detached run
         container_id = `#{command}`.chomp
         # put user into the already-running process, let the make whatever changes they want
