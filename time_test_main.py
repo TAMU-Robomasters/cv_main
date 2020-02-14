@@ -5,7 +5,7 @@ Created on Tue Jan 28 19:43:04 2020
 @author: xyf11
 """
 import numpy as np
-#import tracker
+import tracker
 import argparse
 import time
 import cv2
@@ -64,39 +64,45 @@ def main():
     # frame dimensions
 
     vs = cv2.VideoCapture(inputpath)
+
     writer = None
     (W, H) = (None, None)
 
     # try to determine the total number of frames in the video file
-    try:
-        #prop = cv2.cv.CV_CAP_PROP_FRAME_COUNT if imutils.is_cv2() else cv2.CAP_PROP_FRAME_COUNT
-        total = int(vs.get(cv2.CV_CAP_PROP_FRAME_COUNT))
-        print("[INFO] {} total frames in video".format(total))
-
-    # an error occurred while trying to determine the total
-    # number of frames in the video file
-    except:
-        print("[INFO] could not determine # of frames in video")
-        print("[INFO] no approx. completion time can be provided")
-        total = -1
+    # try:
+    #     #prop = cv2.cv.CV_CAP_PROP_FRAME_COUNT if imutils.is_cv2() else cv2.CAP_PROP_FRAME_COUNT
+    #     total = int(vs.get(cv2.CV_CAP_PROP_FRAME_COUNT))
+    #     print("[INFO] {} total frames in video".format(total))
+    #
+    # # an error occurred while trying to determine the total
+    # # number of frames in the video file
+    # except:
+    #     print("[INFO] could not determine # of frames in video")
+    #     print("[INFO] no approx. completion time can be provided")
+    #     total = -1
 
     counter = 0
+
     while True:
-        (grabbed, frame) = vs.read()
+        grabbed, frame = vs.read()
 
         # to avoid overflow ?
-        if counter > 1000000:
-            counter = 1
-            
+        # if counter > 1000000:
+        #     counter = 0
+
         if counter % 100 == 0:
             # call model
             boxes = yolo_video_timetest.model(frame,net,yolo,confidence,threshold)
             tracker.init(frame,boxes)
+            print('asd')
         else:
             # call tracker
-            (grabbed, frame) = vs.read()
             # print(grabbed)
-            tracker.update(frame)
+            frame = tracker.draw(frame)
+            cv2.imshow('frame',frame)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
         # read the next frame from the file
         counter += 1

@@ -20,7 +20,9 @@ def distance(point_1: tuple, point_2: tuple):
 # Starts tracking the object surrounded by the bounding box in the image
 # bbox is [x, y, width, height]
 def init(image, bboxes, video = []):
-
+    print(bboxes)
+    if len(bboxes) == 0:
+        return False
     # Finds the coordinate for the center of the screen
     center = (image.shape[1] / 2, image.shape[0] / 2)
 
@@ -46,7 +48,7 @@ def init(image, bboxes, video = []):
 
 # Updates the location of the object
 def update(image):
-
+    print("in update")
     # Attempts to update the object's location
     ok, location = tracker.update(image)
 
@@ -62,16 +64,15 @@ def update(image):
 def draw(image):
     # Attempts to update the object's location
     ok, location = tracker.update(image)
-
     # Returns the location if the location was updated
     if ok:
         # Starting cordinate
-        start = (location[0], location[1])
-
+        start = (int (location[0]), int(location[1]))
+        # print("start",start)
         # Bottom right of the bounding box
-        end = (location[0] + location[2], location[1] + location[3])
-
-        # Green in BGR 
+        end = (int(location[0] + location[2]), int(location[1] + location[3]))
+        # print("end", end)
+        # Green in BGR
         color = (0, 255, 0)
 
         # Thickness of rectangle in pixels
