@@ -1,4 +1,0 @@
-#!/bin/bash
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-# no additional specification is needed because the dockerfile has an absolute-path entrypoint
-exec "$SCRIPT_DIR/exec" ffmpeg /usr/local/bin/ffmpeg "$@"

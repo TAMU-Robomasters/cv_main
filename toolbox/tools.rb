@@ -1,7 +1,4 @@
 require 'atk_toolbox'
-require 'nokogiri'
-require 'open-uri'
-require 'statistics2'
 
 # this gets its value from the info.yaml file
 $info = Info.new # load the info.yaml
