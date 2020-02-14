@@ -85,7 +85,7 @@ class LocalDocker
                 which_dockerfile,
                 name_the_image,
             ]
-            system("docker build #{options.join(" ")} #{where_to_build}")
+            system("#{"sudo " if OS.is?(:linux)} docker build #{options.join(" ")} #{where_to_build}")
             success = $?.success?
         ensure
             if old_docker_ignore
