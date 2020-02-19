@@ -4,7 +4,6 @@ require 'atk_toolbox'
 $info = Info.new # load the info.yaml
 
 $paths = $info.paths
-path_to_urls = $paths['all_urls']
 PARAMETERS = $info['parameters']
 
 class Numeric
@@ -123,7 +122,7 @@ class LocalDocker
         # start detached run
         container_id = `#{command}`.chomp
         # put user into the already-running process, let the make whatever changes they want
-        system("docker exec -it #{container_id} /bin/sh")
+        system("#{"sudo " if OS.is?(:linux)} docker exec -it #{container_id} /bin/sh")
         # once they exit that, ask if they want to save those changes
         if Console.yes?("would you like to save those changes?")
             # save those changes to the container
@@ -131,9 +130,9 @@ class LocalDocker
         end
         
         # kill the detached process (otherwise it will continue indefinitely)
-        system( "docker kill #{container_id}", err:"/dev/null")
-        system( "docker stop #{container_id}", err:"/dev/null")
-        system( "docker rm #{container_id}", err:"/dev/null")
+        system( "#{"sudo " if OS.is?(:linux)} docker kill #{container_id}", err:"/dev/null")
+        system( "#{"sudo " if OS.is?(:linux)} docker stop #{container_id}", err:"/dev/null")
+        system( "#{"sudo " if OS.is?(:linux)} docker rm #{container_id}", err:"/dev/null")
     end
     
     def remove
@@ -147,12 +146,12 @@ class LocalDocker
                 next
             end
             # kill/stop/remove
-            system("docker", "container", "kill", each_container_id, :err=>"/dev/null")
-            system("docker", "container", "stop", each_container_id, :err=>"/dev/null")
-            system("docker", "container", "rm", each_container_id, :err=>"/dev/null")
+            system("#{"sudo " if OS.is?(:linux)} docker", "container", "kill", each_container_id, :err=>"/dev/null")
+            system("#{"sudo " if OS.is?(:linux)} docker", "container", "stop", each_container_id, :err=>"/dev/null")
+            system("#{"sudo " if OS.is?(:linux)} docker", "container", "rm", each_container_id, :err=>"/dev/null")
         end
         # remove the image
-        system("docker", "image", "rm", self.image_name, :err=>"/dev/null")
+        system("#{"sudo " if OS.is?(:linux)} docker", "image", "rm", self.image_name, :err=>"/dev/null")
     end
     
     def export
