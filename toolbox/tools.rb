@@ -62,37 +62,24 @@ class LocalDocker
     end
 
     def build(docker_file, files_to_include:[])
-        # create the docker ignore
-        docker_ignore_path = $info.folder/".dockerignore"
-        old_docker_ignore = FS.read(docker_ignore_path)
-        # the gsubs are for crudely escaping ()'s
-        files_to_include = files_to_include.map{|each| "!"+each.gsub(/\(/,"\\(").gsub(/\)/, "\\)")}.join("\n")
-        ignore_file_contents = "**/*\n#{files_to_include}"
-        FS.write(ignore_file_contents, to: docker_ignore_path )
+        # set the buildkit to use local docker ignores
+        ENV['DOCKER_BUILDKIT'] = '1'
         
         # try building the image
         success = false
-        begin
-            where_to_build = Console.as_shell_argument($info.folder)
-            
-            forward_all_ports = "--network=host"
-            which_dockerfile = "--file '#{docker_file}'"
-            name_the_image = "-t #{self.image_name}"
-            
-            options = [
-                forward_all_ports,
-                which_dockerfile,
-                name_the_image,
-            ]
-            system("#{"sudo " if OS.is?(:linux)} docker build #{options.join(" ")} #{where_to_build}")
-            success = $?.success?
-        ensure
-            if old_docker_ignore
-                FS.write(old_docker_ignore, to: docker_ignore_path)
-            else
-                FS.delete(docker_ignore_path)
-            end
-        end
+        where_to_build = Console.as_shell_argument($info.folder)
+        
+        forward_all_ports = "--network=host"
+        which_dockerfile = "--file '#{docker_file}'"
+        name_the_image = "-t #{self.image_name}"
+        
+        options = [
+            forward_all_ports,
+            which_dockerfile,
+            name_the_image,
+        ]
+        system("#{"sudo " if OS.is?(:linux)} docker build #{options.join(" ")} #{where_to_build}")
+        success = $?.success?
         return success
     end
     
