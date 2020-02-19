@@ -85,4 +85,13 @@ else
     image_name=$(ruby "$SCRIPT_DIR/../scripts/convert_name.rb" $command_name )
 fi
 
-exec docker run -it --rm --entrypoint="$entrypoint" -v /var/run/docker.sock:/var/run/docker.sock -v /usr/local/bin/docker:/usr/local/bin/docker --workdir "$WORKING_DIR" -v "$PROJECT_PATH":/project -- $image_name "$@"
+exec docker run \
+    -it \
+    --rm \
+    --entrypoint="$entrypoint" \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v /usr/local/bin/docker:/usr/local/bin/docker \
+    --workdir "$WORKING_DIR" \
+    -v "$PROJECT_PATH":/project \
+    -- \
+    $image_name "$@"
