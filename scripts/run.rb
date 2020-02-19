@@ -5,11 +5,12 @@ first_argument, *other_arguments = Console.args
 
 # give yourself permission to execute the executable
 if OS.is?(:unix)
+    puts "hi"
     system("chmod", "u+x", $paths['project_bin']/first_argument)
 end
 
 if OS.is?(:linux)
     exec("sudo", $paths['project_bin']/first_argument, *other_arguments )
 else
-    exec("sudo", $paths['project_bin']/first_argument, *other_arguments )
+    exec($paths['project_bin']/first_argument, *other_arguments )
 end
