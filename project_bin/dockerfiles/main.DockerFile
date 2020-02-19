@@ -25,16 +25,10 @@ RUN apt install -y cmake
 RUN apt update && \
     apt install -y python3-pip && \
     pip3 install --upgrade pip
-
-# install dlib as its own layer since it takes so long
-RUN pip3 install dlib
+    
 # install all the python packages
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
-
-# install all the needed ruby modules
-COPY Gemfile Gemfile
-RUN bundle install
 
 # install caffe
 RUN apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 886DDD89 && \
