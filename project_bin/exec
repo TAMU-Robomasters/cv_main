@@ -66,8 +66,8 @@ abspath() {
 # 
 # if being called from docker
 # 
-FILE=/proc/1/cpuset
-if test -f "$FILE"; then
+FILE=/project
+if test -d "$FILE"; then
     WORKING_DIR="$PWD"
     # from docker means we have don't access to the real pwd
     # however we do have access to the container's own name and therefore
