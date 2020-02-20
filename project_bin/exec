@@ -76,10 +76,6 @@ if test -f "$FILE"; then
     image="$(docker ps | grep $container | awk '{print $2}' | psub ':.+' '')"
     docker_project_dir="$(docker images | grep $image | awk '{print $1}' | psub '\s+[\w\W]*$' '')"
     image_name="$docker_project_dir:$command_name"
-    echo container: "$container"
-    echo image: "$image"
-    echo docker_project_dir: "$docker_project_dir"
-    echo image_name: "$image_name"
 # 
 # if being called locally
 # 
@@ -88,8 +84,6 @@ else
     WORKING_DIR="/project/$(relpath $PROJECT_PATH $PWD)"
     image_name=$(ruby "$SCRIPT_DIR/../scripts/convert_name.rb" $command_name )
 fi
-
-echo $image_name
 
 exec docker run \
     -it \
