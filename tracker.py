@@ -1,12 +1,12 @@
 # Imports the MOSSE tracker from OpenCV
-# from cv2 import TrackerMOSSE_create
-from cv2 import TrackerCSRT_create
+from cv2 import TrackerMOSSE_create
+# from cv2 import TrackerCSRT_create
 
 # Import the function to draw bbox from OpenCV
 from cv2 import rectangle
 
 # Creates the MOSSE tracker object
-tracker = TrackerCSRT_create()
+tracker = TrackerMOSSE_create()
 
 # Finds the absolute distance between two points
 def distance(point_1: tuple, point_2: tuple):
@@ -19,7 +19,7 @@ def distance(point_1: tuple, point_2: tuple):
 # bbox is [x, y, width, height]
 def init(image, bboxes, video = []):
     global tracker
-    tracker = TrackerCSRT_create()
+    tracker = TrackerMOSSE_create()
     print("inside init")
     print(bboxes)
     if len(bboxes) == 0:
