@@ -1,14 +1,3 @@
-<<<<<<< HEAD
-# setup
-Install python3 (>3.6)
-Then run
-`pip install -r requirements.txt`
-
-# to run main
-`python main.py`
-
-# legacy readme:
-=======
 # How to setup
 1. install atk (single-line install all OSes) https://github.com/aggie-tool-kit/atk
 2. install docker
@@ -30,7 +19,6 @@ run `_` to see all the avalible commands
 run `_ run python any/python/file_you_want.py`
 
 # cv_main
->>>>>>> docker
 cap = cv2.VideoCapture("nvcamerasrc ! video/x-raw(memory:NVMM), width=(int)1280, height=(int)720,format=(string)I420, framerate=(fraction)30/1 ! nvvidconv flip-method=0 ! video/x-raw, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink")
 https://github.com/AlexeyAB/darknet
 
