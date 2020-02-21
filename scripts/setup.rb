@@ -9,7 +9,7 @@ FS.write(project_path, to: $paths["project_dir_file"])
 # 
 # build all the docker images
 # 
-for each in FS.list_files($paths["dockerfiles"])
+for each in FS.list_files($paths["dockerfiles"]).select{|each|!(each =~ /\.dockerignore$/)}
     puts ""
     puts "Building docker file: #{FS.basename(each).to_s.green}"
     puts ""
