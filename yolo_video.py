@@ -6,7 +6,7 @@ from datetime import datetime
 from PIL import Image
 
 def model(frame, net, yolo, iconfidence, ithreshold):
-    
+
     classes_fname='v3t.names'
     labelsPath = os.path.sep.join([yolo, classes_fname])
     LABELS = open(labelsPath).read().strip().split("\n")
@@ -23,7 +23,7 @@ def model(frame, net, yolo, iconfidence, ithreshold):
     # if the frame dimensions are empty, grab them
     if W is None or H is None:
         (H, W) = frame.shape[:2]
-    
+
     # construct a blob from the input frame and then perform a forward
     # pass of the YOLO object detector, giving us our bounding boxes
     # and associated probabilities
@@ -39,7 +39,7 @@ def model(frame, net, yolo, iconfidence, ithreshold):
     boxes = []
     confidences = []
     classIDs = []
-    
+
     # loop over each of the layer outputs
     for output in layerOutputs:
         # loop over each of the detections
@@ -97,5 +97,5 @@ def model(frame, net, yolo, iconfidence, ithreshold):
     img = Image.fromarray(frame, 'RGB')
     img.save('test.nosync.png')
     img.show()
-    
+    print("from model", boxes)
     return boxes
