@@ -37,6 +37,7 @@ todo:
     (commands):
         main: ruby scripts/run.rb python source/main.py
         setup: ruby 'scripts/setup.rb'
+        python: ruby 'scripts/exec_with_python_path.rb'
         # docker stuff
         build: ruby scripts/build.rb
         run: ruby scripts/run.rb
@@ -46,13 +47,13 @@ todo:
     
     (paths):
         project_root: ./
-        # system
+        source_dir: ./source
+        # docker system
         project_bin: ./project_bin
         dockerfiles: ./project_bin/dockerfiles/
         project_dir_file: ./.project_dir.nosync.txt  # dont change unless you also change the project/bin exec
         # tools
         ruby_tools: ./toolbox/tools.rb
-        python_tools: ./toolbox/tools.py
 
 parameters:
     example_param: "you can access this value in python"
