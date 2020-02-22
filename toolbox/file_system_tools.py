@@ -181,5 +181,9 @@ class FileSys():
     @classmethod
     def absolute_path(self, path):
         return os.path.abspath(path)
-    
+
+    @classmethod
+    def pwd(self):
+        return os.getcwd()
+
 FS = FileSys
