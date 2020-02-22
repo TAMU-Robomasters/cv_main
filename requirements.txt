@@ -2,20 +2,7 @@ regex==2019.6.8
 numpy==1.17.3
 PyYAML==5.1.2
 ruamel.yaml==0.16.0
-<<<<<<< HEAD
-opencv-contrib-python==4.1.2.30
-opencv-python==4.1.2.30
+opencv-contrib-python==3.4.9.31
 matplotlib==3.1.1
 argparse==1.4.0
 Pillow==5.4.1
-# scikit-image==0.14.1
-# scikit-learn==0.22.1
-# scipy==1.2.1
-=======
-opencv-python==4.1.2.30
-youtube-dl==2020.1.24
-scipy==1.4.1
-scikit-learn==0.22.1
-matplotlib==3.1.1
-argparse==1.4.0
->>>>>>> docker

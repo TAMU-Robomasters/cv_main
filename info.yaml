@@ -3,6 +3,10 @@
 todo:
     - change the main.DockerFile into a slimed down version:
         - only have python and its dependencies basically
+    - explore the idea of having pre-set firing locations:
+        - get a way for the robot to know where it is
+        - fire in paths where robots are expected
+
 
 (project):
     name: CV Main
