@@ -22,6 +22,9 @@ for each in FS.list_files($paths["dockerfiles"])
             *FS.list_files
         ],
     )
+    if not $?.success?
+        exit
+    end
 end
 
 puts "#".green

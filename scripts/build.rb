@@ -9,4 +9,4 @@ LocalDocker.new(Console.args[0]).build(
         *FS.list_files
     ],
 )
-puts "Task complete".green
+puts "Task complete".green if $?.success?
