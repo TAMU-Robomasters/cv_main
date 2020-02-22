@@ -1,16 +1,22 @@
 import yaml
+import numpy as np
 # relative imports
 from toolbox.file_system_tools import FS
 
 # 
 # explaination
 # 
-# this file contains constants that can be used in most of the tools
+# this file contains (ideally) constants that can be used in many/most of the tools
 # it imports the paths from the info.yaml file so that python knows where everything is
 # exports:
+#     MODE
 #     INFO
 #     PATHS
 #     PARAMETERS
+#     MODEL_LABELS
+#     MODEL_COLORS
+ENVIRONMENT = "laptop" # laptop, docker, or tx2 
+MODE = "development" # development or production
 
 # 
 # load the info.yaml and some of its data
@@ -31,3 +37,10 @@ for each_key in PATHS.keys():
 
 PARAMETERS = INFO["parameters"]
 
+# 
+# modeling
+# 
+MODEL_LABELS = open(PATHS["model_labels"]).read().strip().split("\n")
+# initialize a list of colors to represent each possible class label
+np.random.seed(42)
+MODEL_COLORS = np.random.randint(0, 255, size=(len(MODEL_LABELS), 3), dtype="uint8")

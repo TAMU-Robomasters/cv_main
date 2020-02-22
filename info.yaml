@@ -1,23 +1,5 @@
 (using_atk_version): 1.1.0
 
-pending changes:
-    - set PYTHONPATH
-    - fix references to test.avi
-    - fix references to test.png
-    - fix references inside "test_on_board_cam.py"
-    - fix references inside "tracker.py"
-    - fix references to "tracker.py"
-    - fix references in "videostream_test.py"
-    - fix references in "yolo_video.py"
-    - fix references to "yolo_video.py"
-    - fix references to "v3t1k"
-    - renames:
-        on_board_cam_test.py => test_on_board_cam.py
-        yolo_video.py => modeling_main.py
-        v3t1k => model
-        tracker.py => tracking_main.py
-        videostream_test.py => test_videostream.py
-
 todo:
     - create fully synchronous version (branch?):
         - pull latest video frame
@@ -48,6 +30,12 @@ todo:
     (paths):
         project_root: ./
         source_dir: ./source
+        main_test_video: ./source/_test_data/test.avi
+        main_test_image: ./source/_test_data/test.png
+        # model
+        model_weights: ./source/modeling/model/v3t.weights
+        model_config: ./source/modeling/model/v3t.cfg
+        model_labels: ./source/modeling/model/v3t.names
         # docker system
         project_bin: ./project_bin
         dockerfiles: ./project_bin/dockerfiles/

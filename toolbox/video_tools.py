@@ -2,16 +2,13 @@ from subprocess import call
 import cv2
 # local imports
 from toolbox.file_system_tools import FS
-
-# TODO: import this from globals
-ENVIORMENT = "developer" 
+from toolbox.globals import MODE
 
 # safety check, only runs in testing/developer mode
-if ENVIORMENT == "developer":
+if MODE == "development":
     import distutils.spawn
     if distutils.spawn.find_executable("ffmpeg") is None:
-        from os.path import basename
-        raise Exception(f'Hey, the Video class {basename(__file__)} needs ffmpeg to be installed\nand it appears you don\'t have it installed')
+        raise Exception(f'Hey, the Video class from {FS.basename(__file__)} needs ffmpeg to be installed\nand it appears you don\'t have it installed')
 
 class Video(object):
     def __init__(self, path=None):

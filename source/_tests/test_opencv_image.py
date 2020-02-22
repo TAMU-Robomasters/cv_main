@@ -1,8 +1,10 @@
 import cv2
+# relative imports
+from toolbox.globals import PATHS
 
 # read image 
 print("about to read an image")
-img = cv2.imread('./tests/data/test.png')
+img = cv2.imread(PATHS["main_test_image"])
 print("just read an image")
 # show image
 cv2.imshow('Example - Show image in window',img)

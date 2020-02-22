@@ -4,16 +4,10 @@ import cv2
 import os
 from datetime import datetime
 from PIL import Image
+# relative imports
+from toolbox.globals import PATHS, MODEL_LABELS, MODEL_COLORS
 
-def model(frame, net, yolo, iconfidence, ithreshold):
-
-    classes_fname='v3t.names'
-    labelsPath = os.path.sep.join([yolo, classes_fname])
-    LABELS = open(labelsPath).read().strip().split("\n")
-
-    # initialize a list of colors to represent each possible class label
-    np.random.seed(42)
-    COLORS = np.random.randint(0, 255, size=(len(LABELS), 3), dtype="uint8")
+def model(frame, net, iconfidence, ithreshold):
 
     writer = None
     (W, H) = (None, None)
@@ -86,9 +80,9 @@ def model(frame, net, yolo, iconfidence, ithreshold):
             (x, y) = (boxes[i][0], boxes[i][1])
             (w, h) = (boxes[i][2], boxes[i][3])
             # draw a bounding box rectangle and label on the frame
-            color = [int(c) for c in COLORS[classIDs[i]]]
+            color = [int(c) for c in MODEL_COLORS[classIDs[i]]]
             cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
-            text = "{}: {:.4f}".format(LABELS[classIDs[i]],confidences[i])
+            text = "{}: {:.4f}".format(MODEL_LABELS[classIDs[i]],confidences[i])
             cv2.putText(frame, text, (x, y - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
     timenow = datetime.now()
