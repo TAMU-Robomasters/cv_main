@@ -1,6 +1,10 @@
 (using_atk_version): 1.1.0
 
 todo:
+    - create fully synchronous version (branch?):
+        - pull latest video frame
+        - run model
+        - run aim
     - change the main.DockerFile into a slimed down version:
         - only have python and its dependencies basically
     - explore the idea of having pre-set firing locations:
