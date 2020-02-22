@@ -11,6 +11,12 @@ pending changes:
     - fix references in "yolo_video.py"
     - fix references to "yolo_video.py"
     - fix references to "v3t1k"
+    - renames:
+        on_board_cam_test.py => test_on_board_cam.py
+        yolo_video.py => modeling_main.py
+        v3t1k => model
+        tracker.py => tracking_main.py
+        videostream_test.py => test_videostream.py
 
 todo:
     - create fully synchronous version (branch?):
