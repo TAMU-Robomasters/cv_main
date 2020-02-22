@@ -1,5 +1,6 @@
 # Imports the MOSSE tracker from OpenCV
 from cv2 import TrackerMOSSE_create
+# from cv2 import TrackerCSRT_create
 
 # Import the function to draw bbox from OpenCV
 from cv2 import rectangle
@@ -9,17 +10,17 @@ tracker = TrackerMOSSE_create()
 
 # Finds the absolute distance between two points
 def distance(point_1: tuple, point_2: tuple):
-
     # Calculates the distance using Python spagettie
     distance = (sum((p1 - p2) ** 2.0 for p1, p2 in zip(point_1, point_2))) ** (1 / 2)
-
     # Returns the distance between two points
     return distance
-
 
 # Starts tracking the object surrounded by the bounding box in the image
 # bbox is [x, y, width, height]
 def init(image, bboxes, video = []):
+    global tracker
+    tracker = TrackerMOSSE_create()
+    print("inside init")
     print(bboxes)
     if len(bboxes) == 0:
         return False
@@ -34,13 +35,12 @@ def init(image, bboxes, video = []):
 
     # Attempts to start the tracker
     ok = tracker.init(image, bbox)
-
+    print(ok)
     # Checks if the initialization was successful
     if ok:
-
         # Goes through each frame that occurred since the first image was found
         for frame in video:
-            ok = update(frame)
+            ok = draw(frame)
 
     # Returns the tracker's status
     return ok
@@ -48,7 +48,6 @@ def init(image, bboxes, video = []):
 
 # Updates the location of the object
 def update(image):
-    print("in update")
     # Attempts to update the object's location
     ok, location = tracker.update(image)
 
@@ -62,8 +61,10 @@ def update(image):
         return False
 
 def draw(image):
+    print("in update")
     # Attempts to update the object's location
     ok, location = tracker.update(image)
+    print(ok,location)
     # Returns the location if the location was updated
     if ok:
         # Starting cordinate
@@ -80,6 +81,9 @@ def draw(image):
 
         # Draw bounding box on image
         image = rectangle(image, start, end, color, thickness)
+    else:
+        tracker.clear()
+        # tracker = TrackerCSRT_create()
 
     # Returns the updated image if successful, else just the image
-    return image
+    return image, ok

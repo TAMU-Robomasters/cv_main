@@ -11,11 +11,11 @@ from itertools import count
 from yolo_video import model
 
 def main():
-    # 
-    # 
-    # Configuration 
-    # 
-    # 
+    #
+    #
+    # Configuration
+    #
+    #
     input_path = "test.avi"
     yolo = "./v3t1k/"
     weights_fname='v3t.weights'
@@ -36,26 +36,30 @@ def main():
     ln = [ ln[each_layer[0] - 1] for each_layer in net.getUnconnectedOutLayers() ]
     video_stream = cv2.VideoCapture(input_path)
 
-    # 
-    # 
+    #
+    #
     # main loop
-    # 
-    # 
-    for counter in count(start=0, step=1): # counts up infinitely starting at 0
-        
-        grabbed, frame = video_stream.read()
+    #
+    #
+    ok = True
 
-        if counter % 100 == 0:
-            # 
+    for counter in count(start=0, step=1): # counts up infinitely starting at 0
+
+        grabbed, frame = video_stream.read()
+        print("counter:", counter)
+
+        if counter % 20 == 0 or not ok:
+            #
             # call model
-            # 
+            #
             boxes = model(frame,net,yolo,confidence,threshold)
-            tracker.init(frame,boxes)
+            ok = tracker.init(frame,boxes)
         else:
-            # 
+            #
             # call tracker
-            # 
-            frame = tracker.draw(frame)
+            #
+            frame, ok = tracker.draw(frame)
+
             cv2.imshow('frame',frame)
 
         # wait for a keypress on each frame
