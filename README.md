@@ -10,7 +10,7 @@ For ubuntu 18.04 (bionic)
 For mac 
 - `/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
 - `brew cask install docker`
-- 
+- `open -a Docker --hide`
 1. cd into the project (cv_main) directory
 2. run `_ setup`. This command should build the main docker image
 
