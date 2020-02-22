@@ -1,5 +1,17 @@
 (using_atk_version): 1.1.0
 
+pending changes:
+    - set PYTHONPATH
+    - fix references to test.avi
+    - fix references to test.png
+    - fix references inside "test_on_board_cam.py"
+    - fix references inside "tracker.py"
+    - fix references to "tracker.py"
+    - fix references in "videostream_test.py"
+    - fix references in "yolo_video.py"
+    - fix references to "yolo_video.py"
+    - fix references to "v3t1k"
+
 todo:
     - create fully synchronous version (branch?):
         - pull latest video frame
