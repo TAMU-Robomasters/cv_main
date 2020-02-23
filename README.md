@@ -12,7 +12,7 @@ For mac
 - `brew cask install docker`
 - `open -a Docker --hide`
 1. cd into the project (cv_main) directory
-2. run `_ setup`. This command should build the main docker image
+2. run `_ setup`. This command should install local dependencies and build the docker image
 
 # How to run/test
 run `_` to see all the avalible commands

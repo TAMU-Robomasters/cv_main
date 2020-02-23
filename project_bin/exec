@@ -92,6 +92,7 @@ exec docker run \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /usr/local/bin/docker:/usr/local/bin/docker \
     --workdir "$WORKING_DIR" \
+    --env PROJECT_ENVIRONMENT=docker \
     -v "$PROJECT_PATH":/project \
     -- \
     $image_name "$@"

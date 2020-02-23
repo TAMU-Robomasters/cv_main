@@ -8,7 +8,11 @@ class Geometry():
     @classmethod
     def bounding_box(self, array_of_points):
         """
-        the input needs to be an array with the first column being x values, and the second column being y values
+        @array_of_points
+            the input needs to be an array of tuples (x,y)
+            the array can be any number of points
+        returns:
+            max_x, max_y, min_x, min_y
         """
         max_x = -float('Inf')
         max_y = -float('Inf')
@@ -30,7 +34,7 @@ class Geometry():
         """
         @points: a list of points (x,y tuples) that form a polygon
         
-        returns: the aread of the polygon
+        returns: the area of the polygon
         """
         xs = []
         ys = []

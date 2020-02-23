@@ -1,32 +1,33 @@
 import numpy as np
-import time
 import cv2
-import os
-from datetime import datetime
-from PIL import Image
 # relative imports
-from toolbox.globals import PATHS, MODEL_LABELS, MODEL_COLORS
+from toolbox.globals import PATHS, MODE
 
-def model(frame, net, iconfidence, ithreshold):
 
-    writer = None
-    (W, H) = (None, None)
-    ln = net.getLayerNames()
-    ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+# TODO: I don't know what this number is, and we should probably figure it out
+MAGIC_NUMBER_1 = 416
 
+# 
+# init the model
+# 
+print("[INFO] loading YOLO from disk...") if MODE == "development" else None
+net = cv2.dnn.readNetFromDarknet(PATHS["model_config"], PATHS["model_weights"])
+layer_names = net.getLayerNames()
+output_layer_names = [ layer_names[index[0] - 1] for index in net.getUnconnectedOutLayers() ]
+W, H = None, None
+
+def get_bounding_boxes(frame, iconfidence, ithreshold):
+    # NOTE: code is derived from https://www.pyimagesearch.com/2018/11/12/yolo-object-detection-with-opencv/
+    global W,H
     # if the frame dimensions are empty, grab them
     if W is None or H is None:
         (H, W) = frame.shape[:2]
 
-    # construct a blob from the input frame and then perform a forward
-    # pass of the YOLO object detector, giving us our bounding boxes
-    # and associated probabilities
-    blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (416, 416), swapRB=True, crop=False)
-
+    # convert image to blob before running it in the model
+    blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (MAGIC_NUMBER_1, MAGIC_NUMBER_1), swapRB=True, crop=False)
+    # provide input and retrive output
     net.setInput(blob)
-    start = time.time()
-    layerOutputs = net.forward(ln)
-    end = time.time()
+    layerOutputs = net.forward(output_layer_names)
 
     # initialize our lists of detected bounding boxes, confidences,
     # and class IDs, respectively
@@ -67,29 +68,4 @@ def model(frame, net, iconfidence, ithreshold):
                 confidences.append(float(confidence))
                 classIDs.append(classID)
 
-    # apply non-maxima suppression to suppress weak, overlapping
-    # bounding boxes
-    idxs = cv2.dnn.NMSBoxes(boxes, confidences, iconfidence,ithreshold)
-
-    # ensure at least one detection exists
-    if len(idxs) > 0:
-        # loop over the indexes we are keeping
-        for i in idxs.flatten():
-            # extract the bounding box coordinates
-
-            (x, y) = (boxes[i][0], boxes[i][1])
-            (w, h) = (boxes[i][2], boxes[i][3])
-            # draw a bounding box rectangle and label on the frame
-            color = [int(c) for c in MODEL_COLORS[classIDs[i]]]
-            cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
-            text = "{}: {:.4f}".format(MODEL_LABELS[classIDs[i]],confidences[i])
-            cv2.putText(frame, text, (x, y - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-
-    timenow = datetime.now()
-    current_time = timenow.strftime("%H:%M:%S")
-    print(current_time)
-    img = Image.fromarray(frame, 'RGB')
-    img.save('test.nosync.png')
-    img.show()
-    print("from model", boxes)
-    return boxes
+    return boxes, confidences, classIDs

@@ -38,6 +38,7 @@ class LocalDocker
         remove_after_completion: "--rm",
         ability_to_run_other_docker_containers: "-v /var/run/docker.sock:/var/run/docker.sock",
         interactive: "-it",
+        which_project_environment: "--env PROJECT_ENVIRONMENT=docker"
     }
     
     def initialize(name)
@@ -87,10 +88,12 @@ class LocalDocker
         options = [
             @@options[:ability_to_run_other_docker_containers],
             @@options[:remove_after_completion],
+            @@options[:which_project_environment],
             "-v #{@@volume}", # access_to_current_enviornment
         ]
         options.push(@@options[:interactive]) if interactive
         
+        puts "options.join(" ") is: #{options.join(" ")} "
         Console.run("#{"sudo " if OS.is?(:linux)} docker run #{options.join(" ")} #{self.image_name} "+Console.make_arguments_appendable(arguments))
     end
     
@@ -102,6 +105,7 @@ class LocalDocker
             @@options[:remove_after_completion],
             @@options[:ability_to_run_other_docker_containers],
             @@options[:access_to_current_enviornment],
+            @@options[:which_project_environment],
             "-v #{@@volume}", # access_to_current_enviornment
         ]
         

@@ -1,9 +1,9 @@
 # Imports the MOSSE tracker from OpenCV
-from cv2 import TrackerMOSSE_create
-# from cv2 import TrackerCSRT_create
-
+from cv2 import TrackerMOSSE_create # alternative: from cv2 import TrackerCSRT_create
 # Import the function to draw bbox from OpenCV
 from cv2 import rectangle
+from toolbox.image_tools import Image
+from toolbox.globals import COLOR_GREEN
 
 # Creates the MOSSE tracker object
 tracker = TrackerMOSSE_create()
@@ -67,23 +67,9 @@ def draw(image):
     print(ok,location)
     # Returns the location if the location was updated
     if ok:
-        # Starting cordinate
-        start = (int (location[0]), int(location[1]))
-        # print("start",start)
-        # Bottom right of the bounding box
-        end = (int(location[0] + location[2]), int(location[1] + location[3]))
-        # print("end", end)
-        # Green in BGR
-        color = (0, 255, 0)
-
-        # Thickness of rectangle in pixels
-        thickness = 2
-
-        # Draw bounding box on image
-        image = rectangle(image, start, end, color, thickness)
+        image = Image(image).add_bounding_box(bounding_box=location).img
     else:
         tracker.clear()
-        # tracker = TrackerCSRT_create()
 
     # Returns the updated image if successful, else just the image
     return image, ok

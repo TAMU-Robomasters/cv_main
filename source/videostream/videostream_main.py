@@ -52,3 +52,9 @@ class VideoStream(threading.Thread):
 
     def get_frames(self):
         return self.frame
+
+
+def get_latest_frame():
+    # FIXME: test/integrate a synchronous way to get frames from camera/embedded
+    # OR change the way main works so that it doesn't need synchronous
+    raise Exception('Synchronous get latest frame not yet implemented')

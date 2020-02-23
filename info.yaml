@@ -1,25 +1,25 @@
 (using_atk_version): 1.1.0
 
-todo:
-    - create fully synchronous version (branch?):
-        - pull latest video frame
-        - run model
-        - run aim
-    - change the main.DockerFile into a slimed down version:
-        - only have python and its dependencies basically
-    - explore the idea of having pre-set firing locations:
-        - get a way for the robot to know where it is
-        - fire in paths where robots are expected
-
+parameters:
+    model:
+        confidence: 0.5
+        threshold: 0.3
+    videostream:
+        testing:
+            assumed_framerate: 30 # frames per second
 
 (project):
     name: CV Main
     description: The Master Control repo of the TAMU RoboMaster 2020 team
     
     (commands):
-        main: ruby scripts/run.rb python source/main.py
+        # commands for running the project
+        test_main: ruby scripts/run.rb python source/_tests/test_main.py
+        test_videostream: ruby scripts/run.rb python source/videostream/_tests/simulated_videostream.py
+        # general tools
         setup: ruby 'scripts/setup.rb'
-        python: ruby 'scripts/exec_with_python_path.rb'
+        local_python: ruby 'scripts/exec_with_python_path.rb'
+        docker_python: ruby scripts/run.rb python
         # docker stuff
         build: ruby scripts/build.rb
         run: ruby scripts/run.rb
@@ -32,10 +32,12 @@ todo:
         source_dir: ./source
         main_test_video: ./source/_test_data/test.avi
         main_test_image: ./source/_test_data/test.png
+        video_output: ./result.nosync.mp4
         # model
         model_weights: ./source/modeling/model/v3t.weights
         model_config: ./source/modeling/model/v3t.cfg
         model_labels: ./source/modeling/model/v3t.names
+        frame_save_location: ./source/modeling/_tests/test.nosync.png
         # docker system
         project_bin: ./project_bin
         dockerfiles: ./project_bin/dockerfiles/
@@ -43,5 +45,13 @@ todo:
         # tools
         ruby_tools: ./toolbox/tools.rb
 
-parameters:
-    example_param: "you can access this value in python"
+todo:
+    - create fully synchronous version (branch?):
+        - pull latest video frame
+        - run model
+        - run aim
+    - change the main.DockerFile into a slimed down version:
+        - only have python and its dependencies basically
+    - explore the idea of having pre-set firing locations:
+        - get a way for the robot to know where it is
+        - fire in paths where robots are expected

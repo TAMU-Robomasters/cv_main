@@ -4,18 +4,20 @@ import cv2
 from toolbox.file_system_tools import FS
 from toolbox.globals import MODE
 
-# safety check, only runs in testing/developer mode
-if MODE == "development":
-    import distutils.spawn
-    if distutils.spawn.find_executable("ffmpeg") is None:
-        raise Exception(f'Hey, the Video class from {FS.basename(__file__)} needs ffmpeg to be installed\nand it appears you don\'t have it installed')
+
 
 class Video(object):
     def __init__(self, path=None):
         self.path = path
     
     # requires that ffmpeg be installed
-    def get_frame(self, seconds, path):
+    def save_frame(self, seconds, path):
+        # safety check, only runs in testing/developer mode
+        if MODE == "development":
+            import distutils.spawn
+            if distutils.spawn.find_executable("ffmpeg") is None:
+                raise Exception(f'Hey, the Video class from {FS.basename(__file__)} needs ffmpeg to be installed\nand it appears you don\'t have it installed')
+        
         quality = "2" # can be 1-31, lower is higher quality
         call(["ffmpeg", "-ss", seconds, '-i', self.path , "-vframes", "1", "-q:v", quality, path])
     
@@ -38,7 +40,29 @@ class Video(object):
                 video_capture.release()
                 return None
             yield image
-        
+    
+    def fps(self):
+        video_capture = cv2.VideoCapture(self.path)
+        # Find OpenCV version
+        (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
+        if int(major_ver) < 3:
+            fps = video_capture.get(cv2.cv.CV_CAP_PROP_FPS)
+        else:
+            fps = video_capture.get(cv2.CAP_PROP_FPS)
+        video_capture.release()
+        return fps
+
+    def frame_width(self):
+        video_capture = cv2.VideoCapture(self.path)
+        frame_width  = int(video_capture.get(3))
+        video_capture.release()
+        return frame_width
+    
+    def frame_height(self):
+        video_capture = cv2.VideoCapture(self.path)
+        frame_height = int(video_capture.get(4))
+        video_capture.release()
+        return frame_height
     
     def save_with_labels(self, list_of_labels, to=None):
         # 
@@ -79,3 +103,25 @@ class Video(object):
         
         # combine the resulting frames into a video
         new_video.release()
+
+    @classmethod
+    def create_from_frames(self, list_of_frames, save_to=None, fps=30):
+        # check
+        if len(list_of_frames) == 0:
+            raise Exception('The Video.create_from_frames was given an empty list (no frames)\nso a video cannot be made')
+        elif save_to == None:
+            raise Exception('The Video.create_from_frames was given no save_to= location so it doesn\'t know where to save the file')
+        
+        # 
+        # create new video source
+        # 
+        frame_height, frame_width = list_of_frames[0].shape[:2]
+        frame_dimensions = (frame_width, frame_height)
+        new_video = cv2.VideoWriter(save_to, cv2.VideoWriter_fourcc(*'mp4v'), fps, frame_dimensions)
+        # add all the frames
+        for each_frame in list_of_frames:
+            new_video.write(each_frame)    
+        
+        # combine the resulting frames into a video, which will write to a file
+        new_video.release()
+
