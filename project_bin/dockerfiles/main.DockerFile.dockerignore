@@ -1,0 +1,8 @@
+**/*
+!project_bin
+!./.gitignore
+!./.project_dir.nosync.txt
+!./Gemfile
+!./info.yaml
+!./README.md
+!./requirements.txt
