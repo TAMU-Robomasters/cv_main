@@ -33,18 +33,11 @@ def debug_each_frame(counter, frame, model_ouput, aiming_output):
         exit(0)
 
 # 
-# debugger option #2
-# 
-frames = []
-def save_bounding_boxes_to_video(counter, frame, model_ouput, aiming_output):
-    # extract the output
-    boxes, confidences = model_ouput
-    x,y,z = aiming_output
-
-# 
 # setup main(s)
 # 
 simple_synchronous, _ = setup(
+    # comment out lines (arguments) below to get closer
+    # and closer to realistic output
     get_latest_frame=simulated_get_latest_frame,
     on_next_frame=debug_each_frame,
     modeling=test_modeling,
@@ -60,3 +53,4 @@ simple_synchronous()
 
 # save all the frames as a video
 Video.create_from_frames(frames, save_to=PATHS["video_output"])
+print(f"video output has been saved to {PATHS['video_output']}")
