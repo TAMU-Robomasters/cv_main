@@ -44,8 +44,6 @@ def setup(
         this function is the most simple version of CV
         - no tracking
         - no multiprocessing/async/multithreading
-        
-        it takes 2 functions as arguments and uses them to get/send output
         """
         
         for counter in count(start=0, step=1): # counts up infinitely starting at 0
@@ -72,6 +70,12 @@ def setup(
     # option #2
     # 
     def synchronous_with_tracker():
+        """
+        the 2nd main function
+        - no multiprocessing
+        - does use the tracker
+        """
+    
         # by defaul tracker needs model to be run
         tracker_found_bounding_box = False
         for counter in count(start=0, step=1): # counts up infinitely starting at 0

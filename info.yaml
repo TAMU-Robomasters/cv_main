@@ -14,8 +14,9 @@ parameters:
     
     (commands):
         # commands for running the project
-        test_main: ruby scripts/run.rb python source/_tests/test_main.py
-        test_videostream: ruby scripts/run.rb python source/videostream/_tests/simulated_videostream.py
+        docker_test_main: ruby scripts/run.rb python source/_tests/test_main.py
+        local_test_main: ruby 'scripts/exec_with_python_path.rb' source/_tests/test_main.py
+        docker_test_videostream: ruby scripts/run.rb python source/videostream/_tests/simulated_videostream.py
         # general tools
         setup: ruby 'scripts/setup.rb'
         local_python: ruby 'scripts/exec_with_python_path.rb'

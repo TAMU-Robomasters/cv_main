@@ -6,6 +6,18 @@ from toolbox.globals import PATHS, ENVIRONMENT, MODE, MODEL_COLORS, MODEL_LABELS
 from source.modeling.modeling_main import get_bounding_boxes as original_get_bounding_boxes
 
 def get_bounding_boxes(frame, iconfidence, ithreshold):
+    """
+    this function is the debugging counterpart to the actual get_bounding_boxes()
+    
+    @frame: should be an cv2 image (basically a numpy array)
+    @iconfidence: should be a value between 0-1
+    @ithreshold: should be a value between 0-1
+    
+    returns:
+        a list of bounding boxes, each formatted as (x,y, width, height)
+    
+    """
+    
     # 
     # wrap the original, but display every frame
     # 

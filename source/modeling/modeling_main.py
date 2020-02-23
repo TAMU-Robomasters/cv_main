@@ -17,7 +17,17 @@ output_layer_names = [ layer_names[index[0] - 1] for index in net.getUnconnected
 W, H = None, None
 
 def get_bounding_boxes(frame, iconfidence, ithreshold):
-    # NOTE: code is derived from https://www.pyimagesearch.com/2018/11/12/yolo-object-detection-with-opencv/
+    """
+    @frame: should be an cv2 image (basically a numpy array)
+    @iconfidence: should be a value between 0-1
+    @ithreshold: should be a value between 0-1
+    
+    returns:
+        a list of bounding boxes, each formatted as (x,y, width, height)
+    
+    NOTE: this code is derived from https://www.pyimagesearch.com/2018/11/12/yolo-object-detection-with-opencv/
+    """
+    
     global W,H
     # if the frame dimensions are empty, grab them
     if W is None or H is None:

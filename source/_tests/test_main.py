@@ -15,6 +15,11 @@ import source.tracking._tests.test_tracking as test_tracking
 #
 frames = []
 def debug_each_frame(counter, frame, model_ouput, aiming_output):
+    """
+    this function is designed to be called every time main() processes a frame
+    its only purpose is to bundle all of the debugging output
+    """
+    
     # extract the output
     boxes, confidences = model_ouput
     x,y,z = aiming_output
@@ -35,7 +40,7 @@ def debug_each_frame(counter, frame, model_ouput, aiming_output):
 # 
 # setup main(s)
 # 
-simple_synchronous, _ = setup(
+simple_synchronous, synchronous_with_tracker = setup(
     # comment out lines (arguments) below to get closer
     # and closer to realistic output
     get_latest_frame=simulated_get_latest_frame,
