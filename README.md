@@ -28,12 +28,21 @@
 3. cd into the project (cv_main) directory
 4. run `_ setup`. This command should install local dependencies and build the docker image
 
-# How to run/test
+# How do I run/test the project?
 run `_` to see all the avalible commands
 run `_ docker_test_main` to try running all the code on docker
-run `_ local_test_main` to try running all the code locally
+run `_ local_test_main` to try running all the code with your local python
 
-# cv_main
+# How do I just run python?
+If you just want to run a python file using your local python installation, use `_ local_python`. <br> Ex: `_ local_python source/main.py`
+If you want to use the docker python do `_ docker_python`.
+
+# Caveats/Gotcha's
+- CV.showimg() and Matplotlib visuals don't work by default in docker because they open windows in docker instead of on your computer. There's ways to fix this (X11 forwarding) that I've been working on implementing.
+- Same docker issue when importing info from the camera
+- There could be docker issues connecting to the GPU (additional drivers) 
+
+# Legacy readme
 cap = cv2.VideoCapture("nvcamerasrc ! video/x-raw(memory:NVMM), width=(int)1280, height=(int)720,format=(string)I420, framerate=(fraction)30/1 ! nvvidconv flip-method=0 ! video/x-raw, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink")
 https://github.com/AlexeyAB/darknet
 
