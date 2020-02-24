@@ -29,12 +29,12 @@
 4. run `_ setup`. This command should install local dependencies and build the docker image
 
 # How do I run/test the project?
-run `_` to see all the avalible commands
-run `_ docker_test_main` to try running all the code on docker
-run `_ local_test_main` to try running all the code with your local python
+run `_` to see all the avalible commands<br>
+run `_ docker_test_main` to try running all the code on docker<br>
+run `_ local_test_main` to try running all the code with your local python<br>
 
 # How do I just run python?
-If you just want to run a python file using your local python installation, use `_ local_python`. <br> Ex: `_ local_python source/main.py`
+If you just want to run a python file using your local python installation, use `_ local_python`. <br> Ex: `_ local_python source/main.py` <br>
 If you want to use the docker python do `_ docker_python`.
 
 # Caveats/Gotcha's
