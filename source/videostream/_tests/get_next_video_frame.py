@@ -7,7 +7,7 @@ from toolbox.globals import PATHS, PARAMETERS, ENVIRONMENT
 # initilize
 # 
 test_video = Video(PATHS["main_test_video"])
+frame_generator = test_video.frames()
 
 def get_next_video_frame():
-    for each_frame in test_video.frames():
-        yield each_frame
+    return frame_generator.__next__()

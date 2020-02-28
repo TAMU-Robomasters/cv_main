@@ -56,7 +56,7 @@ simple_synchronous, synchronous_with_tracker = setup(
     on_next_frame=debug_each_frame,
     modeling=test_modeling,
     tracker=test_tracking,
-    send_output=simulated_send_output   
+    # send_output=simulated_send_output, # this should be commented in once we actually add aiming 
 )
 
 # 
