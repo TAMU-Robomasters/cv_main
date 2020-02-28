@@ -51,6 +51,8 @@ todo:
         - PYTHONPATH
         - parameters
         - toolbox folder
+    - add additonal video testing:
+        - DJI dataset: https://terra-1-g.djicdn.com/b2a076471c6c4b72b574a977334d3e05/resources/DJI%20ROCO.zip
     - have code detect if on TX2:
         - check if ARM
         - start the fan command
