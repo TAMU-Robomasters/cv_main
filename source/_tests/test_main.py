@@ -4,10 +4,19 @@ from toolbox.globals import ENVIRONMENT, PATHS
 from toolbox.image_tools import Image
 from toolbox.video_tools import Video
 from source.main import setup
-# import simulated/debugging inputs rather than the real-deal
-from source.videostream._tests.simulated_videostream import get_latest_frame as simulated_get_latest_frame
+
+# 
+# import different simulated/debugging inputs/outputs
+# 
+
+# simulated video
+from source.videostream._tests.get_next_video_frame import get_next_video_frame
+from source.videostream._tests.get_latest_video_frame import get_latest_video_frame
+# simulated embedded output
 from source.embedded_communication._tests.simulated_output import send_output as simulated_send_output
+# simulated modeling
 import source.modeling._tests.test_modeling as test_modeling
+# simulated tracking
 import source.tracking._tests.test_tracking as test_tracking
 
 #
@@ -43,7 +52,7 @@ def debug_each_frame(counter, frame, model_ouput, aiming_output):
 simple_synchronous, synchronous_with_tracker = setup(
     # comment out lines (arguments) below to get closer
     # and closer to realistic output
-    get_latest_frame=simulated_get_latest_frame,
+    get_latest_frame=get_next_video_frame, # can be swapped with get_latest_video_frame
     on_next_frame=debug_each_frame,
     modeling=test_modeling,
     tracker=test_tracking,
@@ -53,7 +62,7 @@ simple_synchronous, synchronous_with_tracker = setup(
 # 
 # run mains (with simulated values)
 # 
-print('Starting simple_synchronous with simulated IO (rather than real IO)')
+print('Starting simple_synchronous with simulated IO')
 simple_synchronous()
 
 # save all the frames as a video

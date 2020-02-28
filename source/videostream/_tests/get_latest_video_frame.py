@@ -13,7 +13,7 @@ all_frames = list(test_video.frames())
 start_time = None
 framerate = PARAMETERS["videostream"]["testing"]["assumed_framerate"]
 
-def get_latest_frame():
+def get_latest_video_frame():
     # kick of the start time if hasn't started yet
     global start_time
     if start_time == None:
@@ -34,10 +34,10 @@ def get_latest_frame():
 # 
 if __name__ == '__main__':
     print('ENVIRONMENT = ', ENVIRONMENT)
-    first_frame = get_latest_frame()
+    first_frame = get_latest_video_frame()
     seconds_of_wait_time = 2
     time.sleep(seconds_of_wait_time)
-    later_frame = get_latest_frame()
+    later_frame = get_latest_video_frame()
     if first_frame is later_frame:
         print(f"\n\nin the simulated videostream, the first frame is equal to the frame {seconds_of_wait_time} seconds later\nthis is probably an error unless the video is 100% black for the first {seconds_of_wait_time} seconds")
         exit(1)

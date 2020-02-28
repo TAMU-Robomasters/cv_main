@@ -24,6 +24,8 @@ def get_bounding_boxes(frame, iconfidence, ithreshold):
     
     returns:
         a list of bounding boxes, each formatted as (x,y, width, height)
+        a list of confidences
+        a list of class_ids
     
     NOTE: this code is derived from https://www.pyimagesearch.com/2018/11/12/yolo-object-detection-with-opencv/
     """

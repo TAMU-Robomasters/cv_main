@@ -15,6 +15,8 @@ def get_bounding_boxes(frame, iconfidence, ithreshold):
     
     returns:
         a list of bounding boxes, each formatted as (x,y, width, height)
+        a list of confidences
+        a list of class_ids
     
     """
     
@@ -42,13 +44,7 @@ def get_bounding_boxes(frame, iconfidence, ithreshold):
             cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
             text = "{}: {:.4f}".format(MODEL_LABELS[class_ids[i]],confidences[i])
             cv2.putText(frame, text, (x, y - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-
-    current_time = datetime.now().strftime("%H:%M:%S")
-    print(current_time)
-    img = Image.fromarray(frame, 'RGB')
-    img.save(PATHS['frame_save_location'])
-    img.show() if ENVIRONMENT != "docker" else None
-    print("bounding boxes from model:", boxes)
+    
     
     return boxes, confidences, class_ids
 

@@ -47,10 +47,14 @@ parameters:
         ruby_tools: ./toolbox/tools.rb
 
 todo:
-    - create fully synchronous version (branch?):
-        - pull latest video frame
-        - run model
-        - run aim
+    - forgot to talk about:
+        - PYTHONPATH
+        - parameters
+        - toolbox folder
+    - have code detect if on TX2:
+        - check if ARM
+        - start the fan command
+        - change the setup script
     - change the main.DockerFile into a slimed down version:
         - only have python and its dependencies basically
     - explore the idea of having pre-set firing locations:
