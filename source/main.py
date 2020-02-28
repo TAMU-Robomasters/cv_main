@@ -87,18 +87,16 @@ def setup(
                 #
                 boxes, confidences, classIDs = model(frame, confidence, threshold)
                 tracker_found_bounding_box = tracker.init(frame,boxes)
+                # FIXME: best_bounding_box needs to be calculated here! (either call tracker)
             else:
                 #
                 # call tracker
                 #
-                frame, tracker_found_bounding_box = tracker.draw(frame)
-                
-            # FIXME:
-            #   the tracker doesn't return bounding boxes
-            #   the boxes value is just leftover from whenever the model last ran
-            
+                # TODO: make sure this works (untested)
+                best_bounding_box, tracker_found_bounding_box = tracker.update(frame)
+
             # figure out where to aim
-            x, y, z = aiming.aim(boxes)
+            x, y, z = aiming.aim(best_bounding_box)
             
             # optional value for debugging/testing
             if not (on_next_frame is None):
@@ -107,9 +105,6 @@ def setup(
             # send data to embedded
             send_output(x, y, z)
     
-    # return a list of the different main options
-    return simple_synchronous, synchronous_with_tracker
-
     # 
     # option #3
     # 
@@ -121,7 +116,9 @@ def setup(
     # 
     # have multiple processes and have them all running all the time
     # tracker pulls the latest model rather than waiting to fail before calling modeling
-
+    
+    # return a list of the different main options
+    return simple_synchronous, synchronous_with_tracker
     
 if __name__ == '__main__':
     # setup mains with real inputs/outputs
