@@ -27,8 +27,6 @@ import os
 # allow ENVIRONMENT to be overridden by the 'PROJECT_ENVIRONMENT' environment variable
 if 'PROJECT_ENVIRONMENT' in os.environ:
     ENVIRONMENT = os.environ['PROJECT_ENVIRONMENT']
-else:
-    os.system("echo ENV: $PROJECT_ENVIRONMENT")
 
 # 
 # load the info.yaml and some of its data

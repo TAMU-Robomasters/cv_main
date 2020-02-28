@@ -1,7 +1,7 @@
 # Imports the MOSSE tracker from OpenCV
 from cv2 import TrackerMOSSE_create # alternative: from cv2 import TrackerCSRT_create
-# Import the function to draw bbox from OpenCV
-from cv2 import rectangle
+
+# local imports
 from toolbox.image_tools import Image
 from toolbox.globals import COLOR_GREEN
 
