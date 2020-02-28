@@ -33,6 +33,8 @@ if Console.yes?("would you like perform a local setup? (the alternative is docke
     if !error && OS.is?("mac")
         error &&= !system("brew install opencv")
     end
+    # uninstall opencv to avoid the "cannot import TrackerMOSSE_create from cv2.cv2"
+    error &&= !system("pip3 uninstall opencv-python") 
     
     # report errors
     if error
