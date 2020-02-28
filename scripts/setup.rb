@@ -4,7 +4,7 @@ require_relative Info.paths["ruby_tools"] # corrisponds to the "(path)" inside i
 # 
 # local setup
 # 
-if Console.yes?("would you like performa local setup? (the alternative is docker)")
+if Console.yes?("would you like perform a local setup? (the alternative is docker)")
     # 
     # check for python
     # 
@@ -49,7 +49,7 @@ end
 # docker setup
 # 
 # 
-if Console.yes?("would you like setup docker?")
+if Console.yes?("\n\n\nwould you like setup docker?")
     # keep a log of the current abs path of your project
     # this is needed for starting up docker instances
     project_path = FS.absolute_path($info.folder)
