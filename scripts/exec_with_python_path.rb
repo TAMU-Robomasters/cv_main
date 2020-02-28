@@ -6,4 +6,4 @@ old_python_path = ENV["PYTHONPATH"]
 project_path = $paths["project_root"]
 ENV["PYTHONPATH"] = "#{old_python_path}:#{project_path}"
 # run the python command
-exec("python", *ARGV)
+exec("python3", *ARGV)
