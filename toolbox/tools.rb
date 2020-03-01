@@ -113,7 +113,7 @@ class LocalDocker
         # start detached run
         container_id = `#{command}`.chomp
         # put user into the already-running process, let the make whatever changes they want
-        system("#{"sudo " if OS.is?(:linux)} docker exec -it #{container_id} /bin/sh")
+        system("#{"sudo " if OS.is?(:linux)}docker exec -it #{container_id} /bin/sh -c \"[ -e /bin/bash ] && /bin/bash || /bin/sh\"")
         # once they exit that, ask if they want to save those changes
         if Console.yes?("would you like to save those changes?")
             # save those changes to the container
