@@ -71,7 +71,7 @@ class LocalDocker
         where_to_build = Console.as_shell_argument($info.folder)
         
         forward_all_ports = "--network=host"
-        which_dockerfile = "--file '#{docker_file}'"
+        which_dockerfile = "--file \"#{docker_file}\""
         name_the_image = "-t #{self.image_name}"
         
         options = [
