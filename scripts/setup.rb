@@ -30,6 +30,7 @@ if Console.yes?("would you like perform a local setup? (the alternative is docke
     puts "# "
     puts "# "
     error = !system("pip3 install -r requirements.txt")
+    error &&= !system("pip3 install --ignore-installed PyYAML==5.1.2")
     if !error && OS.is?("mac")
         error &&= !system("brew install opencv")
     end
