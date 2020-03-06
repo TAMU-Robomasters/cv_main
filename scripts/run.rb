@@ -18,7 +18,7 @@ else
             -it \
             --rm \
             --network=host \
-            -v "$PROJECT_PATH":/project \
+            -v "#{Info.folder}":/project \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v /usr/local/bin/docker:/usr/local/bin/docker \
             --env PATH="/project/project_bin:${PATH}" \
@@ -26,6 +26,8 @@ else
             ubuntu:bionic-20200112
     HEREDOC
     puts command
+    exec(command)
     puts ""
+    # FIXME
     puts "The command (above) still needs to be converted to windows"
 end
