@@ -57,14 +57,14 @@ def setup(
             boxes, confidences, classIDs = modeling.get_bounding_boxes(frame, confidence, threshold)
             
             # figure out where to aim
-            x, y, z = aiming.aim(boxes)
+            x, y = aiming.aim(boxes)
             
             # optional value for debugging/testing
             if not (on_next_frame is None):
-                on_next_frame(counter, frame, (boxes, confidences), (x,y,z))
+                on_next_frame(counter, frame, (boxes, confidences), (x,y))
             
             # send data to embedded
-            send_output(x, y, z)
+            send_output(x, y)
     
     # 
     # option #2
@@ -96,14 +96,14 @@ def setup(
                 best_bounding_box, tracker_found_bounding_box = tracker.update(frame)
 
             # figure out where to aim
-            x, y, z = aiming.aim(best_bounding_box)
+            x, y = aiming.aim(best_bounding_box)
             
             # optional value for debugging/testing
             if not (on_next_frame is None):
-                on_next_frame(counter, frame, (boxes, confidences), (x,y,z))
+                on_next_frame(counter, frame, (boxes, confidences), (x,y))
             
             # send data to embedded
-            send_output(x, y, z)
+            send_output(x, y)
     
     # 
     # option #3
