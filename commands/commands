@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+ls -1 ./commands | sed 's/^/    /'

@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+python source/_tests/test_main.py
