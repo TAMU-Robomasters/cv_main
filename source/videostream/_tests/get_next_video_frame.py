@@ -10,4 +10,7 @@ test_video = Video(PATHS["main_test_video"])
 frame_generator = test_video.frames()
 
 def get_next_video_frame():
-    return frame_generator.__next__()
+    try:
+        return frame_generator.__next__()
+    except:
+        None

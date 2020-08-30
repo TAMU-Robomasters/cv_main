@@ -2,7 +2,6 @@ from subprocess import call
 import cv2
 # local imports
 from toolbox.file_system_tools import FS
-from toolbox.globals import MODE
 
 
 
@@ -10,16 +9,6 @@ class Video(object):
     def __init__(self, path=None):
         self.path = path
     
-    # requires that ffmpeg be installed
-    def save_frame(self, seconds, path):
-        # safety check, only runs in testing/developer mode
-        if MODE == "development":
-            import distutils.spawn
-            if distutils.spawn.find_executable("ffmpeg") is None:
-                raise Exception(f'Hey, the Video class from {FS.basename(__file__)} needs ffmpeg to be installed\nand it appears you don\'t have it installed')
-        
-        quality = "2" # can be 1-31, lower is higher quality
-        call(["ffmpeg", "-ss", seconds, '-i', self.path , "-vframes", "1", "-q:v", quality, path])
     
     def frames(self):
         """

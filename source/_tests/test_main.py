@@ -1,12 +1,12 @@
 import cv2
 # import local
-from toolbox.globals import ENVIRONMENT, PATHS
+from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS
 from toolbox.image_tools import Image
 from toolbox.video_tools import Video
 from source.main import setup
 
 # 
-# import different simulated/debugging inputs/outputs
+# import simulated inputs/outputs
 # 
 
 # simulated video
@@ -18,6 +18,8 @@ from source.embedded_communication._tests.simulated_output import send_output as
 import source.modeling._tests.test_modeling as test_modeling
 # simulated tracking
 import source.tracking._tests.test_tracking as test_tracking
+# simulated aiming 
+import source.aiming._tests.test_aiming as test_aiming
 
 #
 # debugger option #1
@@ -31,15 +33,21 @@ def debug_each_frame(counter, frame, model_ouput, aiming_output):
     
     # extract the output
     boxes, confidences = model_ouput
-    x,y,z = aiming_output
+    x, y = aiming_output
     
     # load/show the image
     image = Image(frame)
     for each in boxes:
         image.add_bounding_box(each)
-    if ENVIRONMENT == 'docker':
+    
+    if PARAMETERS["testing"]["save_frame_to_file"]:
         frames.append(image.img)
-    else:
+    
+    if PARAMETERS["testing"]["open_each_frame"]:
+        # NOTE: this currently fails in nix-shell on Mac with error message:
+        #     qt.qpa.plugin: Could not find the Qt platform plugin "cocoa" in ""
+        #     its fixable, see "qt.qpa.plugin: Could not find the Qt" on https://nixos.wiki/wiki/Qt
+        #     but its hard to fix
         image.show("frame")
 
     # allow user to quit by pressing q (at least I think thats what this checks)
@@ -56,6 +64,7 @@ simple_synchronous, synchronous_with_tracker = setup(
     on_next_frame=debug_each_frame,
     modeling=test_modeling,
     tracker=test_tracking,
+    aiming=test_aiming
     # send_output=simulated_send_output, # this should be commented in once we actually add aiming 
 )
 
