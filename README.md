@@ -1,49 +1,32 @@
-# How to setup
-1. install atk (single-line install all OSes) https://github.com/aggie-tool-kit/atk
-2. install docker
+## How to setup (The not-recommended-but-simple-to-explain way)
+* install python3
+* install the pip modules in `requirements.txt`
+* add the project directory to your `PYTHONPATH` env variable
+* try running `python source/main.py`
 
-   For Ubuntu 18.04 (bionic) <br>
-   - `sudo apt-get update`
-   - `sudo apt-get remove docker docker-engine docker.io`
-   - `sudo apt install docker.io`
-   - `sudo systemctl start docker`
-   - `sudo systemctl enable docker`
+# How to setup (Prefered way)
 
-   <br>
-   For MacOS <br>
-   
-   - `/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
-   - `brew cask install docker`
-   - `open -a Docker --hide`
+### For Windows
 
-   <br>
-   For Windows 10 Home/Standard/Edu versions
-   
-   - See https://www.sitepoint.com/docker-windows-10-home/
-   
-   <br>
-   For Windows 10 Pro/Enterprise
-   
-   - Get the official installer: https://www.docker.com/products/docker-desktop
-3. cd into the project (cv_main) directory
-4. run `_ setup`. This command should install local dependencies and build the docker image
+* Get [WSL](https://youtu.be/av0UQy6g2FA?t=91) (Windows Subsystem for Linux) or [WSL2](https://www.omgubuntu.co.uk/how-to-install-wsl2-on-windows-10)<br>
+    * If you're not familiar with WSL, I'd recommend [watching a quick thing on it like this one](https://youtu.be/av0UQy6g2FA?t=91)
+    * Ubuntu 18.04 for WSL is preferred (same as in that linked video), but Ubuntu 20.04 or similar should work.
+    * [WSL2](https://www.omgubuntu.co.uk/how-to-install-wsl2-on-windows-10) (just released August 2020) is needed if you want to use your GPU.<br>
+* WSL is installed (and you have a terminal logged into WSL) follow the Mac/Linux instructions below.
 
-# How do I run/test the project?
-run `_` to see all the avalible commands<br>
-run `_ docker_test_main` to try running all the code on docker<br>
-run `_ local_test_main` to try running all the code with your local python<br>
+### For Mac/Linux
 
-# How do I just run python?
-If you just want to run a python file using your local python installation, use `_ local_python`. <br> Ex: `_ local_python source/main.py` <br>
-If you want to use the docker python do `_ docker_python`.
-
-# Caveats/Gotcha's
-- CV.showimg() and Matplotlib visuals don't work by default in docker because they open windows in docker instead of on your computer. There's ways to fix this (X11 forwarding) that I've been working on implementing.
-- Same docker issue when importing info from the camera
-- There could be docker issues connecting to the GPU (additional drivers) 
-
-# Legacy readme
-cap = cv2.VideoCapture("nvcamerasrc ! video/x-raw(memory:NVMM), width=(int)1280, height=(int)720,format=(string)I420, framerate=(fraction)30/1 ! nvvidconv flip-method=0 ! video/x-raw, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink")
-https://github.com/AlexeyAB/darknet
-
-https://github.com/douglasrizzo/detection_util_scripts
+* Install [nix](https://nixos.org/guides/install-nix.html) 
+    * Just run `sh <(curl -L https://nixos.org/nix/install) --daemon` in your console/terminal app
+    * *Note:* you might need to close and reopen the your terminal after it installs
+* Open up the project
+    * If you haven't already, clone the repository (aka run the following)<br>
+    `cd wherever-you-want-to-save-this-project`<br>
+    `git clone https://github.com/TAMU-RoboMaster-Computer-Vision/cv_main`
+    * open up the project:<br>
+    `cd cv_main`
+* Run the code
+    * run `nix-shell`
+        * Note: this will almost certainly take a while the first time because it will auto-install python, pip, a python virtual enviornment, and all of the pip modules that are needed.
+    * run `commands` to see all of the project commands
+    * run `python source/_tests/test_main.py` to try running the main program
