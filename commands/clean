@@ -8,8 +8,8 @@
 rm -rf **/__pycache__
 
 # all the virtual env pip modules (several minutes to rebuild these)
-rm -rf ./
+rm -rf .venv
 
 # misc
-rm .project_dir.nosync.txt
-rm .nosync.pip_modules.hash
+rm -rf ./settings/.cache
+rm -f .project_dir.nosync.txt
