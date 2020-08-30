@@ -15,7 +15,7 @@ import source.modeling.modeling_main as modeling
 import source.tracking.tracking_main as tracker
 import source.aiming.aiming_main as aiming
 
-# import parameters
+# import parameters from the info.yaml file
 confidence = PARAMETERS["model"]["confidence"]
 threshold = PARAMETERS["model"]["threshold"]
 

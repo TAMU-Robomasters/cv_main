@@ -12,11 +12,12 @@ def get_bounding_boxes(frame, iconfidence, ithreshold):
     @frame: should be an cv2 image (basically a numpy array)
     @iconfidence: should be a value between 0-1
     @ithreshold: should be a value between 0-1
-    
-    returns:
-        a list of bounding boxes, each formatted as (x,y, width, height)
-        a list of confidences
-        a list of class_ids
+    -
+    @@returns:
+    - a tuple containing
+        - a list of bounding boxes, each formatted as (x, y, width, height)
+        - a list of confidences
+        - a list of class_ids
     
     """
     

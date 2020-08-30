@@ -18,15 +18,17 @@ W, H = None, None
 
 def get_bounding_boxes(frame, iconfidence, ithreshold):
     """
+    ex: boxes, confidences, class_ids = get_bounding_boxes(frame, 0.5, 0.3)
+    
     @frame: should be an cv2 image (basically a numpy array)
     @iconfidence: should be a value between 0-1
     @ithreshold: should be a value between 0-1
-    
-    returns:
-        a list of bounding boxes, each formatted as (x,y, width, height)
-        a list of confidences
-        a list of class_ids
-    
+    -
+    @@returns:
+    - a tuple containing
+        - a list of bounding boxes, each formatted as (x, y, width, height)
+        - a list of confidences
+        - a list of class_ids
     NOTE: this code is derived from https://www.pyimagesearch.com/2018/11/12/yolo-object-detection-with-opencv/
     """
     
