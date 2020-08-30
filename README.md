@@ -19,12 +19,12 @@
 * Install [nix](https://nixos.org/guides/install-nix.html) 
     * Just run `sh <(curl -L https://nixos.org/nix/install) --daemon` in your console/terminal app
     * *Note:* you might need to close and reopen the your terminal after it installs
-* Open up the project
-    * If you haven't already, clone the repository (aka run the following)<br>
-    `cd wherever-you-want-to-save-this-project`<br>
-    `git clone https://github.com/TAMU-RoboMaster-Computer-Vision/cv_main`
-    * open up the project:<br>
-    `cd cv_main`
+* Install `git`
+    * run `nix-env -i git`
+* Clone/Open the project
+    * `cd wherever-you-want-to-save-this-project`<br>
+    * `git clone https://github.com/TAMU-RoboMaster-Computer-Vision/cv_main`
+    * `cd cv_main`
 * Run the code
     * run `nix-shell`
         * Note: this will almost certainly take a while the first time because it will auto-install python, pip, a python virtual enviornment, and all of the pip modules that are needed.
