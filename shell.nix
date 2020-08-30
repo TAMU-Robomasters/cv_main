@@ -2,7 +2,7 @@
 let
     # niv should pin your current thing inside ./nix/sources
     # here we go and get that pinned version so we can pull packages out of it
-    sources = import ./nix/sources.nix;
+    sources = import ./settings/nix/sources.nix;
     normalPackages = import sources.nixpkgs {};
     
 # using those definitions
@@ -13,7 +13,7 @@ in
         # inside that shell, make sure to use these packages
         buildInputs = [
             normalPackages.cmake
-            # python an venv
+            # python and venv
             normalPackages.python37
             normalPackages.python37Packages.setuptools
             normalPackages.python37Packages.pip
@@ -45,36 +45,16 @@ in
         ];
         
         shellHook = ''
-        
-        # asthetics
-        PS1="∫"
-        alias ls="ls --color"
-        
-        #
-        # use venv
-        #
-        ls .venv &>/dev/null || python -m venv .venv
-        source .venv/bin/activate
-        echo "============================================="
-        echo "installing pip modules"
-        echo "============================================="
-        pip install -r requirements.txt
-        # use the project directory
-        PYTHONPATH="$PYTHONPATH:$PWD"
-        
-        # setup local commands
-        PATH="$PWD/commands:$PATH"
-        echo ""
-        echo ""
-        echo "available commands:"
-        ls -1 ./commands | sed 's/^/    /'
-        alias help="./commands/help" # overrides default bash "help"
-        echo ""
+        # 
+        # find and run all the startup scripts in alphabetical order
+        # 
+        for file in ./settings/shell_startup/*
+        do
+            # make sure its a file
+            if [[ -f $file ]]; then
+                source $file
+            fi
+        done
         '';
-
-        # Environment variables
-        # PYTHONPATH=".";
-        # # note the ./. acts like $PWD
-        # FOO = toString ./. + "/foobar";
     }
 
