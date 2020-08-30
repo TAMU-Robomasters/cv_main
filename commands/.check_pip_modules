@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
 echo Running pip install check
 
-# ensure that the requirements.txt, and .nosync.pip_modules.hash files exits
+# ensure that the requirements.txt, and ./settings/.cache/.nosync.pip_modules.hash files exits
 if ! [[ -f "./requirements.txt" ]]; then
     pip freeze > requirements.txt
 fi
-if ! [[ -f ".nosync.pip_modules.hash" ]]; then
-    touch ".nosync.pip_modules.hash"
+if ! [[ -f "./settings/.cache/.nosync.pip_modules.hash" ]]; then
+    # make sure the folder exists
+    mkdir -p ./settings/.cache/
+    touch "./settings/.cache/.nosync.pip_modules.hash"
 fi
 
 # check if need to do pip install using that hash
-old_pip_modules_hash="$(cat .nosync.pip_modules.hash)"
+old_pip_modules_hash="$(cat ./settings/.cache/.nosync.pip_modules.hash)"
 new_pip_modules_hash="$(cat requirements.txt | md5sum)"
 if [[ "$old_pip_modules_hash" != "$new_pip_modules_hash" ]]; then
-    echo "$new_pip_modules_hash" > ".nosync.pip_modules.hash"
+    echo "$new_pip_modules_hash" > "./settings/.cache/.nosync.pip_modules.hash"
     pip install -r requirements.txt
 fi
