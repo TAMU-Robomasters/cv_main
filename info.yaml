@@ -15,22 +15,6 @@ parameters:
     name: CV Main
     description: The Master Control repo of the TAMU RoboMaster 2020 team
     
-    (commands):
-        # commands for running the project
-        docker_test_main: ruby scripts/run.rb python source/_tests/test_main.py
-        local_test_main: ruby 'scripts/exec_with_python_path.rb' source/_tests/test_main.py
-        docker_test_videostream: ruby scripts/run.rb python source/videostream/_tests/simulated_videostream.py
-        # general tools
-        setup: ruby 'scripts/setup.rb'
-        local_python: ruby 'scripts/exec_with_python_path.rb'
-        docker_python: ruby scripts/run.rb python
-        # docker stuff
-        build: ruby scripts/build.rb
-        run: ruby scripts/run.rb
-        edit: ruby scripts/edit.rb
-        remove: ruby scripts/remove.rb
-        convert_name: ruby scripts/convert_name.rb
-    
     (paths):
         project_root: ./
         source_dir: ./source
@@ -50,18 +34,12 @@ parameters:
         ruby_tools: ./toolbox/tools.rb
 
 todo:
-    - forgot to talk about:
-        - PYTHONPATH
-        - parameters
-        - toolbox folder
     - add additonal video testing:
         - DJI dataset: https://terra-1-g.djicdn.com/b2a076471c6c4b72b574a977334d3e05/resources/DJI%20ROCO.zip
     - have code detect if on TX2:
         - check if ARM
         - start the fan command
         - change the setup script
-    - change the main.DockerFile into a slimed down version:
-        - only have python and its dependencies basically
     - explore the idea of having pre-set firing locations:
         - get a way for the robot to know where it is
         - fire in paths where robots are expected

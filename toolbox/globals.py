@@ -21,7 +21,7 @@ from toolbox.file_system_tools import FS
 # 
 # mode and environment
 # 
-ENVIRONMENT = "laptop" # laptop, docker, or tx2 
+ENVIRONMENT = "laptop" # laptop, or tx2 
 MODE = "development" # development or production
 import os
 # allow ENVIRONMENT to be overridden by the 'PROJECT_ENVIRONMENT' environment variable

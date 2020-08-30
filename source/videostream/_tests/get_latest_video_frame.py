@@ -8,7 +8,6 @@ from toolbox.globals import PATHS, PARAMETERS, ENVIRONMENT
 # 
 test_video = Video(PATHS["main_test_video"])
 print('Loading all frames into ram for simulated testing')
-print("if this fails with error code 137, it means you need to allocate more ram to docker") if ENVIRONMENT == 'docker' else None
 all_frames = list(test_video.frames())
 start_time = None
 framerate = PARAMETERS["videostream"]["testing"]["assumed_framerate"]
