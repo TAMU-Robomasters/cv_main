@@ -19,7 +19,7 @@ in
         
         # inside that shell, make sure to use these packages
         buildInputs = [
-            normalPackages.ffmpeg
+            normalPackages.ffmpeg # used by scikit-video
             normalPackages.cmake
             # python and venv
             normalPackages.python37
@@ -27,7 +27,6 @@ in
             normalPackages.python37Packages.pip
             normalPackages.python37Packages.virtualenv
             normalPackages.python37Packages.opencv3
-            normalPackages.python37Packages.virtualenv
             # basic commandline tools
             normalPackages.ripgrep
             normalPackages.which
