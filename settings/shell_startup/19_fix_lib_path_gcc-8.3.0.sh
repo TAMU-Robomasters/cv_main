@@ -31,7 +31,7 @@ then
 fi
 
 # also add the path to the libgthread-2.0.so.0
-ubtunut_gtk_lib="/user/lib/x86_64-linux-gnu"
+ubtunut_gtk_lib="/usr/lib/x86_64-linux-gnu"
 if [[ -d "$ubtunut_gtk_lib" ]]
 then
     export LD_LIBRARY_PATH="$ubtunut_gtk_lib:$LD_LIBRARY_PATH"
