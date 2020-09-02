@@ -1,3 +1,16 @@
+# find all the shared objects
+shared_objects_file="./settings/.cache/.shared_objects.cleanable"
+# cache them
+if ! [[ -f "$shared_objects_file" ]] 
+then
+    "$(find -L /nix/store/ -name *.so.* 2>/dev/null)" > $shared_objects_file
+fi
+# iterate through them
+while IFS= read -r line; do
+    # dump all of them in the LD_LIBRARY_PATH
+    export LD_LIBRARY_PATH="$(dirname "$line"):$LD_LIBRARY_PATH"
+done <<< "$(cat "$shared_objects_file")"
+
 # 
 # libstdc++.so.6 fix
 # 
@@ -50,6 +63,7 @@ if ! [[ -f "$location_of_file_cache" ]]; then
     echo "$lib_path" > "$location_of_file_cache"
     
 fi
+
 # load the path from the cache
 lib_path="$(cat "$location_of_file_cache")"
 # if the file exists (which it should linux)
