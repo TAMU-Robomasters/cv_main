@@ -4,6 +4,9 @@ import skvideo.io
 # local imports
 from toolbox.file_system_tools import FS
 
+
+# FIXME: rewrite this tool so that it doens't use cv2
+
 class Video(object):
     def __init__(self, path=None):
         self.path = path
@@ -63,6 +66,8 @@ class Video(object):
             output_file = FS.join(*folders, name+".labelled"+ext)
         else:
             output_file = to
+        
+        
         new_video = cv2.VideoWriter(output_file, cv2.VideoWriter_fourcc(*'mp4v'), fps, frame_dimensions)
         # Read until video is completed
         for each_frame, each_label in zip(self.frames(), list_of_labels):
@@ -87,16 +92,4 @@ class Video(object):
         elif save_to == None:
             raise Exception('The Video.create_from_frames was given no save_to= location so it doesn\'t know where to save the file')
         
-        # 
-        # create new video source
-        # 
-        frame_height, frame_width = list_of_frames[0].shape[:2]
-        frame_dimensions = (frame_width, frame_height)
-        new_video = cv2.VideoWriter(save_to, cv2.VideoWriter_fourcc(*'mp4v'), fps, frame_dimensions)
-        # add all the frames
-        for each_frame in list_of_frames:
-            new_video.write(each_frame)    
-        
-        # combine the resulting frames into a video, which will write to a file
-        new_video.release()
-
+        skvideo.io.vwrite(save_to, list_of_frames)
