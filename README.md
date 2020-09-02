@@ -18,7 +18,7 @@
 
 * Install [nix](https://nixos.org/guides/install-nix.html) 
     * Just run `curl -L https://nixos.org/nix/install | sh` in your console/terminal app
-    * *Note:* you might need to close and reopen the your terminal after it installs
+    * *Note:* you might need to close and reopen your terminal after it installs
 * Install `git`
     * (if you don't have git just run `nix-env -i git`)
 * Clone/Open the project
