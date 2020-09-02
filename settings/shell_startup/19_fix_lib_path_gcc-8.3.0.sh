@@ -11,6 +11,8 @@ if ! [[ -f "$location_of_file_cache" ]]; then
     # find the first gcc package with the missing libstdc++.so.6
     gcc_cpp_lib_path="$(find -L /nix/store/ -name libstdc++.so.6 | grep -e "$which_gcc_to_look_for/lib" | head -n 1)"
     
+    echo "heres what I found $(echo "$gcc_cpp_lib_path")"
+    
     # save the result to a file (because that^ operation takes awhile)
     echo "$gcc_cpp_lib_path" > "$location_of_file_cache"
     
@@ -18,6 +20,7 @@ fi
 
 # load the path from the cache
 gcc_cpp_lib_path="$(cat "$location_of_file_cache")"
+echo "heres what I found in the file cache $(echo "$gcc_cpp_lib_path")"
 # if the file exists (which it should linux)
 if [[ -f "$gcc_cpp_lib_path" ]] 
 then
