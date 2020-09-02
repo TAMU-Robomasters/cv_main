@@ -37,8 +37,8 @@ def debug_each_frame(counter, frame, model_ouput, aiming_output):
     
     # load/show the image
     image = Image(frame)
-    # if type(image) != type(None):
-    #     print("found a frame")
+    if type(image) != type(None):
+        print("found a frame")
         
     for each in boxes:
         image.add_bounding_box(each)
