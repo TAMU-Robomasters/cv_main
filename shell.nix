@@ -20,8 +20,8 @@ in
         # inside that shell, make sure to use these packages
         buildInputs = [
             olderPackageRepoWithGcc.gcc-unwrapped
+            normalPackages.xorg.libSM
             normalPackages.cmake
-            normalPackages.gtk2-x11
             # python and venv
             normalPackages.python37
             normalPackages.python37Packages.setuptools
