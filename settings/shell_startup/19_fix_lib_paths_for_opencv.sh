@@ -8,6 +8,7 @@ then
     find -L /nix/store/ -name "libstdc++.so.6" 2>/dev/null | head -1 >> $shared_objects_file
     find -L /nix/store/ -name "libSM.so.6" 2>/dev/null | head -1 >> $shared_objects_file
     find -L /nix/store/ -name "libICE.so.6" 2>/dev/null | head -1 >> $shared_objects_file
+    find -L /nix/store/ -name "libXrender.so.1" 2>/dev/null | head -1 >> $shared_objects_file
 fi
 # iterate through them
 while IFS= read -r line; do
