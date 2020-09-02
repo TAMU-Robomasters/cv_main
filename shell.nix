@@ -19,10 +19,8 @@ in
         
         # inside that shell, make sure to use these packages
         buildInputs = [
-            olderPackageRepoWithGcc.gcc-unwrapped
-            normalPackages.xorg.libSM
+            normalPackages.ffmpeg
             normalPackages.cmake
-            normalPackages.pcre.dev
             # python and venv
             normalPackages.python37
             normalPackages.python37Packages.setuptools
