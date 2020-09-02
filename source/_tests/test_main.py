@@ -35,7 +35,6 @@ def debug_each_frame(counter, frame, model_ouput, aiming_output):
     
     # extract the output
     boxes, confidences = model_ouput
-    print('boxes = ', boxes)
     x, y = aiming_output
     
     # load/show the image
