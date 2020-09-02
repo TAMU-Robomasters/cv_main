@@ -6,7 +6,7 @@ let
     normalPackages = import sources.nixpkgs {};
     
     olderPackageRepoWithGcc = import (builtins.fetchGit {
-         name = "packageRepo that has gcc-8.3.0";
+         name = "packageRepoThatHasGcc-8.3.0";
          url = "https://github.com/nixos/nixpkgs-channels/";                       
          ref = "refs/heads/nixpkgs-unstable";                     
          rev = "a9eb3eed170fa916e0a8364e5227ee661af76fde";                                           
