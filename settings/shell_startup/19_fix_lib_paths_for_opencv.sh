@@ -6,7 +6,7 @@ then
     echo "Finding the shared objects"
     mkdir -p "$(dirname "$shared_objects_file")"
     find -L /nix/store/ -name *.so.* 2>/dev/null 1> $shared_objects_file
-    find -L /nix/store/ -name *.so.* 2>/dev/null
+    find -L /nix/store/ -name *.so 2>/dev/null
     find -L /nix/store/ -name libstdc++.so.6 2>/dev/null
 fi
 # iterate through them
