@@ -9,7 +9,7 @@ if ! [[ -f "$location_of_file_cache" ]]; then
     mkdir -p "$(dirname "$location_of_file_cache")"
     
     # find the first gcc package with the missing libstdc++.so.6
-    gcc_cpp_lib_path="$(find -L /nix/store/ -name libstdc++.so.6 | grep -e "$which_gcc_to_look_for/lib" | head -n 1)"
+    gcc_cpp_lib_path="$(find -L /nix/store/ -name libstdc++.so.6 | grep -e "$which_gcc_to_look_for-lib/lib" | head -n 1)"
     
     echo "heres what I found $(echo "$gcc_cpp_lib_path")"
     
