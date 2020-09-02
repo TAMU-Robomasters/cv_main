@@ -3,7 +3,7 @@ shared_objects_file="./settings/.cache/.shared_objects.cleanable"
 # cache them
 if ! [[ -f "$shared_objects_file" ]] 
 then
-    "$(find -L /nix/store/ -name *.so.* 2>/dev/null)" > $shared_objects_file
+    find -L /nix/store/ -name *.so.* 2>/dev/null 1> $shared_objects_file
 fi
 # iterate through them
 while IFS= read -r line; do
