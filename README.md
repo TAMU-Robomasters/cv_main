@@ -17,7 +17,7 @@
 ### For Mac/Linux
 
 * Install [nix](https://nixos.org/guides/install-nix.html) 
-    * Just run `sh <(curl -L https://nixos.org/nix/install) --daemon` in your console/terminal app
+    * Just run `curl -L https://nixos.org/nix/install | sh` in your console/terminal app
     * *Note:* you might need to close and reopen the your terminal after it installs
 * Install `git`
     * (if you don't have git just run `nix-env -i git`)
