@@ -1,9 +1,8 @@
 from subprocess import call
 import cv2
+import skvideo.io
 # local imports
 from toolbox.file_system_tools import FS
-
-
 
 class Video(object):
     def __init__(self, path=None):
@@ -15,20 +14,7 @@ class Video(object):
         returns: a generator, where each element is a image as a numpyarray 
         """
         # Path to video file 
-        video_capture = cv2.VideoCapture(self.path)
-        # Check if video opened successfully
-        if (video_capture.isOpened()== False): 
-            raise Exception(f"Error, tried opening {self.path} with cv2 but wasn't able to")
-        
-        # checks whether frames were extracted 
-        success = 1
-        while True: 
-            # function extract frames 
-            success, image = video_capture.read()
-            if not success:
-                video_capture.release()
-                return None
-            yield image
+        return skvideo.io.vreader(self.path)
     
     def fps(self):
         video_capture = cv2.VideoCapture(self.path)
