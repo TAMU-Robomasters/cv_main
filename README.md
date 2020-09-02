@@ -12,7 +12,7 @@
     * If you're not familiar with WSL, I'd recommend [watching a quick thing on it like this one](https://youtu.be/av0UQy6g2FA?t=91)
     * Ubuntu 18.04 for WSL is preferred (same as in that linked video), but Ubuntu 20.04 or similar should work.
     * [WSL2](https://www.omgubuntu.co.uk/how-to-install-wsl2-on-windows-10) (just released August 2020) is needed if you want to use your GPU.<br>
-* WSL is installed (and you have a terminal logged into WSL) follow the Mac/Linux instructions below.
+* Once WSL is installed (and you have a terminal logged into WSL) follow the Mac/Linux instructions below.
 
 ### For Mac/Linux
 
