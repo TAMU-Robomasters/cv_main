@@ -21,6 +21,7 @@ in
         buildInputs = [
             olderPackageRepoWithGcc.gcc-unwrapped
             normalPackages.cmake
+            normalPackages.gtk2-x11
             # python and venv
             normalPackages.python37
             normalPackages.python37Packages.setuptools
