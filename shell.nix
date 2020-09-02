@@ -22,6 +22,7 @@ in
             olderPackageRepoWithGcc.gcc-unwrapped
             normalPackages.xorg.libSM
             normalPackages.cmake
+            normalPackages.pcre.dev
             normalPackages.opencv3
             # python and venv
             normalPackages.python37
