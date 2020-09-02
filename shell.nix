@@ -23,11 +23,12 @@ in
             normalPackages.xorg.libSM
             normalPackages.cmake
             normalPackages.pcre.dev
-            normalPackages.opencv3
             # python and venv
             normalPackages.python37
             normalPackages.python37Packages.setuptools
             normalPackages.python37Packages.pip
+            normalPackages.python37Packages.virtualenv
+            normalPackages.python37Packages.opencv3
             normalPackages.python37Packages.virtualenv
             # basic commandline tools
             normalPackages.ripgrep
