@@ -19,7 +19,7 @@ in
             normalPackages.python37Packages.setuptools
             normalPackages.python37Packages.pip
             normalPackages.python37Packages.virtualenv
-            normalPackages.python37Packages.opencv3
+            normalPackages.python37Packages.opencv4
             # normalPackages.python37Packages.pyyaml
             # normalPackages.python37Packages.ruamel_yaml
             # normalPackages.python37Packages.matplotlib
