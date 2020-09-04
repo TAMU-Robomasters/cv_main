@@ -12,6 +12,7 @@ in
         
         # inside that shell, make sure to use these packages
         buildInputs = [
+            normalPackages.libav
             normalPackages.ffmpeg
             normalPackages.cmake
             # python and venv

@@ -2,7 +2,7 @@ regex==2019.6.8
 numpy==1.17.3
 PyYAML==5.1.2
 ruamel.yaml==0.16.0
-opencv-contrib-python==4.4.0.42
+opencv-contrib-python==4.3.0.38
 matplotlib==3.1.1
 argparse==1.4.0
 Pillow==5.4.1

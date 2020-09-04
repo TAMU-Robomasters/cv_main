@@ -14,8 +14,13 @@ class Video(object):
         """
         returns: a generator, where each element is a image as a numpyarray 
         """
+        # detect type
+        *folders, file_name, file_extension = FS.path_pieces(self.path)
+        video_format = None
+        if file_extension == ".avi":
+            video_format = cv2.VideoWriter_fourcc(*'aaaa')
         # Path to video file 
-        video_capture = cv2.VideoCapture(self.path)
+        video_capture = cv2.VideoCapture(self.path, video_format)
         # Check if video opened successfully
         if (video_capture.isOpened()== False): 
             raise Exception(f"Error, tried opening {self.path} with cv2 but wasn't able to")
