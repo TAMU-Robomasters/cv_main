@@ -12,8 +12,7 @@ in
         
         # inside that shell, make sure to use these packages
         buildInputs = [
-            normalPackages.libav
-            normalPackages.ffmpeg-full
+            # normalPackages.ffmpeg-full # this might help with opencv, not sure
             normalPackages.cmake
             # python and venv
             normalPackages.python37
