@@ -7,6 +7,14 @@
 #   => this command should get rid of it
 #   useful when you're trying to reset a project back to 0 when debugging
 
+read -p "Are you sure? (y/n)" -n 1 -r
+echo    # (optional) move to a new line
+if [[ ! $REPLY =~ ^[Yy]$ ]]
+then
+    echo "canceling"
+    exit 0
+fi
+
 # clean all the small things
 ./commands/clean
 
