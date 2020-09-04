@@ -19,4 +19,4 @@ fi
 ./commands/clean
 
 # all the virtual env pip modules (several minutes to rebuild these)
-rm -rf .venv
+rm -rfv .venv
