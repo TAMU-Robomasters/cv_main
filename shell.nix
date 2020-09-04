@@ -13,7 +13,7 @@ in
         # inside that shell, make sure to use these packages
         buildInputs = [
             normalPackages.libav
-            normalPackages.ffmpeg
+            normalPackages.ffmpeg-full
             normalPackages.cmake
             # python and venv
             normalPackages.python37
