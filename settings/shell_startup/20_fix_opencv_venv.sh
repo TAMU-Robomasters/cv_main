@@ -9,6 +9,8 @@ cv2_shared_object_file="$("$python_from_nix" -c "import cv2; print(cv2.__file__)
 # if the so object doesn't exist, then copy it
 if ! [[ -f "$venv_folder/lib/$venv_python_folder_name" ]] 
 then
+    ls "$venv_folder/lib/$venv_python_folder_name"
+    echo "Copying"
     cp "$cv2_shared_object_file" "$venv_folder/lib/$venv_python_folder_name"
 fi
 
