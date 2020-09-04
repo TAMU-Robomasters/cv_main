@@ -5,13 +5,6 @@ let
     sources = import ./settings/nix/sources.nix;
     normalPackages = import sources.nixpkgs {};
     
-    olderPackageRepoWithGcc = import (builtins.fetchGit {
-         name = "packageRepoThatHasGcc-8.3.0";
-         url = "https://github.com/nixos/nixpkgs-channels/";                       
-         ref = "refs/heads/nixpkgs-unstable";                     
-         rev = "a9eb3eed170fa916e0a8364e5227ee661af76fde";                                           
-     }) {};                                                                           
-
 # using those definitions
 in
     # create a shell
@@ -19,7 +12,6 @@ in
         
         # inside that shell, make sure to use these packages
         buildInputs = [
-            normalPackages.ffmpeg # used by scikit-video
             normalPackages.cmake
             # python and venv
             normalPackages.python37
