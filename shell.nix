@@ -12,6 +12,7 @@ in
         
         # inside that shell, make sure to use these packages
         buildInputs = [
+            normalPackages.ffmpeg
             normalPackages.cmake
             # python and venv
             normalPackages.python37
@@ -26,6 +27,7 @@ in
             # normalPackages.python37Packages.filterpy
             # normalPackages.python37Packages.scikit-build
             # normalPackages.python37Packages.scipy
+            
             # basic commandline tools
             normalPackages.ripgrep
             normalPackages.which
