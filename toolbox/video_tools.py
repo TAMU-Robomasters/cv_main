@@ -17,8 +17,11 @@ class Video(object):
         # detect type
         *folders, file_name, file_extension = FS.path_pieces(self.path)
         video_format = None
+        print('file_extension = ', file_extension)
         if file_extension == ".avi":
             video_format = cv2.VideoWriter_fourcc(*'aaaa')
+        print('video_format = ', video_format)
+        
         # Path to video file 
         video_capture = cv2.VideoCapture(self.path, video_format)
         # Check if video opened successfully
