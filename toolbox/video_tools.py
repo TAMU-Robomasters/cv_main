@@ -1,11 +1,9 @@
 from subprocess import call
 import cv2
-import skvideo.io
 # local imports
 from toolbox.file_system_tools import FS
 
 
-# FIXME: rewrite this tool so that it doens't use cv2
 
 class Video(object):
     def __init__(self, path=None):
@@ -17,7 +15,20 @@ class Video(object):
         returns: a generator, where each element is a image as a numpyarray 
         """
         # Path to video file 
-        return skvideo.io.vreader(self.path)
+        video_capture = cv2.VideoCapture(self.path)
+        # Check if video opened successfully
+        if (video_capture.isOpened()== False): 
+            raise Exception(f"Error, tried opening {self.path} with cv2 but wasn't able to")
+        
+        # checks whether frames were extracted 
+        success = 1
+        while True: 
+            # function extract frames 
+            success, image = video_capture.read()
+            if not success:
+                video_capture.release()
+                return None
+            yield image
     
     def fps(self):
         video_capture = cv2.VideoCapture(self.path)
@@ -66,8 +77,6 @@ class Video(object):
             output_file = FS.join(*folders, name+".labelled"+ext)
         else:
             output_file = to
-        
-        
         new_video = cv2.VideoWriter(output_file, cv2.VideoWriter_fourcc(*'mp4v'), fps, frame_dimensions)
         # Read until video is completed
         for each_frame, each_label in zip(self.frames(), list_of_labels):
@@ -92,4 +101,16 @@ class Video(object):
         elif save_to == None:
             raise Exception('The Video.create_from_frames was given no save_to= location so it doesn\'t know where to save the file')
         
-        skvideo.io.vwrite(save_to, list_of_frames)
+        # 
+        # create new video source
+        # 
+        frame_height, frame_width = list_of_frames[0].shape[:2]
+        frame_dimensions = (frame_width, frame_height)
+        new_video = cv2.VideoWriter(save_to, cv2.VideoWriter_fourcc(*'mp4v'), fps, frame_dimensions)
+        # add all the frames
+        for each_frame in list_of_frames:
+            new_video.write(each_frame)    
+        
+        # combine the resulting frames into a video, which will write to a file
+        new_video.release()
+
