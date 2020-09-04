@@ -27,6 +27,13 @@ in
             normalPackages.python37Packages.pip
             normalPackages.python37Packages.virtualenv
             normalPackages.python37Packages.opencv3
+            # normalPackages.python37Packages.pyyaml
+            # normalPackages.python37Packages.ruamel_yaml
+            # normalPackages.python37Packages.matplotlib
+            # normalPackages.python37Packages.pillow
+            # normalPackages.python37Packages.filterpy
+            # normalPackages.python37Packages.scikit-build
+            # normalPackages.python37Packages.scipy
             # basic commandline tools
             normalPackages.ripgrep
             normalPackages.which
