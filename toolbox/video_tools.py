@@ -14,16 +14,19 @@ class Video(object):
         """
         returns: a generator, where each element is a image as a numpyarray 
         """
+        if not FS.is_file(self.path):
+            raise Exception(f"Error, tried opening {self.path} but I don't think that is a file")
+        
         # detect type
         *folders, file_name, file_extension = FS.path_pieces(self.path)
-        video_format = None
-        print('file_extension = ', file_extension)
-        if file_extension == ".avi":
-            video_format = cv2.VideoWriter_fourcc(*'aaaa')
-        print('video_format = ', video_format)
+        # video_format = None
+        # print('file_extension = ', file_extension)
+        # if file_extension == ".avi":
+        #     video_format = cv2.VideoWriter_fourcc(*'aaaa')
+        # print('video_format = ', video_format)
         
         # Path to video file 
-        video_capture = cv2.VideoCapture(self.path, video_format)
+        video_capture = cv2.VideoCapture(self.path)
         # Check if video opened successfully
         if (video_capture.isOpened()== False): 
             raise Exception(f"Error, tried opening {self.path} with cv2 but wasn't able to")
