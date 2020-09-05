@@ -4,20 +4,44 @@
 venv_folder="./.venv"
 venv_python_folder_name="python3.7"
 
+function is_command {
+    command -v "$@" >/dev/null 2>&1
+}
 
+# put local stuff (project and venv) first
+PYTHONPATH="$PWD:$PWD/.venv/lib/$venv_python_folder_name/site-packages:$PYTHONPATH"
 # if on a mac
-if [[ "$OSTYPE" == "darwin"* ]]
+if ! [[ "$OSTYPE" == "darwin"* ]]
 then
-    # remove all the nix-added stuff (opencv instead of opencv-contrib)
-    PYTHONPATH="$PWD"
-# if not on a mac
-else
-    python_from_nix="$(which -a python | grep '/nix/store' | head -1)"
-    cv2_shared_object_file="$("$python_from_nix" -c "import cv2; print(cv2.__file__)")"
-    # if the so object doesn't exist, then copy it
-    if ! [[ -f "$venv_folder/lib/$venv_python_folder_name/$(basename "$cv2_shared_object_file")" ]] 
+    # use python to find and install the apt-get version of opencv
+    # and save the path to opencv inside ./settings/.cache/opencv-python-path.cleanable
+    # python_from_nix="$(which -a python | grep '/nix/store' | head -1)"
+    python_from_system="/usr/bin/python3"
+    cv2_shared_object_file="$("$python_from_system" -c "import cv2; print(cv2.__file__)")"
+    if ! [[ -f "$cv2_shared_object_file" ]] 
     then
-        cp "$cv2_shared_object_file" "$venv_folder/lib/$venv_python_folder_name"
+        echo it appears you dont have the full opencv installed
+        echo I will try to install it with these commands:
+        echo "    sudo apt-get update"
+        echo "    sudo apt-get install -y python3-opencv"
+        echo 
+        echo "Note: your system may need to be restarted"
+        echo "(it will mention if it does)"
+        
+        sudo apt-get update
+        sudo apt-get install -y python3-opencv
+    fi
+    
+    cv2_shared_object_file="$("$python_from_system" -c "import cv2; print(cv2.__file__)")"
+    if ! [[ -f "$cv2_shared_object_file" ]] 
+    then
+        echo "ERROR: it appears the installtion of python3-opencv didn't work"
+    else
+        # if the so object doesn't exist, then copy it
+        if ! [[ -f "$venv_folder/lib/$venv_python_folder_name/site-packages/$(basename "$cv2_shared_object_file")" ]] 
+        then
+            cp "$cv2_shared_object_file" "$venv_folder/lib/$venv_python_folder_name"
+        fi
     fi
 fi
 
