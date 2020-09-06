@@ -27,6 +27,7 @@ in
             # normalPackages.ffmpeg-full # this might help with opencv, not sure
             # normalPackages.cmake
             # python and venv
+            
             python-with-my-packages
             # normalPackages.python3
             # normalPackages.poetry
