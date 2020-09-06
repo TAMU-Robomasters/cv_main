@@ -68,17 +68,17 @@ in
             # search results for some reason, and you just have to guess and check 🙃 
         ];
         
-        # shellHook = ''
-        # # 
-        # # find and run all the startup scripts in alphabetical order
-        # # 
-        # for file in ./settings/shell_startup/*
-        # do
-        #     # make sure its a file
-        #     if [[ -f $file ]]; then
-        #         source $file
-        #     fi
-        # done
-        # '';
+        shellHook = ''
+        # 
+        # find and run all the startup scripts in alphabetical order
+        # 
+        for file in ./settings/shell_startup/*
+        do
+            # make sure its a file
+            if [[ -f $file ]]; then
+                source $file
+            fi
+        done
+        '';
     }
 
