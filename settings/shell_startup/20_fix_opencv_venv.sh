@@ -15,7 +15,42 @@ if ! [[ "$OSTYPE" == "darwin"* ]]
 then
     # use python to find and install the apt-get version of opencv
     # and save the path to opencv inside ./settings/.cache/opencv-python-path.cleanable
-    # python_from_nix="$(which -a python | grep '/nix/store' | head -1)"
+#     python3 -c '
+# import os
+# import time
+# with_success = 0
+# with_failure = 1
+# def has_opencv_lib():
+#     files = os.listdir("/usr/lib/python3/dist-packages/")
+#     for each in files:
+#         if each.startswith("cv2.cpython") and each.endswith(".so"):
+#             # save the path of the opencv library
+#             os.makedirs("./settings/.cache/")
+#             with open("./settings/.cache/opencv-python-path.cleanable", "w") as the_file:
+#                 the_file.write(str(each))
+#             return True
+#     return False
+
+# if has_opencv_lib():
+#     exit(with_success)
+# else:
+#     # if the cv2 doesnt exist, then try to install it
+#     print("it appears you dont have the full opencv installed\nI will try to install it with these commands:\n    sudo apt-get update\n    sudo apt-get install -y python3-opencv\n\nNote: your system may need to be restarted (it will mention if it does)\n")
+#     time.sleep(3)
+#     os.system("sudo apt-get update")  
+#     os.system("sudo apt-get install -y python3-opencv")
+#     if not has_opencv_lib():
+#         print("something went wrong when installing python3-opencv.\nI still cant find the library\nIt should be in /usr/lib/python3/dist-packages/")
+#         exit(with_failure)
+#     '
+    
+    # # if the opencv shared object exists (which it should)
+    # if [[ -f "$(cat "./settings/.cache/opencv-python-path.cleanable")" ]]
+    # then
+        
+    # fi
+    
+    python_from_nix="$(which -a python | grep '/nix/store' | head -1)"
     python_from_system="/usr/bin/python3"
     cv2_shared_object_file="$("$python_from_system" -c "import cv2; print(cv2.__file__)")"
     if ! [[ -f "$cv2_shared_object_file" ]] 
