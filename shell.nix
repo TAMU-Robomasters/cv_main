@@ -7,12 +7,12 @@ let
     
     my-python-packages = python-packages: with python-packages; [ 
         opencv4
-        # numpy
-        # matplotlib
-        # pillow
-        # filterpy
-        # scikit-build
-        # scipy
+        numpy
+        matplotlib
+        pillow
+        filterpy
+        scikit-build
+        scipy
     ];
     python-with-my-packages = normalPackages.python3.withPackages my-python-packages;
 # using those definitions
