@@ -14,6 +14,7 @@ let
         scikit-build
         scipy
         pyyaml
+        regex
     ];
     python-with-my-packages = normalPackages.python3.withPackages my-python-packages;
 # using those definitions
