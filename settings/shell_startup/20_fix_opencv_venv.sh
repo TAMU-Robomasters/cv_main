@@ -8,6 +8,7 @@
 #     command -v "$@" >/dev/null 2>&1
 # }
 
+
 # # put local stuff (project and venv) first
 # PYTHONPATH="$PWD:$PWD/.venv/lib/$venv_python_folder_name/site-packages:$PYTHONPATH"
 # # if on a mac
