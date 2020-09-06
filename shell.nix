@@ -13,6 +13,7 @@ let
         filterpy
         scikit-build
         scipy
+        pyyaml
     ];
     python-with-my-packages = normalPackages.python3.withPackages my-python-packages;
 # using those definitions
