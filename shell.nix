@@ -5,6 +5,16 @@ let
     sources = import ./settings/nix/sources.nix;
     normalPackages = import sources.nixpkgs {};
     
+    my-python-packages = python-packages: with python-packages; [ 
+        opencv4
+        # numpy
+        # matplotlib
+        # pillow
+        # filterpy
+        # scikit-build
+        # scipy
+    ];
+    python-with-my-packages = normalPackages.python3.withPackages my-python-packages;
 # using those definitions
 in
     # create a shell
@@ -13,12 +23,14 @@ in
         # inside that shell, make sure to use these packages
         buildInputs = [
             # normalPackages.ffmpeg-full # this might help with opencv, not sure
-            normalPackages.cmake
+            # normalPackages.cmake
             # python and venv
-            normalPackages.python37
-            normalPackages.python37Packages.setuptools
-            normalPackages.python37Packages.pip
-            normalPackages.python37Packages.virtualenv
+            python-with-my-packages
+            # normalPackages.python3
+            # normalPackages.poetry
+            # normalPackages.python37Packages.setuptools
+            # normalPackages.python37Packages.pip
+            # normalPackages.python37Packages.virtualenv
             # normalPackages.python37Packages.opencv4
             # normalPackages.python37Packages.pyyaml
             # normalPackages.python37Packages.ruamel_yaml
@@ -29,15 +41,15 @@ in
             # normalPackages.python37Packages.scipy
             
             # basic commandline tools
-            normalPackages.ripgrep
-            normalPackages.which
-            normalPackages.git
-            normalPackages.colorls
-            normalPackages.tree
-            normalPackages.less
-            normalPackages.niv
-            normalPackages.cacert # needed for niv
-            normalPackages.nix    # needed for niv
+            # normalPackages.ripgrep
+            # normalPackages.which
+            # normalPackages.git
+            # normalPackages.colorls
+            # normalPackages.tree
+            # normalPackages.less
+            # normalPackages.niv
+            # normalPackages.cacert # needed for niv
+            # normalPackages.nix    # needed for niv
             # 
             # how to add packages?
             # 
@@ -56,17 +68,17 @@ in
             # search results for some reason, and you just have to guess and check 🙃 
         ];
         
-        shellHook = ''
-        # 
-        # find and run all the startup scripts in alphabetical order
-        # 
-        for file in ./settings/shell_startup/*
-        do
-            # make sure its a file
-            if [[ -f $file ]]; then
-                source $file
-            fi
-        done
-        '';
+        # shellHook = ''
+        # # 
+        # # find and run all the startup scripts in alphabetical order
+        # # 
+        # for file in ./settings/shell_startup/*
+        # do
+        #     # make sure its a file
+        #     if [[ -f $file ]]; then
+        #         source $file
+        #     fi
+        # done
+        # '';
     }
 
