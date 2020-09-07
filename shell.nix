@@ -5,18 +5,25 @@ let
     sources = import ./settings/nix/sources.nix;
     normalPackages = import sources.nixpkgs {};
     
-    my-python-packages = python-packages: with python-packages; [ 
-        opencv4
-        numpy
-        matplotlib
-        pillow
-        filterpy
-        scikit-build
-        scipy
-        pyyaml
-        regex
-    ];
-    python-with-my-packages = normalPackages.python3.withPackages my-python-packages;
+    # pull the stdenv and lib out so we can use them
+    inherit (normalPackages) stdenv lib;
+    
+    # get python with some custom packages
+    customPython = normalPackages.python3.withPackages(
+        pythonPackages: with pythonPackages; [ 
+            opencv4
+            numpy
+            matplotlib
+            pillow
+            scikit-build
+            scipy
+            pyyaml
+            regex
+        # if not on mac then also add the following packages
+        ] ++ lib.optionals (!stdenv.isDarwin) [
+            filterpy
+        ]
+    );
 # using those definitions
 in
     # create a shell
@@ -27,32 +34,18 @@ in
             # normalPackages.ffmpeg-full # this might help with opencv, not sure
             # normalPackages.cmake
             # python and venv
-            
-            python-with-my-packages
-            # normalPackages.python3
-            # normalPackages.poetry
-            # normalPackages.python37Packages.setuptools
-            # normalPackages.python37Packages.pip
-            # normalPackages.python37Packages.virtualenv
-            # normalPackages.python37Packages.opencv4
-            # normalPackages.python37Packages.pyyaml
-            # normalPackages.python37Packages.ruamel_yaml
-            # normalPackages.python37Packages.matplotlib
-            # normalPackages.python37Packages.pillow
-            # normalPackages.python37Packages.filterpy
-            # normalPackages.python37Packages.scikit-build
-            # normalPackages.python37Packages.scipy
+            customPython
             
             # basic commandline tools
-            # normalPackages.ripgrep
-            # normalPackages.which
-            # normalPackages.git
-            # normalPackages.colorls
-            # normalPackages.tree
-            # normalPackages.less
-            # normalPackages.niv
-            # normalPackages.cacert # needed for niv
-            # normalPackages.nix    # needed for niv
+            normalPackages.ripgrep
+            normalPackages.which
+            normalPackages.git
+            normalPackages.colorls
+            normalPackages.tree
+            normalPackages.less
+            normalPackages.niv
+            normalPackages.cacert # needed for niv
+            normalPackages.nix    # needed for niv
             # 
             # how to add packages?
             # 
