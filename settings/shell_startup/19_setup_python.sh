@@ -48,4 +48,6 @@ else
             sudo apt-get install -y python3-opencv
         fi
     fi
+    alias python="python3"
+    alias pip="pip3"
 fi
