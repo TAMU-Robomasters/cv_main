@@ -78,5 +78,6 @@ print('Starting simple_synchronous() with simulated IO')
 simple_synchronous()
 
 # save all the frames as a video
+print("Starting process of saving frames to a video file")
 Video.create_from_frames(frames, save_to=PATHS["video_output"])
 print(f"video output has been saved to {PATHS['video_output']}")
