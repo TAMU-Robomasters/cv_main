@@ -15,6 +15,6 @@ fi
 old_pip3_modules_hash="$(cat ./settings/.cache/.nosync.pip3_modules.hash)"
 new_pip3_modules_hash="$(cat requirements.txt | md5sum)"
 if [[ "$old_pip3_modules_hash" != "$new_pip3_modules_hash" ]]; then
-    echo "$new_pip3_modules_hash" > "./settings/.cache/.nosync.pip3_modules.hash"
-    pip3 install -r requirements.txt
+    # only save the hash if the install is successful
+    pip3 install -r requirements.txt && echo "$new_pip3_modules_hash" > "./settings/.cache/.nosync.pip3_modules.hash"
 fi
