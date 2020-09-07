@@ -4,14 +4,25 @@
 if [[ "$OSTYPE" == "darwin"* ]]
 then
     # use the virual enviornment
+    # because nix-opencv doesn't setup correctly for mac
+    # and I can't figure out how to override the videoio setting
+    # relevent link to the nix build-opencv: https://github.com/NixOS/nixpkgs/blob/193a6a2307b7b29aa11bee309d4aa41840686ab0/pkgs/development/libraries/opencv/4.x.nix#L258
     ls .venv &>/dev/null || python -m venv .venv
     source .venv/bin/activate
 # 
 # linux
 # 
 else
-    # opencv breaks inside venv for linux, and I'm not sure how to fix it
-    # so on linux we don't use venv even though thats more likely to cause problems down the road
+    # nix-opencv runs but has an error opening video files
+    # ("Can't find starting number (in the name of file)" and the standard solutions don't work)
+    # virual enviornment opencv breaks for linux
+    # (it can't find the shared object files for C/C++ libs)
+    # 
+    # I can't figure out an automated solution to either of those 
+    # so on linux we don't use either of them, and instead we use the system python
+    # (which is bad because they keep track of verions, and the system one doesn't)
+    # oh well
+    # the below code does its best to check the system versions and install the missing parts
     
     # 
     # pip3 check
@@ -35,7 +46,6 @@ else
         echo "it looks like pip3 still isn't installed."
         echo "I'll let the rest of the project load but it will likely be broken"
     else
-        alias pip="pip3"
         
         # 
         # python3 check
@@ -61,7 +71,6 @@ else
             echo "I'll let the rest of the project load but it will likely be broken"
         # if python3 exists
         else
-            alias python="python3"
         
             # 
             # opencv check
