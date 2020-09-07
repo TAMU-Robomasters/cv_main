@@ -1,5 +1,5 @@
 opencv-contrib-python==4.2.0.34
-regex==2019.6.8
+regex==2020.7.14
 PyYAML==5.1.2
 matplotlib==3.1.1
 argparse==1.4.0
