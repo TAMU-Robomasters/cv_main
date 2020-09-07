@@ -8,34 +8,23 @@ let
     # pull the stdenv and lib out so we can use them
     inherit (normalPackages) stdenv lib;
     
-    # get python with some custom packages
-    customPython = normalPackages.python3.withPackages(
-        pythonPackages: with pythonPackages; [ 
-            opencv4
-            numpy
-            matplotlib
-            pillow
-            scikit-build
-            scipy
-            pyyaml
-            regex
-        # if not on mac then also add the following packages
-        ] ++ lib.optionals (!stdenv.isDarwin) [
-            filterpy
-        ]
-    );
+    # only use these packages on mac (the isDarwin check)
+    # this is an empty list, concationated with another list
+    # (but the concationation only happens on mac)
+    packagesForPython = [] ++ lib.optionals (stdenv.isDarwin) [
+        # python and venv
+        normalPackages.python37
+        normalPackages.python37Packages.setuptools
+        normalPackages.python37Packages.pip
+        normalPackages.python37Packages.virtualenv
+    ];
 # using those definitions
 in
     # create a shell
     normalPackages.mkShell {
         
         # inside that shell, make sure to use these packages
-        buildInputs = [
-            # normalPackages.ffmpeg-full # this might help with opencv, not sure
-            # normalPackages.cmake
-            # python and venv
-            customPython
-            
+        buildInputs = packagesForPython ++ [
             # basic commandline tools
             normalPackages.ripgrep
             normalPackages.which

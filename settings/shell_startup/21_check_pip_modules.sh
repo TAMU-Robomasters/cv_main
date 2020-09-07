@@ -1,1 +1,1 @@
-# ./commands/.check_pip_modules
+./commands/.check_pip_modules
