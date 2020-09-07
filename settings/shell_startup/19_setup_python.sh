@@ -35,6 +35,7 @@ else
         echo "it looks like pip3 still isn't installed."
         echo "I'll let the rest of the project load but it will likely be broken"
     else
+        alias pip="pip3"
         
         # 
         # python3 check
@@ -60,6 +61,7 @@ else
             echo "I'll let the rest of the project load but it will likely be broken"
         # if python3 exists
         else
+            alias python="python3"
         
             # 
             # opencv check
