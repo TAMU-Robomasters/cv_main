@@ -45,4 +45,4 @@ if __name__ == "__main__":
     for each_input, each_expeacted_output in test_data:
         actual_output = aim(each_input) 
         if actual_output != each_expeacted_output:
-            raise Exception(f'The aiming function failed a test:\ninput: {each_input}\nexpected_output:{each_output}\nactual output:{actual_output}')
+            raise Exception(f'The aiming function failed a test:\ninput: {each_input}\nexpected_output:{each_expeacted_output}\nactual output:{actual_output}')
