@@ -17,6 +17,22 @@ imm = IMMEstimator(filters, mu, trans)
 
 
 def aim(bounding_boxes):
+    """
+    @bounding_boxes - this is a list of boxes
+                      each box (should) corrispond to an armor-plate on an enemy vehicle
+                      the box itself is a list containing 4 things (in this order)
+                      - integer: the x-coordinate of the top left corner of the box (measured in pixels)
+                      - integer: the y-coordinate of the top left corner of the box (measured in pixels)
+                      - integer: the width of the box (measured in pixels)
+                      - integer: the height of the box (measured in pixels)
+    @@returns:
+        a list (or tuple) with two elements
+        - the x-coordinate of where to aim the barrel
+        - the y-coordinate of where to aim the barrel
+        
+        note: in the future this function might return more data, like the depth/distance to the target
+    """
+    
     # TODO: Needs testing
     # TODO: Finalize on input contract
     if len(bounding_boxes) == 0:
