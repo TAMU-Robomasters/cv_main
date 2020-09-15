@@ -32,10 +32,10 @@ def aim(bounding_boxes):
 if __name__ == "__main__":
     test_data = [
         # fake inputs                 # expected outputs (dead center of box)
-        #  x,  y, width, height 
+        #  x,  y, width, height       #  x    y   
         [ 50, 50,  200, 200 ],        ( 150, 150 ),
         [ 50, 50,  200, 200 ],        ( 150, 150 ),
-        # TODO: should probably change these numbers
+        # TODO: add some better data
         [ 50, 50,  200, 200 ],        ( 150, 150 ),
         [ 50, 50,  200, 200 ],        ( 150, 150 ),
         [ 50, 50,  200, 200 ],        ( 150, 150 ),
