@@ -23,7 +23,7 @@ def init(image, bboxes, video = []):
     print("inside init")
     print(bboxes)
     if len(bboxes) == 0:
-        return False
+        return False, None
     # Finds the coordinate for the center of the screen
     center = (image.shape[1] / 2, image.shape[0] / 2)
 
@@ -41,9 +41,11 @@ def init(image, bboxes, video = []):
         # Goes through each frame that occurred since the first image was found
         for frame in video:
             ok = draw(frame)
+        return True, bbox
+        
 
     # Returns the tracker's status
-    return ok
+    return False,None
 
 
 # Updates the location of the object
@@ -53,12 +55,12 @@ def update(image):
 
     # Returns the location if the location was updated
     if ok:
-        # Return centerpoint location (x, y)
-        return (location[0] + location[2] / 2, location[1] + location[3] / 2)
+        # Return top left location (x, y)
+        return location, True
 
     # Returns false the updating the location fails
     else:
-        return False
+        return None, False
 
 def draw(image):
     print("in update")

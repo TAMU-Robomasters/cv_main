@@ -78,15 +78,22 @@ def setup(
     
         # by defaul tracker needs model to be run
         tracker_found_bounding_box = False
+        boxes = None
         for counter in count(start=0, step=1): # counts up infinitely starting at 0
+            if counter == 450:
+                break
             frame = get_latest_frame()
-
-            if counter % 20 == 0 or not tracker_found_bounding_box:
+            best_bounding_box = None
+            
+            if counter % 40 == 0 or tracker_found_bounding_box==False:
                 #
                 # call model
                 #
-                boxes, confidences, classIDs = model(frame, confidence, threshold)
-                tracker_found_bounding_box = tracker.init(frame,boxes)
+                if frame is not None:
+                    boxes, confidences, classIDs = modeling.get_bounding_boxes(frame, confidence, threshold)
+                    tracker_found_bounding_box, best_bounding_box = tracker.init(frame,boxes)
+                else:
+                    tracker_found_bounding_box=False
                 # FIXME: best_bounding_box needs to be calculated here! (either call tracker)
             else:
                 #
@@ -94,16 +101,20 @@ def setup(
                 #
                 # TODO: make sure this works (untested)
                 best_bounding_box, tracker_found_bounding_box = tracker.update(frame)
+                boxes = [best_bounding_box]
+                confidences=[1]
+
 
             # figure out where to aim
-            x, y = aiming.aim(best_bounding_box)
-            
-            # optional value for debugging/testing
-            if not (on_next_frame is None):
-                on_next_frame(counter, frame, (boxes, confidences), (x,y))
-            
-            # send data to embedded
-            send_output(x, y)
+            if tracker_found_bounding_box==True:
+                x, y = aiming.aim(best_bounding_box)
+                
+                # optional value for debugging/testing
+                if not (on_next_frame is None) :
+                    on_next_frame(counter, frame, (boxes, confidences), (x,y))
+                
+                # send data to embedded
+                send_output(x, y)
     
     # 
     # option #3
@@ -125,4 +136,4 @@ if __name__ == '__main__':
     simple_synchronous, synchronous_with_tracker = setup()
     
     # for now, default to simple_synchronous
-    simple_synchronous()
+    synchronous_with_tracker
