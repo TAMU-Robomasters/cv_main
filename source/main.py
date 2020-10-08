@@ -81,7 +81,7 @@ def setup(
         for counter in count(start=0, step=1): # counts up infinitely starting at 0
             frame = get_latest_frame()
 
-            if counter % 40 == 0 or not tracker_found_bounding_box:
+            if counter % 20 == 0 or not tracker_found_bounding_box:
                 #
                 # call model
                 #
