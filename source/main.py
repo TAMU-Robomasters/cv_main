@@ -79,14 +79,17 @@ def setup(
         # by defaul tracker needs model to be run
         tracker_found_bounding_box = False
         for counter in count(start=0, step=1): # counts up infinitely starting at 0
+            if counter == 460:
+                break
             frame = get_latest_frame()
 
             if counter % 40 == 0 or not tracker_found_bounding_box:
                 #
                 # call model
                 #
-                boxes, confidences, classIDs = model(frame, confidence, threshold)
-                tracker_found_bounding_box = tracker.init(frame,boxes)
+               # boxes, confidences, classIDs = model(frame, confidence, threshold)
+               boxes, confidences, classIDs = modeling.get_bounding_boxes(frame, confidence, threshold)
+               tracker_found_bounding_box,best_bounding_box = tracker.init(frame,boxes)
                 # FIXME: best_bounding_box needs to be calculated here! (either call tracker)
             else:
                 #

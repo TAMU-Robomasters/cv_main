@@ -16,11 +16,13 @@
 
 ### For Mac/Linux
 
-* Install [nix](https://nixos.org/guides/install-nix.html) 
+* Install [nix](https://nixos.org/guides/install-nix.html), more detailed guide [here](https://nixos.org/manual/nix/stable/#chap-installation)
     * Just run the following in your console/terminal app
-        * `mkdir -m 0755 /nix && chown "$(whoami)" /nix`
-        * `sudo install -d -m755 -o $(id -u) -g $(id -g) /nix`
-        * `curl -L https://nixos.org/nix/install | sh`
+        * `sudo apt-get update 2>/dev/null`
+        * If you're on MacOS Catalina, run:
+            * `sh <(curl -L https://nixos.org/nix/install) --darwin-use-unencrypted-nix-store-volume `
+        * If you're not, run:
+            * `curl -L https://nixos.org/nix/install | bash`
         * `source $HOME/.nix-profile/etc/profile.d/nix.sh`
 * Install `git`
     * (if you don't have git just run `nix-env -i git`)
