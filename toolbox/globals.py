@@ -32,7 +32,7 @@ if 'PROJECT_ENVIRONMENT' in os.environ:
 # load the info.yaml and some of its data
 # 
 INFO = yaml.unsafe_load(FS.read(FS.join(FS.dirname(__file__),'..','info.yaml')))
-PATHS = INFO["(project)"]["(paths)"]
+PATHS = INFO["paths"]
 # make paths absolute if they're relative
 for each_key in PATHS.keys():
     *folders, name, ext = FS.path_pieces(PATHS[each_key])

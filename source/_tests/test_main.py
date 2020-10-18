@@ -31,7 +31,7 @@ def debug_each_frame(frame_index, frame, model_ouput, aiming_output):
     its only purpose is to bundle all of the debugging output
     """
     
-    print(f'on frame {frame_index}')
+    print(f'processing frame {frame_index}')
     
     # extract the output
     boxes, confidences = model_ouput

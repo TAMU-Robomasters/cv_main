@@ -1,3 +1,7 @@
+(project):
+    name: CV Main
+    description: The Master Control repo of the TAMU RoboMaster 2020 team
+
 parameters:
     model:
         confidence: 0.5
@@ -9,18 +13,14 @@ parameters:
         save_frame_to_file: true
         open_each_frame: false
 
-(project):
-    name: CV Main
-    description: The Master Control repo of the TAMU RoboMaster 2020 team
-    
-    (paths):
-        project_root: ./
-        source_dir: ./source
-        main_test_video: ./source/_test_data/test.avi
-        main_test_image: ./source/_test_data/test.png
-        video_output: ./result.nosync.mp4
-        # model
-        model_weights: ./source/modeling/model/v3t.weights
-        model_config: ./source/modeling/model/v3t.cfg
-        model_labels: ./source/modeling/model/v3t.names
-        frame_save_location: ./source/modeling/_tests/test.nosync.png
+paths:
+    project_root: ./
+    source_dir: ./source
+    main_test_video: ./source/_test_data/test.avi
+    main_test_image: ./source/_test_data/test.png
+    video_output: ./result.nosync.mp4
+    # model
+    model_weights: ./source/modeling/model/v3t.weights
+    model_config: ./source/modeling/model/v3t.cfg
+    model_labels: ./source/modeling/model/v3t.names
+    frame_save_location: ./source/modeling/_tests/test.nosync.png
