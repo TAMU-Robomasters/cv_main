@@ -38,7 +38,8 @@ in
             # 
             # how to add packages?
             # 
-            # to find package verisons use:
+            # you can search for them here: https://search.nixos.org/packages
+            # to find them in the commandline use:
             #     nix-env -qP --available PACKAGE_NAME_HERE | cat
             # ex:
             #     nix-env -qP --available opencv
