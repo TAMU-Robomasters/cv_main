@@ -1,4 +1,6 @@
-(using_atk_version): 1.1.0
+(project):
+    name: CV Main
+    description: The Master Control repo of the TAMU RoboMaster 2020 team
 
 parameters:
     model:
@@ -11,35 +13,14 @@ parameters:
         save_frame_to_file: true
         open_each_frame: false
 
-(project):
-    name: CV Main
-    description: The Master Control repo of the TAMU RoboMaster 2020 team
-    
-    (paths):
-        project_root: ./
-        source_dir: ./source
-        main_test_video: ./source/_test_data/test.avi
-        main_test_image: ./source/_test_data/test.png
-        video_output: ./result.nosync.mp4
-        # model
-        model_weights: ./source/modeling/model/v3t.weights
-        model_config: ./source/modeling/model/v3t.cfg
-        model_labels: ./source/modeling/model/v3t.names
-        frame_save_location: ./source/modeling/_tests/test.nosync.png
-        # docker system
-        project_bin: ./project_bin
-        dockerfiles: ./project_bin/dockerfiles/
-        project_dir_file: ./.project_dir.nosync.txt  # dont change unless you also change the project/bin exec
-        # tools
-        ruby_tools: ./toolbox/tools.rb
-
-todo:
-    - add additonal video testing:
-        - DJI dataset: https://terra-1-g.djicdn.com/b2a076471c6c4b72b574a977334d3e05/resources/DJI%20ROCO.zip
-    - have code detect if on TX2:
-        - check if ARM
-        - start the fan command
-        - change the setup script
-    - explore the idea of having pre-set firing locations:
-        - get a way for the robot to know where it is
-        - fire in paths where robots are expected
+paths:
+    project_root: ./
+    source_dir: ./source
+    main_test_video: ./source/_test_data/test.avi
+    main_test_image: ./source/_test_data/test.png
+    video_output: ./result.nosync.mp4
+    # model
+    model_weights: ./source/modeling/model/v3t.weights
+    model_config: ./source/modeling/model/v3t.cfg
+    model_labels: ./source/modeling/model/v3t.names
+    frame_save_location: ./source/modeling/_tests/test.nosync.png

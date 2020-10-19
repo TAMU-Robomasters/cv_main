@@ -25,13 +25,13 @@ import source.aiming._tests.test_aiming as test_aiming
 # debugger option #1
 #
 frames = []
-def debug_each_frame(counter, frame, model_ouput, aiming_output):
+def debug_each_frame(frame_index, frame, model_ouput, aiming_output):
     """
     this function is designed to be called every time main() processes a frame
     its only purpose is to bundle all of the debugging output
     """
     
-    print('counter = ', counter)
+    print(f'processing frame {frame_index}')
     
     # extract the output
     boxes, confidences = model_ouput
