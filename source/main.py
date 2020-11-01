@@ -76,42 +76,35 @@ def setup(
         - does use the tracker
         """
     
-        # by defaul tracker needs model to be run
-        tracker_found_bounding_box = False
-        boxes = None
+        # model needs to run on first iteration
+        best_bounding_box = None
+
         for counter in count(start=0, step=1): # counts up infinitely starting at 0
+            # runs for the first 450 frames of video since there is a faulty frame later on
             if counter == 450:
                 break
             frame = get_latest_frame()
-            best_bounding_box = None
-            
-            if counter % 40 == 0 or tracker_found_bounding_box==False:
-                #
-                # call model
-                #
+
+            # run model every 40 frames or whenever the tracker fails
+            if counter % 40 == 0 or (best_bounding_box is None):
+                # call model and initialize tracker
                 if frame is not None:
                     boxes, confidences, classIDs = modeling.get_bounding_boxes(frame, confidence, threshold)
-                    tracker_found_bounding_box, best_bounding_box = tracker.init(frame,boxes)
+                    best_bounding_box = tracker.init(frame,boxes)
                 else:
-                    tracker_found_bounding_box=False
-                # FIXME: best_bounding_box needs to be calculated here! (either call tracker)
+                    # set tracking to have failed on faulty frames
+                    best_bounding_box=None
             else:
-                #
-                # call tracker
-                #
-                # TODO: make sure this works (untested)
-                best_bounding_box, tracker_found_bounding_box = tracker.update(frame)
-                boxes = [best_bounding_box]
-                confidences=[1]
+                best_bounding_box = tracker.update(frame)
 
 
             # figure out where to aim
-            if tracker_found_bounding_box==True:
+            if best_bounding_box:
                 x, y = aiming.aim(best_bounding_box)
                 
                 # optional value for debugging/testing
                 if not (on_next_frame is None) :
-                    on_next_frame(counter, frame, (boxes, confidences), (x,y))
+                    on_next_frame(counter, frame, ([best_bounding_box], [1]), (x,y))
                 
                 # send data to embedded
                 send_output(x, y)

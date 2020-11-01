@@ -1,12 +1,9 @@
-# Imports the MOSSE tracker from OpenCV
-from cv2 import TrackerKCF_create # alternative: from cv2 import TrackerCSRT_create
+# Imports the KCF tracker from OpenCV
+from cv2 import TrackerKCF_create # alternative: from cv2 import TrackerMOSSE_create which is a way faster tracker with lower accuracy and can't tell when tracking fails
 
 # local imports
 from toolbox.image_tools import Image
 from toolbox.globals import COLOR_GREEN
-
-# Creates the MOSSE tracker object
-tracker = TrackerKCF_create()
 
 # Finds the absolute distance between two points
 def distance(point_1: tuple, point_2: tuple):
@@ -19,11 +16,12 @@ def distance(point_1: tuple, point_2: tuple):
 # bbox is [x, y, width, height]
 def init(image, bboxes, video = []):
     global tracker
+    # creates the tracker and returns None if there are no bounding boxes to track
     tracker = TrackerKCF_create()
     print("inside init")
     print(bboxes)
     if len(bboxes) == 0:
-        return False, None
+        return None
     # Finds the coordinate for the center of the screen
     center = (image.shape[1] / 2, image.shape[0] / 2)
 
@@ -36,42 +34,14 @@ def init(image, bboxes, video = []):
     # Attempts to start the tracker
     ok = tracker.init(image, bbox)
     print(ok)
-    # Checks if the initialization was successful
-    if ok:
-        # Goes through each frame that occurred since the first image was found
-        for frame in video:
-            ok = draw(frame)
-        return True, bbox
-        
-
-    # Returns the tracker's status
-    return False,None
-
+    
+    # returns the tracked bounding box if tracker was successful, otherwise None
+    return bbox if ok else None
 
 # Updates the location of the object
 def update(image):
     # Attempts to update the object's location
     ok, location = tracker.update(image)
 
-    # Returns the location if the location was updated
-    if ok:
-        # Return top left location (x, y)
-        return location, True
-
-    # Returns false the updating the location fails
-    else:
-        return None, False
-
-def draw(image):
-    print("in update")
-    # Attempts to update the object's location
-    ok, location = tracker.update(image)
-    print(ok,location)
-    # Returns the location if the location was updated
-    if ok:
-        image = Image(image).add_bounding_box(bounding_box=location).img
-    else:
-        tracker.clear()
-
-    # Returns the updated image if successful, else just the image
-    return image, ok
+    # Returns the location if the location was updated, otherwise None
+    return location if ok else None
