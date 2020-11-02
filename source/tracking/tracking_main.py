@@ -18,7 +18,7 @@ def init(image, bboxes, video = []):
     global tracker
     # creates the tracker and returns None if there are no bounding boxes to track
     tracker = TrackerKCF_create()
-    print("inside init")
+    print("inside init for KCF")
     print(bboxes)
     if len(bboxes) == 0:
         return None
