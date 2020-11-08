@@ -12,6 +12,9 @@ parameters:
     testing:
         save_frame_to_file: true
         open_each_frame: false
+    embedded_communication:
+        serial_port: 0 #replace 0 to "/dev/ttyACM0" to enable port on TX2
+        serial_baudrate: 115200
 
 paths:
     project_root: ./

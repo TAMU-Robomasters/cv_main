@@ -9,7 +9,7 @@ import os
 from itertools import count
 # relative imports
 from toolbox.globals import PATHS, PARAMETERS
-from source.embedded_communication.send_to_embedded import send_output
+from source.embedded_communication.send_to_embedded import SendToEmbedded
 from source.videostream.videostream_main import get_latest_frame
 import source.modeling.modeling_main as modeling
 import source.tracking.tracking_main as tracker
@@ -18,6 +18,8 @@ import source.aiming.aiming_main as aiming
 # import parameters from the info.yaml file
 confidence = PARAMETERS["model"]["confidence"]
 threshold = PARAMETERS["model"]["threshold"]
+serial_port = PARAMETERS["embedded_communication"]["serial_port"]
+serial_baudrate = PARAMETERS["embedded_communication"]["serial_baudrate"]
 
 def setup(
         get_latest_frame=get_latest_frame,
@@ -25,7 +27,8 @@ def setup(
         modeling=modeling,
         tracker=tracker,
         aiming=aiming,
-        send_output=send_output
+        #send_output=send_output
+        send_to_embedded=SendToEmbedded
     ):
     """
     this function is used to connect main with other modules
@@ -45,7 +48,7 @@ def setup(
         - no tracking
         - no multiprocessing/async/multithreading
         """
-        
+        embedded_communication=send_to_embedded(port=serial_port,baudrate=serial_baudrate)
         for counter in count(start=0, step=1): # counts up infinitely starting at 0
             # get the latest image from the camera
             frame = get_latest_frame()
@@ -64,7 +67,7 @@ def setup(
                 on_next_frame(counter, frame, (boxes, confidences), (x,y))
             
             # send data to embedded
-            send_output(x, y)
+            embedded_communication.send_output(x, y)
     
     # 
     # option #2
@@ -75,7 +78,8 @@ def setup(
         - no multiprocessing
         - does use the tracker
         """
-    
+
+        embedded_communication=send_to_embedded(port=serial_port,baudrate=serial_baudrate)
         # by defaul tracker needs model to be run
         tracker_found_bounding_box = False
         for counter in count(start=0, step=1): # counts up infinitely starting at 0
@@ -103,7 +107,7 @@ def setup(
                 on_next_frame(counter, frame, (boxes, confidences), (x,y))
             
             # send data to embedded
-            send_output(x, y)
+            embedded_communication.send_output(x, y)
     
     # 
     # option #3
