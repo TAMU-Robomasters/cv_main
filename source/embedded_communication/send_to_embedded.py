@@ -15,7 +15,7 @@ class SendToEmbedded:
     def send_output(self,x:int,y:int,padding_per_value=5):
         """
         Send data to DJI board via serial communication as a padded string
-        e.g. given x=1080 and y=500, it will send 0108000500 to DJI board.
+        e.g. given x=1080, y=500, and padding_per_value=5, it will send 0108000500 to DJI board.
         :param x: x coordinate of the target. Unit: pixel. Zero coordinate: upper left
         :param y: y coordinate of the target. Unit: pixel. Zero coordinate: upper left
         """
