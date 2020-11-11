@@ -45,11 +45,11 @@ let
     
     # TODO: add support for package.json to have nested packages
     nestedPackages = [
-        # definitions.mainPackages.unixtools.arp      # commented out because of security flaws in openssl-1.0.2u, TODO: make a fixed version with overrides
-        # definitions.mainPackages.unixtools.ifconfig # commented out because of security flaws in openssl-1.0.2u, TODO: make a fixed version with overrides
-        # definitions.mainPackages.unixtools.netstat  # commented out because of security flaws in openssl-1.0.2u, TODO: make a fixed version with overrides
-        # definitions.mainPackages.unixtools.ping     # commented out because of security flaws in openssl-1.0.2u, TODO: make a fixed version with overrides
-        # definitions.mainPackages.unixtools.route    # commented out because of security flaws in openssl-1.0.2u, TODO: make a fixed version with overrides
+        definitions.mainPackages.unixtools.arp      # commented out because of security flaws in openssl-1.0.2u, TODO: make a fixed version with overrides
+        definitions.mainPackages.unixtools.ifconfig # commented out because of security flaws in openssl-1.0.2u, TODO: make a fixed version with overrides
+        definitions.mainPackages.unixtools.netstat  # commented out because of security flaws in openssl-1.0.2u, TODO: make a fixed version with overrides
+        definitions.mainPackages.unixtools.ping     # commented out because of security flaws in openssl-1.0.2u, TODO: make a fixed version with overrides
+        definitions.mainPackages.unixtools.route    # commented out because of security flaws in openssl-1.0.2u, TODO: make a fixed version with overrides
         # definitions.mainPackages.unixtools.logger # fail on macos
         # definitions.mainPackages.unixtools.wall   # fail on macos
         definitions.mainPackages.unixtools.col
