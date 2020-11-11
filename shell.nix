@@ -50,11 +50,11 @@ let
         # 
         # this is just a list of all of the standard unix tools
         # 
-        definitions.mainPackages.unixtools.arp
-        definitions.mainPackages.unixtools.ifconfig
-        definitions.mainPackages.unixtools.netstat
-        definitions.mainPackages.unixtools.ping
-        definitions.mainPackages.unixtools.route
+        definitions.mainPackages.unixtools.arp         # depends on openssl_1_0_2     
+        definitions.mainPackages.unixtools.ifconfig    # depends on openssl_1_0_2         
+        definitions.mainPackages.unixtools.netstat     # depends on openssl_1_0_2         
+        definitions.mainPackages.unixtools.ping        # depends on openssl_1_0_2     
+        definitions.mainPackages.unixtools.route       # depends on openssl_1_0_2         
         # definitions.mainPackages.unixtools.logger # fail on macos
         # definitions.mainPackages.unixtools.wall   # fail on macos
         definitions.mainPackages.unixtools.col
