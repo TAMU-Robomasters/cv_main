@@ -1,11 +1,11 @@
+from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS
 from serial import Serial
 
-
-class SendToEmbedded:
+class EmbeddedCommunication:
     """
     Jetson <-> DJI board communication
     """
-    def __init__(self,port,baudrate):
+    def __init__(self, port, baudrate):
         if port is None or port==0:
             self.port=None  # disable port
             print('Embedded Communication: Port is set to None. No communication will be established.')
@@ -29,3 +29,8 @@ class SendToEmbedded:
         """
         if self.port is not None:
             return self.port.readline()
+
+embedded_communication = EmbeddedCommunication(
+    port=PARAMETERS["embedded_communication"]["serial_port"],
+    baudrate=PARAMETERS["embedded_communication"]["serial_baudrate"],
+)

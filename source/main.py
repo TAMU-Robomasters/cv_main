@@ -9,7 +9,7 @@ import os
 from itertools import count
 # relative imports
 from toolbox.globals import PATHS, PARAMETERS
-from source.embedded_communication.send_to_embedded import SendToEmbedded
+from source.embedded_communication.embedded_main import embedded_communication
 from source.videostream.videostream_main import get_latest_frame
 import source.modeling.modeling_main as modeling
 import source.tracking.tracking_main as tracker
@@ -18,8 +18,6 @@ import source.aiming.aiming_main as aiming
 # import parameters from the info.yaml file
 confidence = PARAMETERS["model"]["confidence"]
 threshold = PARAMETERS["model"]["threshold"]
-serial_port = PARAMETERS["embedded_communication"]["serial_port"]
-serial_baudrate = PARAMETERS["embedded_communication"]["serial_baudrate"]
 
 def setup(
         get_latest_frame=get_latest_frame,
@@ -28,7 +26,7 @@ def setup(
         tracker=tracker,
         aiming=aiming,
         #send_output=send_output
-        send_to_embedded=SendToEmbedded
+        embedded_communication=embedded_communication
     ):
     """
     this function is used to connect main with other modules
@@ -48,7 +46,6 @@ def setup(
         - no tracking
         - no multiprocessing/async/multithreading
         """
-        embedded_communication=send_to_embedded(port=serial_port,baudrate=serial_baudrate)
         for counter in count(start=0, step=1): # counts up infinitely starting at 0
             # get the latest image from the camera
             frame = get_latest_frame()
@@ -79,7 +76,6 @@ def setup(
         - does use the tracker
         """
 
-        embedded_communication=send_to_embedded(port=serial_port,baudrate=serial_baudrate)
         # by defaul tracker needs model to be run
         tracker_found_bounding_box = False
         for counter in count(start=0, step=1): # counts up infinitely starting at 0
