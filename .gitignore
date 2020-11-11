@@ -7,7 +7,6 @@
 #
 # home folder files
 #
-.zsh_history
 .bash_history
 .zcompdump*
 .gitconfig
