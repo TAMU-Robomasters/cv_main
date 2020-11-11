@@ -7,17 +7,19 @@
 #
 # home folder files
 #
-.zsh_history
 .bash_history
+.zsh_history
 .zcompdump*
+.nix-defexpr
+.nix-profile
+.lesshst
+.npmrc
 .gitconfig
 .local
 .cache
-.nix-defexpr
-.nix-profile
-.npmrc
-Library/Caches/pip/
-.lesshst
+Library/Caches
+# dont remove this next one unless you want passwords to be public
+Library/Keychains
 
 # 
 # Linux
@@ -575,7 +577,6 @@ dkms.conf
 *.so
 *.dylib
 *.dll
-
 
 # Fortran module files
 *.mod
