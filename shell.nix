@@ -79,10 +79,10 @@ let
     # TODO: add support for OS-specific packages (if statement inside package inclusion)
     packagesForMacOnly = [] ++ definitions.mainPackages.lib.optionals (definitions.mainPackages.stdenv.isDarwin) [
         # python and venv
-        normalPackages.python37
-        normalPackages.python37Packages.setuptools
-        normalPackages.python37Packages.pip
-        normalPackages.python37Packages.virtualenv
+        definitions.mainPackages.python37
+        definitions.mainPackages.python37Packages.setuptools
+        definitions.mainPackages.python37Packages.pip
+        definitions.mainPackages.python37Packages.virtualenv
     ];
 # using those definitions
 in
