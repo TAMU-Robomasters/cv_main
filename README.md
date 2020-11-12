@@ -16,7 +16,7 @@
 
 ### For Mac/Linux
 
-* Install [nix](https://nixos.org/guides/install-nix.html), more detailed guide [here](https://nixos.org/manual/nix/stable/#chap-installation)
+* Install [nix](https://nixos.org/guides/install-nix.html) (you shouldn't need it, but here's the [original instructions](https://nixos.org/manual/nix/stable/#chap-installation))
     * Just run the following in your console/terminal app
         * `sudo apt-get update 2>/dev/null`
         * If you're on MacOS Catalina, run:
