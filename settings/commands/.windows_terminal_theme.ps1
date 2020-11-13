@@ -1,14 +1,10 @@
-# TODO:
-    # - check if ruby is already installed, and what version
-    # - use scoop reset instead of uninstalling things
-
 # change the powershell theme to use a black background instead of dark magenta
 if (-not $host.ui.rawui.backgroundcolor.equals([System.ConsoleColor]::Black)) {
     Clear-Host
-$atk_command = @"
-powershell -command "Set-ExecutionPolicy RemoteSigned -scope CurrentUser; iex (new-object net.webclient).downloadstring('https://git.io/fj7gT')" & ___AtkPrintDone.bat & exit
+$install_command = @"
+powershell -command "Set-ExecutionPolicy RemoteSigned -scope CurrentUser; iex (new-object net.webclient).downloadstring('https://git.io/JkmRl')"
 "@
-    start cmd.exe "/k $atk_command"
+    start cmd.exe "/k $install_command"
     exit
 }
 
