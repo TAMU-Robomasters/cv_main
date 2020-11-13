@@ -74,8 +74,8 @@ simple_synchronous, synchronous_with_tracker = setup(
 # 
 # run mains (with simulated values)
 # 
-print('Starting simple_synchronous() with simulated IO')
-simple_synchronous()
+print('Starting synchronous_with_tracker() with simulated IO')
+synchronous_with_tracker()
 
 # save all the frames as a video
 print("Starting process of saving frames to a video file")

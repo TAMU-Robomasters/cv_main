@@ -6,6 +6,7 @@ parameters:
     model:
         confidence: 0.5
         threshold: 0.3
+        frequency: 40
     videostream:
         testing:
             assumed_framerate: 30 # frames per second
