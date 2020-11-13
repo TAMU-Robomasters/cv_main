@@ -9,7 +9,7 @@ import os
 from itertools import count
 # relative imports
 from toolbox.globals import PATHS, PARAMETERS
-from source.embedded_communication.send_to_embedded import send_output
+from source.embedded_communication.embedded_main import embedded_communication
 from source.videostream.videostream_main import get_latest_frame
 import source.modeling.modeling_main as modeling
 import source.tracking.tracking_main as tracker
@@ -25,7 +25,8 @@ def setup(
         modeling=modeling,
         tracker=tracker,
         aiming=aiming,
-        send_output=send_output
+        #send_output=send_output
+        embedded_communication=embedded_communication
     ):
     """
     this function is used to connect main with other modules
@@ -45,7 +46,6 @@ def setup(
         - no tracking
         - no multiprocessing/async/multithreading
         """
-        
         for counter in count(start=0, step=1): # counts up infinitely starting at 0
             # get the latest image from the camera
             frame = get_latest_frame()
@@ -64,7 +64,7 @@ def setup(
                 on_next_frame(counter, frame, (boxes, confidences), (x,y))
             
             # send data to embedded
-            send_output(x, y)
+            embedded_communication.send_output(x, y)
     
     # 
     # option #2
@@ -75,6 +75,7 @@ def setup(
         - no multiprocessing
         - does use the tracker
         """
+
     
         # model needs to run on first iteration
         best_bounding_box = None
@@ -99,6 +100,7 @@ def setup(
 
 
             # figure out where to aim
+
             if best_bounding_box:
                 x, y = aiming.aim(best_bounding_box)
                 
@@ -107,7 +109,7 @@ def setup(
                     on_next_frame(counter, frame, ([best_bounding_box], [1]), (x,y))
                 
                 # send data to embedded
-                send_output(x, y)
+                embedded_communication.send_output(x, y)
     
     # 
     # option #3

@@ -16,7 +16,7 @@
 
 ### For Mac/Linux
 
-* Install [nix](https://nixos.org/guides/install-nix.html), more detailed guide [here](https://nixos.org/manual/nix/stable/#chap-installation)
+* Install [nix](https://nixos.org/guides/install-nix.html) (in case something goes wrong; here's the [original instructions](https://nixos.org/manual/nix/stable/#chap-installation))
     * Just run the following in your console/terminal app
         * `sudo apt-get update 2>/dev/null`
         * If you're on MacOS Catalina, run:
@@ -24,6 +24,7 @@
         * If you're not, run:
             * `curl -L https://nixos.org/nix/install | bash`
         * `source $HOME/.nix-profile/etc/profile.d/nix.sh`
+        * (may need to restart console/terminal)
 * Install `git`
     * (if you don't have git just run `nix-env -i git`)
 * Clone/Open the project

@@ -15,8 +15,16 @@ then
     exit 0
 fi
 
+unlink ./Library/Keychains &>/dev/null
+
 # clean all the small things
-./commands/clean
+./settings/commands/clean
+
+# all the node modules
+rm -rfv node_modules
 
 # all the virtual env pip modules (several minutes to rebuild these)
 rm -rfv .venv
+
+# the mac library cache
+rm -rfv ./Library/Caches/
