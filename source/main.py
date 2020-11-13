@@ -18,6 +18,7 @@ import source.aiming.aiming_main as aiming
 # import parameters from the info.yaml file
 confidence = PARAMETERS["model"]["confidence"]
 threshold = PARAMETERS["model"]["threshold"]
+model_frequency = PARAMETERS["model"]["frequency"]
 
 def setup(
         get_latest_frame=get_latest_frame,
@@ -73,7 +74,7 @@ def setup(
         """
         the 2nd main function
         - no multiprocessing
-        - does use the tracker
+        - does use the tracker(KCF)
         """
 
     
@@ -81,26 +82,22 @@ def setup(
         best_bounding_box = None
 
         for counter in count(start=0, step=1): # counts up infinitely starting at 0
-            # runs for the first 450 frames of video since there is a faulty frame later on
-            if counter == 450:
-                break
-            frame = get_latest_frame()
 
-            # run model every 40 frames or whenever the tracker fails
-            if counter % 40 == 0 or (best_bounding_box is None):
+            # grabs frame and ends loop if we reach the last one
+            frame = get_latest_frame()   
+            if frame is None:
+                break
+
+            # run model every model_frequency frames or whenever the tracker fails
+            if counter % model_frequency == 0 or (best_bounding_box is None):
                 # call model and initialize tracker
-                if frame is not None:
-                    boxes, confidences, classIDs = modeling.get_bounding_boxes(frame, confidence, threshold)
-                    best_bounding_box = tracker.init(frame,boxes)
-                else:
-                    # set tracking to have failed on faulty frames
-                    best_bounding_box=None
+                boxes, confidences, classIDs = modeling.get_bounding_boxes(frame, confidence, threshold)
+                best_bounding_box = tracker.init(frame,boxes)
             else:
                 best_bounding_box = tracker.update(frame)
 
 
             # figure out where to aim
-
             if best_bounding_box:
                 x, y = aiming.aim(best_bounding_box)
                 
