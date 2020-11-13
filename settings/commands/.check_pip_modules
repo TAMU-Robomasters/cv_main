@@ -20,5 +20,5 @@ if [[ "$old_pip_modules_hash" != "$new_pip_modules_hash" ]]; then
 else
     echo "I see a cached pip check, so the pip install check seems to be good"
 fi
-
+python -V
 which python || echo "$PATH"
