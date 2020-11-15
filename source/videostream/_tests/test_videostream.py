@@ -2,8 +2,10 @@ import pyrealsense2 as rs
 import numpy as np
 import cv2
 import pdb,time
+from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 
 # parameters
+# TODO: put this in the info.yaml
 SHOW_IMAGES = False
 
 # Configure depth and color streams

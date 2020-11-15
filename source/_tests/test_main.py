@@ -1,6 +1,6 @@
 import cv2
 # import local
-from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS
+from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 from toolbox.image_tools import Image
 from toolbox.video_tools import Video
 from source.main import setup

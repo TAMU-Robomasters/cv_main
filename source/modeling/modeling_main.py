@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 # relative imports
-from toolbox.globals import PATHS, MODE
+from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 
 
 # TODO: I don't know what this number is, and we should probably figure it out
@@ -10,7 +10,7 @@ MAGIC_NUMBER_1 = 416
 # 
 # init the model
 # 
-print("[INFO] loading YOLO from disk...") if MODE == "development" else None
+print("[INFO] loading YOLO from disk...")
 net = cv2.dnn.readNetFromDarknet(PATHS["model_config"], PATHS["model_weights"])
 layer_names = net.getLayerNames()
 output_layer_names = [ layer_names[index[0] - 1] for index in net.getUnconnectedOutLayers() ]

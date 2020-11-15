@@ -1,3 +1,5 @@
+from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
+
 def aim(bounding_boxes):
     # this should be nearly the same as aiming_main
     # BUT should just have additional debugging/print statements

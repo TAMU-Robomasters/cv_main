@@ -2,7 +2,7 @@ import cv2
 from PIL import Image
 from datetime import datetime
 # relative imports
-from toolbox.globals import PATHS, ENVIRONMENT, MODE, MODEL_COLORS, MODEL_LABELS
+from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, MODE, MODEL_COLORS, MODEL_LABELS, print
 from source.modeling.modeling_main import get_bounding_boxes as original_get_bounding_boxes
 
 def get_bounding_boxes(frame, iconfidence, ithreshold):

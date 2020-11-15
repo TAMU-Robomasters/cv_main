@@ -21,12 +21,12 @@ from toolbox.file_system_tools import FS
 # 
 # mode and environment
 # 
-ENVIRONMENT = "laptop" # laptop, or tx2 
-MODE = "development" # development or production
 import os
-# allow ENVIRONMENT to be overridden by the 'PROJECT_ENVIRONMENT' environment variable
-if 'PROJECT_ENVIRONMENT' in os.environ:
-    ENVIRONMENT = os.environ['PROJECT_ENVIRONMENT']
+
+# laptop or tx2 (default laptop), and it to be overridden by the 'PROJECT_ENVIRONMENT' environment variable
+ENVIRONMENT = os.environ.get('PROJECT_ENVIRONMENT',"laptop")
+# development or production (default to development), and allow for it to be overridden as well
+MODE = os.environ.get('PROJECT_MODE',"development")
 
 # 
 # load the info.yaml and some of its data
@@ -57,3 +57,10 @@ MODEL_COLORS = np.random.randint(0, 255, size=(len(MODEL_LABELS), 3), dtype="uin
 # Green in RGB
 COLOR_GREEN = (0, 255, 0)
 COLOR_YELLOW = (255, 255, 00)
+
+original_print = print
+def print(*args,**kwargs):
+    global MODE
+    if MODE == "development":
+        return original_print(*args,**kwargs)
+    # if not in development (e.g. production) don't print anything

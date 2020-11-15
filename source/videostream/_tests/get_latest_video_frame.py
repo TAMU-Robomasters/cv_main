@@ -1,7 +1,7 @@
 import time
 # relative imports
 from toolbox.video_tools import Video
-from toolbox.globals import PATHS, PARAMETERS, ENVIRONMENT
+from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 
 # 
 # initilize

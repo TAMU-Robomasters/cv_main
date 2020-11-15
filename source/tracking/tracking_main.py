@@ -3,7 +3,7 @@ from cv2 import TrackerKCF_create # alternative: from cv2 import TrackerMOSSE_cr
 
 # local imports
 from toolbox.image_tools import Image
-from toolbox.globals import COLOR_GREEN
+from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, COLOR_GREEN, print
 
 # Finds the absolute distance between two points
 def distance(point_1: tuple, point_2: tuple):

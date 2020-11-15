@@ -1,4 +1,4 @@
-from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS
+from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 from serial import Serial
 
 class EmbeddedCommunication:

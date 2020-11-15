@@ -8,7 +8,7 @@ import cv2
 import os
 from itertools import count
 # relative imports
-from toolbox.globals import PATHS, PARAMETERS
+from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 from source.embedded_communication.embedded_main import embedded_communication
 from source.videostream.videostream_main import get_latest_frame
 import source.modeling.modeling_main as modeling
