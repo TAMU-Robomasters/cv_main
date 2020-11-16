@@ -49,7 +49,6 @@ def setup(
         """
         for counter in count(start=0, step=1): # counts up infinitely starting at 0
             # get the latest image from the camera
-            print(str(counter)+"AAAAAAAAAAA")
             frame = get_latest_frame()
             if frame is None:
                 print("assuming the video stream ended because latest frame is None")
