@@ -49,6 +49,7 @@ def setup(
         """
         for counter in count(start=0, step=1): # counts up infinitely starting at 0
             # get the latest image from the camera
+            print(str(counter)+"AAAAAAAAAAA")
             frame = get_latest_frame()
             if frame is None:
                 print("assuming the video stream ended because latest frame is None")
@@ -96,17 +97,17 @@ def setup(
             else:
                 best_bounding_box = tracker.update(frame)
 
+            # optional value for debugging/testing
+            if not (on_next_frame is None) :
+                x, y = aiming.aim([best_bounding_box] if best_bounding_box else [])
 
-            # figure out where to aim
-            if best_bounding_box:
-                x, y = aiming.aim(best_bounding_box)
+                if best_bounding_box:
+                    on_next_frame(counter, frame, ([best_bounding_box], [1]), (x,y))      
+                    # send data to embedded
+                    embedded_communication.send_output(x, y)
+                else:
+                    on_next_frame(counter, frame, ([], []), (x,y))
                 
-                # optional value for debugging/testing
-                if not (on_next_frame is None) :
-                    on_next_frame(counter, frame, ([best_bounding_box], [1]), (x,y))
-                
-                # send data to embedded
-                embedded_communication.send_output(x, y)
     
     # 
     # option #3
