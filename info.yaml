@@ -23,6 +23,7 @@ paths:
     main_test_video: ./source/_test_data/test.avi
     main_test_image: ./source/_test_data/test.png
     video_output: ./result.nosync.mp4
+    time_output: ./time.txt
     # model
     model_weights: ./source/modeling/model/v3t.weights
     model_config: ./source/modeling/model/v3t.cfg
