@@ -80,7 +80,7 @@ t0 = time.time()
 synchronous_with_tracker()
 t1 = time.time()
 with open(PATHS["time_output"],'w') as f:
-    f.write("Time Taken for Model With Tracker: "+str(t1-t0))
+    f.write("Time Taken for Model With Tracker: "+str(t1-t0)+" seconds")
 
 # save all the frames as a video
 print("Starting process of saving frames to a video file")
