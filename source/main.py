@@ -77,17 +77,26 @@ def setup(
         - does use the tracker(KCF)
         """
 
-    
+        frameNumber = 1 # can't use counter for frame number since we might ask for the same frame twice in get_latest_video_frame
         # model needs to run on first iteration
         best_bounding_box = None
 
         for counter in count(start=0, step=1): # counts up infinitely starting at 0
 
             # grabs frame and ends loop if we reach the last one
-            frame = get_latest_frame()   
+            frame = get_latest_frame()
+            # stop loop if using get_next_video_frame   
             if frame is None:
                 break
+            # stop loop if using get_latest_video_frame(required since there are 3 cases for get_latest_video_frame compared to the 2 cases in get_next_video_frame)
+            if isinstance(frame,int):
+                if frame==-1:
+                    break
+                else: # this means there are still frames to come
+                    continue
 
+    
+            frameNumber+=1
             # run model every model_frequency frames or whenever the tracker fails
             if counter % model_frequency == 0 or (best_bounding_box is None):
                 # call model and initialize tracker
@@ -103,7 +112,7 @@ def setup(
                 
                 # optional value for debugging/testing
                 if not (on_next_frame is None) :
-                    on_next_frame(counter, frame, ([best_bounding_box], [1]), (x,y))
+                    on_next_frame(frameNumber, frame, ([best_bounding_box], [1]), (x,y))
                 
                 # send data to embedded
                 embedded_communication.send_output(x, y)
