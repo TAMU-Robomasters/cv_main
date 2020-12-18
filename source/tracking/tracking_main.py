@@ -4,7 +4,7 @@ from cv2 import TrackerKCF_create # alternative: from cv2 import TrackerMOSSE_cr
 # local imports
 from toolbox.image_tools import Image
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, COLOR_GREEN, print
-
+tracker =  TrackerKCF_create()
 # Finds the absolute distance between two points
 def distance(point_1: tuple, point_2: tuple):
     # Calculates the distance using Python spagettie
@@ -14,7 +14,7 @@ def distance(point_1: tuple, point_2: tuple):
 
 # Starts tracking the object surrounded by the bounding box in the image
 # bbox is [x, y, width, height]
-def init(image, bboxes, video = []):
+def init(image, bboxes):
     global tracker
     # creates the tracker and returns None if there are no bounding boxes to track
     tracker = TrackerKCF_create()

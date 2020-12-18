@@ -8,7 +8,7 @@ import multiprocessing
 import cv2
 import os
 from itertools import count
-from multiprocessing import Process
+from multiprocessing import Process,Value,Array
 # relative imports
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 from source.embedded_communication.embedded_main import embedded_communication
@@ -21,10 +21,6 @@ import source.aiming.aiming_main as aiming
 confidence = PARAMETERS["model"]["confidence"]
 threshold = PARAMETERS["model"]["threshold"]
 model_frequency = PARAMETERS["model"]["frequency"]
-
-#initialize global variables for multiprocessing
-best_bounding_box = None
-process = None
 
 def setup(
         get_latest_frame=get_latest_frame,
@@ -125,13 +121,12 @@ def setup(
                 
     
 
-    def modelMulti(frame,confidence,threshold):
+    def modelMulti(frame,confidence,threshold,best_bounding_box,tracker,modeling):
         #run the model and update best bounding box to the new bounding box if it exists, otherwise keep tracking the old bounding box
-        global best_bounding_box
         boxes, confidences, classIDs = modeling.get_bounding_boxes(frame, confidence, threshold)
         potentialbbox = tracker.init(frame,boxes)
         if potentialbbox:
-            best_bounding_box = potentialbbox
+            best_bounding_box[:] = potentialbbox
         
 
     # option #4
@@ -142,10 +137,9 @@ def setup(
         frameNumber = 1 # can't use counter for frame number since we might ask for the same frame twice in get_latest_video_frame
         # model needs to run on first iteration
         
-
+        best_bounding_box = Array('d',[-1,-1,-1,-1])
+        process = None
         for counter in count(start=0, step=1): # counts up infinitely starting at 0
-            global best_bounding_box
-            global process
             # grabs frame and ends loop if we reach the last one
             frame = get_latest_frame()
             # stop loop if using get_next_video_frame   
@@ -160,10 +154,11 @@ def setup(
 
             frameNumber+=1
             # run model if there is no current bounding box
-            if best_bounding_box is None:
+            if best_bounding_box[:] == [-1,-1,-1,-1]:
                 if process is None or process.is_alive()==False:
                     boxes, confidences, classIDs = modeling.get_bounding_boxes(frame, confidence, threshold)
-                    best_bounding_box = tracker.init(frame,boxes)
+                    potentialbbox = tracker.init(frame,boxes)
+                    best_bounding_box[:] = potentialbbox if potentialbbox else [-1,-1,-1,-1]
                     print("NONE")
                 # else:
                 #     process.join()
@@ -173,19 +168,20 @@ def setup(
                 if counter % model_frequency == 0:
                     # call model and initialize tracker
                     if process is None or process.is_alive()==False:
-                        process = Process(target=modelMulti,args=(frame,confidence,threshold))
-                        process.start()
+                        process = Process(target=modelMulti,args=(frame,confidence,threshold,best_bounding_box,tracker,modeling)) # need to find a way to pass tracker and modeling in properly
+                        process.start() 
                 
-                best_bounding_box = tracker.update(frame)
+                potentialbbox = tracker.update(frame)
+                best_bounding_box[:] = potentialbbox if potentialbbox else [-1,-1,-1,-1]
 
 
             # figure out where to aim
             # if best_bounding_box:
-            x, y = aiming.aim(best_bounding_box)
+            x, y = aiming.aim(best_bounding_box[:])
             
             # optional value for debugging/testing
             if not (on_next_frame is None) :
-                on_next_frame(frameNumber, frame, ([best_bounding_box], [1])if best_bounding_box else ([], []), (x,y))
+                on_next_frame(frameNumber, frame, ([best_bounding_box[:]], [1])if best_bounding_box[:] != [-1,-1,-1,-1] else ([], []), (x,y))
             
             # send data to embedded
             embedded_communication.send_output(x, y)
