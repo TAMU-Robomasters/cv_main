@@ -1,10 +1,11 @@
+import multiprocessing
 import cv2
+import time
 # import local
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 from toolbox.image_tools import Image
 from toolbox.video_tools import Video
 from source.main import setup
-import time
 
 # 
 # import simulated inputs/outputs
@@ -61,10 +62,10 @@ def debug_each_frame(frame_index, frame, model_ouput, aiming_output):
 # 
 # setup main(s)
 # 
-simple_synchronous, synchronous_with_tracker = setup(
+simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(
     # comment out lines (arguments) below to get closer
     # and closer to realistic output
-    get_latest_frame=get_next_video_frame, # can be swapped with get_latest_video_frame
+    get_latest_frame=get_latest_video_frame, # can be swapped with get_latest_video_frame
     on_next_frame=debug_each_frame,
     modeling=test_modeling,
     tracker=test_tracking,
@@ -75,15 +76,14 @@ simple_synchronous, synchronous_with_tracker = setup(
 # 
 # run mains (with simulated values)
 # 
-print('Starting synchronous_with_tracker() with simulated IO')
 t0 = time.time()
-synchronous_with_tracker()
+multiprocessing_with_tracker()
 t1 = time.time()
 with open(PATHS["time_output"],'w') as f:
     f.write("Time Taken for Model With Tracker: "+str(t1-t0)+" seconds")
 
+
 # save all the frames as a video
 print("Starting process of saving frames to a video file")
-
-# Video.create_from_frames(frames, save_to=PATHS["video_output"])
+Video.create_from_frames(frames, save_to=PATHS["video_output"])
 print(f"video output has been saved to {PATHS['video_output']}")

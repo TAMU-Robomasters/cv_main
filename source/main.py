@@ -21,7 +21,11 @@ import source.aiming.aiming_main as aiming
 confidence = PARAMETERS["model"]["confidence"]
 threshold = PARAMETERS["model"]["threshold"]
 model_frequency = PARAMETERS["model"]["frequency"]
+
+#initialize global variables for multiprocessing
 best_bounding_box = None
+process = None
+
 def setup(
         get_latest_frame=get_latest_frame,
         on_next_frame=None,
@@ -120,24 +124,41 @@ def setup(
                     on_next_frame(frameNumber, frame, ([best_bounding_box], [1]), (x,y))
                 
     
+    def getBestBoundingBox():
+        global best_bounding_box
+        return best_bounding_box
+    def updateBestBoundingBox(bbox):
+        global best_bounding_box
+        best_bounding_box = bbox
 
     def modelMulti(frame,confidence,threshold):
-        global best_bounding_box
+        #run the model and update best bounding box to the new bounding box if it exists, otherwise keep tracking the old bounding box
         boxes, confidences, classIDs = modeling.get_bounding_boxes(frame, confidence, threshold)
-        best_bounding_box = tracker.init(frame,boxes)
+        potentialbbox = tracker.init(frame,boxes)
+        if potentialbbox:
+            updateBestBoundingBox(potentialbbox)
+        global process
+        process = None
 
+    def beginProcess(frame,confidence,threshold):
+        global process
+        process = Process(target=modelMulti,args=(frame,confidence,threshold))
+        process.start()
+    def getProcess():
+        global process
+        return process
+
+    # option #4
     # 
-    # option #3
-    # 
-    # multiprocessing: have main/tracker/videostream/aiming as seperate processes
-    # have modeling only be called once tracker fails
+    # have tracking almost always running and modeling run in another process
+    # tracker pulls the latest model rather than waiting to fail before calling modeling
     def multiprocessing_with_tracker():
         frameNumber = 1 # can't use counter for frame number since we might ask for the same frame twice in get_latest_video_frame
         # model needs to run on first iteration
-        global best_bounding_box
-
-        for counter in count(start=0, step=1): # counts up infinitely starting at 0
-
+        
+        
+        for counter in count(start=0, step=1): # counts up infinitely starting at 0           
+            
             # grabs frame and ends loop if we reach the last one
             frame = get_latest_frame()
             # stop loop if using get_next_video_frame   
@@ -149,36 +170,39 @@ def setup(
                     break
                 else: # this means there are still frames to come
                     continue
-
             frameNumber+=1
-            # run model every model_frequency frames or whenever the tracker fails
-            if best_bounding_box is None:
-                boxes, confidences, classIDs = modeling.get_bounding_boxes(frame, confidence, threshold)
-                best_bounding_box = tracker.init(frame,boxes)
+            print("EXISTS" if best_bounding_box else "")
 
-            elif counter % model_frequency == 0:
-                # call model and initialize tracker
-                p = Process(target=modelMulti,args=(frame,confidence,threshold))
-                p.start()
+            # run model if there is no current bounding box
+            if getBestBoundingBox() is None:
+                process = getProcess()
+                if process is None or process.is_alive()==False:
+                    beginProcess(frame,confidence,threshold)
+                # else:
+                #     process.join()
+
             else:
-                best_bounding_box = tracker.update(frame)
+            # run model in another process every model_frequency frames
+                if counter % model_frequency == 0:
+                    # call model and initialize tracker
+                    process = getProcess()
+                    if process is None or process.is_alive()==False:
+                        beginProcess(frame,confidence,threshold)
+                
+                updateBestBoundingBox(tracker.update(frame))
 
 
             # figure out where to aim
-            if best_bounding_box:
-                x, y = aiming.aim(best_bounding_box)
-                
-                # optional value for debugging/testing
-                if not (on_next_frame is None) :
-                    on_next_frame(frameNumber, frame, ([best_bounding_box], [1]), (x,y))
-                
-                # send data to embedded
-                embedded_communication.send_output(x, y)
-    # 
-    # option #4
-    # 
-    # have multiple processes and have them all running all the time
-    # tracker pulls the latest model rather than waiting to fail before calling modeling
+            # if best_bounding_box:
+            x, y = aiming.aim(getBestBoundingBox())
+            
+            # optional value for debugging/testing
+            if not (on_next_frame is None) :
+                on_next_frame(frameNumber, frame, ([getBestBoundingBox()], [1])if getBestBoundingBox() else ([], []), (x,y))
+            
+            # send data to embedded
+            embedded_communication.send_output(x, y)
+
     
     # return a list of the different main options
     return simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker
