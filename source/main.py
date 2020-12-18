@@ -107,6 +107,9 @@ def setup(
             else:
                 best_bounding_box = tracker.update(frame)
 
+            # optional value for debugging/testing
+            if not (on_next_frame is None) :
+                x, y = aiming.aim([best_bounding_box] if best_bounding_box else [])
 
             # figure out where to aim
             if best_bounding_box:
@@ -116,8 +119,6 @@ def setup(
                 if not (on_next_frame is None) :
                     on_next_frame(frameNumber, frame, ([best_bounding_box], [1]), (x,y))
                 
-                # send data to embedded
-                embedded_communication.send_output(x, y)
     
 
     def modelMulti(frame,confidence,threshold):
