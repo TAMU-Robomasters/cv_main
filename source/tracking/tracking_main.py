@@ -4,7 +4,7 @@ from cv2 import TrackerKCF_create # alternative: from cv2 import TrackerMOSSE_cr
 # local imports
 from toolbox.image_tools import Image
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, COLOR_GREEN, print
-class trackers:
+class trackingClass:
     def __init__(self):
         self.tracker =  None
     # Finds the absolute distance between two points

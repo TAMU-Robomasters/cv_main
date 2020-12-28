@@ -42,8 +42,8 @@ def setup(
     """
     class MyManager(BaseManager):
         pass
-    MyManager.register('tracker', tracker.trackers)
-
+    MyManager.register('tracker', tracker.trackingClass)
+    MyManager.register('modeling', modeling.modelingClass)
     # 
     # option #1
     #
@@ -53,25 +53,33 @@ def setup(
         - no tracking
         - no multiprocessing/async/multithreading
         """
-        for counter in count(start=0, step=1): # counts up infinitely starting at 0
-            # get the latest image from the camera
-            frame = get_latest_frame()
-            if frame is None:
-                print("assuming the video stream ended because latest frame is None")
-                return
-            
-            # run the model
-            boxes, confidences, classIDs = modeling.get_bounding_boxes(frame, confidence, threshold)
-            
-            # figure out where to aim
-            x, y = aiming.aim(boxes)
-            
-            # optional value for debugging/testing
-            if not (on_next_frame is None):
-                on_next_frame(counter, frame, (boxes, confidences), (x,y))
-            
-            # send data to embedded
-            embedded_communication.send_output(x, y)
+
+        with MyManager() as manager:
+            model = manager.modeling()
+            for counter in count(start=0, step=1): # counts up infinitely starting at 0
+                # get the latest image from the camera
+                frame = get_latest_frame()
+                if frame is None:
+                        break
+                # stop loop if using get_latest_video_frame(required since there are 3 cases for get_latest_video_frame compared to the 2 cases in get_next_video_frame)
+                if isinstance(frame,int):
+                    if frame==-1:
+                        break
+                    else: # this means there are still frames to come
+                        continue
+                
+                # run the model
+                boxes, confidences, classIDs = model.get_bounding_boxes(frame, confidence, threshold)
+                
+                # figure out where to aim
+                x, y = aiming.aim(boxes)
+                
+                # optional value for debugging/testing
+                if not (on_next_frame is None):
+                    on_next_frame(counter, frame, (boxes, confidences), (x,y))
+                
+                # send data to embedded
+                embedded_communication.send_output(x, y)
     
     # 
     # option #2
@@ -89,6 +97,7 @@ def setup(
         best_bounding_box = None
         with MyManager() as manager:
             track = manager.tracker()
+            model = manager.modeling()
             for counter in count(start=0, step=1): # counts up infinitely starting at 0
 
                 # grabs frame and ends loop if we reach the last one
@@ -109,7 +118,7 @@ def setup(
                 if realCounter % model_frequency == 0 or (best_bounding_box is None):
                     realCounter=1
                     # call model and initialize tracker
-                    boxes, confidences, classIDs = modeling.get_bounding_boxes(frame, confidence, threshold)
+                    boxes, confidences, classIDs = model.get_bounding_boxes(frame, confidence, threshold)
                     best_bounding_box = track.init(frame,boxes)
                 else:
                     best_bounding_box = track.update(frame)
@@ -122,9 +131,9 @@ def setup(
                 
     
 
-    def modelMulti(frame,confidence,threshold,best_bounding_box,track,modeling):
+    def modelMulti(frame,confidence,threshold,best_bounding_box,track,model):
         #run the model and update best bounding box to the new bounding box if it exists, otherwise keep tracking the old bounding box
-        boxes, confidences, classIDs = modeling.get_bounding_boxes(frame, confidence, threshold)
+        boxes, confidences, classIDs = model.get_bounding_boxes(frame, confidence, threshold)
         potentialbbox = track.init(frame,boxes)
         if potentialbbox:
             best_bounding_box[:] = potentialbbox
@@ -142,6 +151,8 @@ def setup(
         process = None
         with MyManager() as manager:
             track = manager.tracker()
+            model = manager.modeling()
+
             for counter in count(start=0, step=1): # counts up infinitely starting at 0
                 # grabs frame and ends loop if we reach the last one
                 frame = get_latest_frame()
@@ -159,7 +170,7 @@ def setup(
                 # run model if there is no current bounding box
                 if best_bounding_box[:] == [-1,-1,-1,-1]:
                     if process is None or process.is_alive()==False:
-                        process = Process(target=modelMulti,args=(frame,confidence,threshold,best_bounding_box,track,modeling)) # need to find a way to pass tracker and modeling in properly, in case it's not
+                        process = Process(target=modelMulti,args=(frame,confidence,threshold,best_bounding_box,track,model)) # need to find a way to pass tracker and modeling in properly, in case it's not
                         process.start() 
                         realCounter=1
 
@@ -167,8 +178,10 @@ def setup(
                 # run model in another process every model_frequency frames
                     if realCounter % model_frequency == 0:
                         # call model and initialize tracker
+                        print("FREQUENCY OF PROCESS IS ALIVE:",process.is_alive() if process else "NONE TYPE")
+
                         if process is None or process.is_alive()==False:
-                            process = Process(target=modelMulti,args=(frame,confidence,threshold,best_bounding_box,track,modeling)) # need to find a way to pass tracker and modeling in properly, in case it's not
+                            process = Process(target=modelMulti,args=(frame,confidence,threshold,best_bounding_box,track,model)) # need to find a way to pass tracker and modeling in properly, in case it's not
                             process.start() 
                     
                     potentialbbox = track.update(frame)
