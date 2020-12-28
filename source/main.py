@@ -53,7 +53,7 @@ def setup(
         - no tracking
         - no multiprocessing/async/multithreading
         """
-
+        frameNumber = 0
         with MyManager() as manager:
             model = manager.modeling()
             for counter in count(start=0, step=1): # counts up infinitely starting at 0
@@ -67,7 +67,7 @@ def setup(
                         break
                     else: # this means there are still frames to come
                         continue
-                
+                frameNumber+=1
                 # run the model
                 boxes, confidences, classIDs = model.get_bounding_boxes(frame, confidence, threshold)
                 
@@ -76,7 +76,7 @@ def setup(
                 
                 # optional value for debugging/testing
                 if not (on_next_frame is None):
-                    on_next_frame(counter, frame, (boxes, confidences), (x,y))
+                    on_next_frame(frameNumber, frame, (boxes, confidences), (x,y))
                 
                 # send data to embedded
                 embedded_communication.send_output(x, y)
