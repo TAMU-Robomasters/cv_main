@@ -1,20 +1,20 @@
 import numpy as np
 import cv2
 # relative imports
-from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS,MODE, print
+from toolbox.globals import ENVIRONMENT,PATHS,PARAMETERS,MODE,MODEL_COLORS,MODEL_LABELS, print
 
 class modelingClass:
     def __init__(self):
         self.MAGIC_NUMBER_1 = 416 # TODO: I don't know what this number is, and we should probably figure it out
         print("[INFO] loading YOLO from disk...")
         self.net = cv2.dnn.readNetFromDarknet(PATHS["model_config"], PATHS["model_weights"])    # init the model
-    
-        # net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-        # net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+        
+        if PARAMETERS['model']['gpu_acceleration']:
+            self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+            self.net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
         self.layer_names = self.net.getLayerNames()
         self.output_layer_names = [self.layer_names[index[0] - 1] for index in self.net.getUnconnectedOutLayers()]
-        print("ASDFIAUSHFIOHASDuIOASHDUIOASHDJASUIOHDJAIOSHJDUIOASHDJ")
         self.W, self.H = None, None
     
     def original_get_bounding_boxes(self,frame, iconfidence, ithreshold):
@@ -87,25 +87,24 @@ class modelingClass:
     def get_bounding_boxes(self,frame, iconfidence, ithreshold):
         boxes, confidences, class_ids = self.original_get_bounding_boxes(frame, iconfidence, ithreshold)
 
-        # if MODE == "production":
-        return boxes, confidences, class_ids
+        if MODE == "production":
+            return boxes, confidences, class_ids
+        # apply non-maxima suppression to suppress weak, overlapping
+        # bounding boxes
+        idxs = cv2.dnn.NMSBoxes(boxes, confidences, iconfidence, ithreshold)
         
-        # # apply non-maxima suppression to suppress weak, overlapping
-        # # bounding boxes
-        # idxs = cv2.dnn.NMSBoxes(boxes, confidences, iconfidence, ithreshold)
-        
-        # # ensure at least one detection exists
-        # if len(idxs) > 0:
-        #     # loop over the indexes we are keeping
-        #     for i in idxs.flatten():
-        #         # extract the bounding box coordinates
+        # ensure at least one detection exists
+        if len(idxs) > 0:
+            # loop over the indexes we are keeping
+            for i in idxs.flatten():
+                # extract the bounding box coordinates
 
-        #         (x, y) = (boxes[i][0], boxes[i][1])
-        #         (w, h) = (boxes[i][2], boxes[i][3])
-        #         # draw a bounding box rectangle and label on the frame
-        #         color = [int(c) for c in MODEL_COLORS[class_ids[i]]]
-        #         cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
-        #         text = "{}: {:.4f}".format(MODEL_LABELS[class_ids[i]],confidences[i])
-        #         cv2.putText(frame, text, (x, y - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                (x, y) = (boxes[i][0], boxes[i][1])
+                (w, h) = (boxes[i][2], boxes[i][3])
+                # draw a bounding box rectangle and label on the frame
+                color = [int(c) for c in MODEL_COLORS[class_ids[i]]]
+                cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
+                text = "{}: {:.4f}".format(MODEL_LABELS[class_ids[i]],confidences[i])
+                cv2.putText(frame, text, (x, y - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
         
-        # return boxes, confidences, class_ids
+        return boxes, confidences, class_ids,frame

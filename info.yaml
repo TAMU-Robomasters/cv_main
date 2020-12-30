@@ -7,9 +7,11 @@ parameters:
         confidence: 0.5
         threshold: 0.3
         frequency: 40
+        gpu_acceleration: false # OpenCV must be Cuda Enabled
     videostream:
         testing:
             assumed_framerate: 30 # frames per second
+            grab_frame: 0 # 0 means grab next frame, 1 means grab latest frame
     testing:
         save_frame_to_file: true
         open_each_frame: false

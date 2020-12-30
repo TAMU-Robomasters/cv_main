@@ -13,7 +13,6 @@ from multiprocessing.managers import BaseManager
 # relative imports
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 from source.embedded_communication.embedded_main import embedded_communication
-from source.videostream.videostream_main import get_latest_frame
 import source.modeling.modeling_main as modeling
 import source.tracking.tracking_main as tracker
 import source.aiming.aiming_main as aiming
@@ -24,7 +23,7 @@ threshold = PARAMETERS["model"]["threshold"]
 model_frequency = PARAMETERS["model"]["frequency"]
 
 def setup(
-        get_latest_frame=get_latest_frame,
+        get_frame = None,
         on_next_frame=None,
         modeling=modeling,
         tracker=tracker,
@@ -40,6 +39,8 @@ def setup(
     since we are testing multiple versions of main functions
     this returns a list of the all the different main functions
     """
+
+    # Manager is required in order to share instances of classes between processes
     class MyManager(BaseManager):
         pass
     MyManager.register('tracker', tracker.trackingClass)
@@ -53,12 +54,15 @@ def setup(
         - no tracking
         - no multiprocessing/async/multithreading
         """
-        frameNumber = 0
+        frameNumber = 0 # used for on_next_frame
+
         with MyManager() as manager:
+            # create instance of modeling
             model = manager.modeling()
-            for counter in count(start=0, step=1): # counts up infinitely starting at 0
+            while True:
                 # get the latest image from the camera
-                frame = get_latest_frame()
+                frame = get_frame()
+                # stop loop if using get_next_video_frame 
                 if frame is None:
                         break
                 # stop loop if using get_latest_video_frame(required since there are 3 cases for get_latest_video_frame compared to the 2 cases in get_next_video_frame)
@@ -69,7 +73,7 @@ def setup(
                         continue
                 frameNumber+=1
                 # run the model
-                boxes, confidences, classIDs = model.get_bounding_boxes(frame, confidence, threshold)
+                boxes, confidences, classIDs, frame = model.get_bounding_boxes(frame, confidence, threshold)
                 
                 # figure out where to aim
                 x, y = aiming.aim(boxes)
@@ -91,17 +95,18 @@ def setup(
         - does use the tracker(KCF)
         """
 
-        realCounter = 1 # can't use counter for frame number since we might ask for the same frame twice in get_latest_video_frame
-        frameNumber = 1
+        counter = 1
+        frameNumber = 0 # used for on_next_frame
         # model needs to run on first iteration
         best_bounding_box = None
         with MyManager() as manager:
+            # create shared instances of tracker and model between multiprocesses
             track = manager.tracker()
             model = manager.modeling()
-            for counter in count(start=0, step=1): # counts up infinitely starting at 0
 
+            while True: # counts up infinitely starting at 0
                 # grabs frame and ends loop if we reach the last one
-                frame = get_latest_frame()
+                frame = get_frame()
                 # stop loop if using get_next_video_frame   
                 if frame is None:
                     break
@@ -113,12 +118,12 @@ def setup(
                         continue
 
                 frameNumber+=1
-                realCounter+=1
+                counter+=1
                 # run model every model_frequency frames or whenever the tracker fails
-                if realCounter % model_frequency == 0 or (best_bounding_box is None):
-                    realCounter=1
+                if counter % model_frequency == 0 or (best_bounding_box is None):
+                    counter=1
                     # call model and initialize tracker
-                    boxes, confidences, classIDs = model.get_bounding_boxes(frame, confidence, threshold)
+                    boxes, confidences, classIDs, frame = model.get_bounding_boxes(frame, confidence, threshold)
                     best_bounding_box = track.init(frame,boxes)
                 else:
                     best_bounding_box = track.update(frame)
@@ -133,29 +138,30 @@ def setup(
 
     def modelMulti(frame,confidence,threshold,best_bounding_box,track,model):
         #run the model and update best bounding box to the new bounding box if it exists, otherwise keep tracking the old bounding box
-        boxes, confidences, classIDs = model.get_bounding_boxes(frame, confidence, threshold)
+        boxes, confidences, classIDs, frame = model.get_bounding_boxes(frame, confidence, threshold)
         potentialbbox = track.init(frame,boxes)
         if potentialbbox:
             best_bounding_box[:] = potentialbbox
         
-    # option #4
-    # 
-    # have tracking almost always running and modeling run in another process
-    # tracker pulls the latest model rather than waiting to fail before calling modeling
     def multiprocessing_with_tracker():
-        realCounter = 1 # can't use counter for frame number since we might ask for the same frame twice in get_latest_video_frame
-        frameNumber = 1
-        # model needs to run on first iteration
-        
-        best_bounding_box = Array('d',[-1,-1,-1,-1])
+        """
+        the 3nd main function
+        - multiprocessing
+        - does use the tracker(KCF)
+        """
+        realCounter = 1
+        frameNumber = 0 # used for on_next_frame
+        best_bounding_box = Array('d',[-1,-1,-1,-1]) # must be of Array type to be modified by multiprocess
         process = None
+
         with MyManager() as manager:
+            # create shared instances of tracker and model between multiprocesses
             track = manager.tracker()
             model = manager.modeling()
 
-            for counter in count(start=0, step=1): # counts up infinitely starting at 0
+            while True:
                 # grabs frame and ends loop if we reach the last one
-                frame = get_latest_frame()
+                frame = get_frame()
                 # stop loop if using get_next_video_frame   
                 if frame is None:
                     break
@@ -165,12 +171,13 @@ def setup(
                         break
                     else: # this means there are still frames to come
                         continue
+
                 realCounter+=1
                 frameNumber+=1
-                # run model if there is no current bounding box
+                # run model if there is no current bounding box in another process
                 if best_bounding_box[:] == [-1,-1,-1,-1]:
                     if process is None or process.is_alive()==False:
-                        process = Process(target=modelMulti,args=(frame,confidence,threshold,best_bounding_box,track,model)) # need to find a way to pass tracker and modeling in properly, in case it's not
+                        process = Process(target=modelMulti,args=(frame,confidence,threshold,best_bounding_box,track,model))
                         process.start() 
                         realCounter=1
 
@@ -178,17 +185,15 @@ def setup(
                 # run model in another process every model_frequency frames
                     if realCounter % model_frequency == 0:
                         # call model and initialize tracker
-                        print("FREQUENCY OF PROCESS IS ALIVE:",process.is_alive() if process else "NONE TYPE")
-
                         if process is None or process.is_alive()==False:
-                            process = Process(target=modelMulti,args=(frame,confidence,threshold,best_bounding_box,track,model)) # need to find a way to pass tracker and modeling in properly, in case it's not
+                            process = Process(target=modelMulti,args=(frame,confidence,threshold,best_bounding_box,track,model))
                             process.start() 
                     
+                    #track bounding box, even if we are modeling for a new one
                     potentialbbox = track.update(frame)
                     best_bounding_box[:] = potentialbbox if potentialbbox else [-1,-1,-1,-1]
 
                 # figure out where to aim
-                # if best_bounding_box:
                 x, y = aiming.aim(best_bounding_box[:])
                 
                 # optional value for debugging/testing
@@ -197,7 +202,7 @@ def setup(
                 
                 # send data to embedded
                 embedded_communication.send_output(x, y)
-            process.join()
+            process.join() # make sure process is complete to avoid errors being thrown
 
     
     # return a list of the different main options
@@ -208,4 +213,4 @@ if __name__ == '__main__':
     simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup()
     
     # for now, default to simple_synchronous
-    multiprocessing_with_tracker
+    simple_synchronous

@@ -1,1 +1,1 @@
-Time Taken for Model With Tracker: 16.65157699584961 seconds
+Time Taken for Model With Tracker: 37.90775656700134 seconds

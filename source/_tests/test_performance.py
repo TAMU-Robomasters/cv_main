@@ -65,7 +65,7 @@ def debug_each_frame(frame_index, frame, model_ouput, aiming_output):
 simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(
     # comment out lines (arguments) below to get closer
     # and closer to realistic output
-    get_latest_frame=get_latest_video_frame, # can be swapped with get_latest_video_frame
+    get_frame=get_next_video_frame if PARAMETERS['videostream']['testing']['grab_frame']==0 else get_latest_video_frame, # 0 means grab next frame, 1 means grab latest frame
     on_next_frame=debug_each_frame,
     modeling=test_modeling,
     tracker=test_tracking,
@@ -77,7 +77,7 @@ simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setu
 # run mains (with simulated values)
 # 
 t0 = time.time()
-simple_synchronous()
+synchronous_with_tracker()
 t1 = time.time()
 with open(PATHS["time_output"],'w') as f:
     f.write("Time Taken for Model With Tracker: "+str(t1-t0)+" seconds")
