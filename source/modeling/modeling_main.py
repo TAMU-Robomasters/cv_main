@@ -5,9 +5,9 @@ from toolbox.globals import ENVIRONMENT,PATHS,PARAMETERS,MODE,MODEL_COLORS,MODEL
 
 class modelingClass:
     def __init__(self):
-        self.MAGIC_NUMBER_1 = 416 # TODO: I don't know what this number is, and we should probably figure it out
+        self.input_dimension = PARAMETERS['model']['input_dimension']
         print("[INFO] loading YOLO from disk...")
-        self.net = cv2.dnn.readNetFromDarknet(PATHS["model_config"], PATHS["model_weights"])    # init the model
+        self.net = cv2.dnn.readNetFromDarknet(PATHS["model_config"], PATHS["model_weights"])  # init the model
         
         if PARAMETERS['model']['gpu_acceleration']:
             self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
@@ -38,7 +38,7 @@ class modelingClass:
             (self.H, self.W) = frame.shape[:2]
 
         # convert image to blob before running it in the model
-        blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (self.MAGIC_NUMBER_1, self.MAGIC_NUMBER_1), swapRB=True, crop=False)
+        blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (self.input_dimension, self.input_dimension), swapRB=True, crop=False)
         # provide input and retrive output
         self.net.setInput(blob)
         layerOutputs = self.net.forward(self.output_layer_names)
@@ -85,6 +85,23 @@ class modelingClass:
         return boxes, confidences, classIDs
         
     def get_bounding_boxes(self,frame, iconfidence, ithreshold):
+        """	
+        this function is the debugging counterpart to the actual get_bounding_boxes()	
+            
+        @frame: should be an cv2 image (basically a numpy array)	
+        @iconfidence: should be a value between 0-1	
+        @ithreshold: should be a value between 0-1	
+        -	
+        @@returns:	
+        - a tuple containing	
+            - a list of bounding boxes, each formatted as (x, y, width, height)	
+            - a list of confidences	
+            - a list of class_ids	
+        """
+
+        # 	
+        # wrap the original, but display every frame	
+        # 
         boxes, confidences, class_ids = self.original_get_bounding_boxes(frame, iconfidence, ithreshold)
 
         if MODE == "production":

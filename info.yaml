@@ -8,6 +8,7 @@ parameters:
         threshold: 0.3
         frequency: 40
         gpu_acceleration: false # OpenCV must be Cuda Enabled
+        input_dimension: 416
     videostream:
         testing:
             assumed_framerate: 30 # frames per second
