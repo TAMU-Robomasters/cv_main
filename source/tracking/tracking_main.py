@@ -1,5 +1,5 @@
 # Imports the KCF tracker from OpenCV
-from cv2 import TrackerKCF_create # alternative: from cv2 import TrackerMOSSE_create which is a way faster tracker with lower accuracy and can't tell when tracking fails
+import cv2 # alternative: from cv2 import TrackerMOSSE_create which is a way faster tracker with lower accuracy and can't tell when tracking fails
 
 # local imports
 from toolbox.image_tools import Image
@@ -17,7 +17,7 @@ class trackingClass:
     # bbox is [x, y, width, height]
     def init(self,image, bboxes):
         # creates the tracker and returns None if there are no bounding boxes to track
-        self.tracker = TrackerKCF_create()
+        self.tracker = cv2.TrackerKCF_create()
         print("inside init for KCF")
         print(bboxes)
         if len(bboxes) == 0:
@@ -32,11 +32,11 @@ class trackingClass:
         bbox = min(bboxes, key=bboxes.get)
 
         # Attempts to start the tracker
-        ok = self.tracker.init(image, bbox)
-        print("TRACKER INIT",ok)
+        self.tracker.init(image, bbox)
+        print("TRACKER INIT")
         
         # returns the tracked bounding box if tracker was successful, otherwise None
-        return bbox if ok else None
+        return bbox
 
     # Updates the location of the object
     def update(self,image):

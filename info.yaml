@@ -28,7 +28,7 @@ paths:
     video_output: ./result.nosync.mp4
     time_output: ./time.txt
     # model
-    model_weights: ./source/modeling/model/v3t.weights
-    model_config: ./source/modeling/model/v3t.cfg
-    model_labels: ./source/modeling/model/v3t.names
+    model_weights: ./source/modeling/model/v4t.weights
+    model_config: ./source/modeling/model/v4t.cfg
+    model_labels: ./source/modeling/model/v4t.names
     frame_save_location: ./source/modeling/_tests/test.nosync.png
