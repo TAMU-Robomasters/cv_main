@@ -77,7 +77,7 @@ simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setu
 # run mains (with simulated values)
 # 
 t0 = time.time()
-simple_synchronous()
+synchronous_with_tracker()
 t1 = time.time()
 with open(PATHS["time_output"],'w') as f:
     f.write("Time Taken for Model With Tracker: "+str(t1-t0)+" seconds")
