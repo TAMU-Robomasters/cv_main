@@ -77,10 +77,19 @@ simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setu
 # run mains (with simulated values)
 # 
 t0 = time.time()
-synchronous_with_tracker()
+
+main_function = PARAMETERS['testing']['main_function']
+print("MAIN",main_function)
+if main_function == 0:
+    simple_synchronous()
+elif main_function == 1:
+    synchronous_with_tracker()
+else:
+    multiprocessing_with_tracker()
+
 t1 = time.time()
 with open(PATHS["time_output"],'w') as f:
-    f.write("Time Taken for Model With Tracker: "+str(t1-t0)+" seconds")
+    f.write("Time Taken: "+str(t1-t0)+" seconds")
 
 
 # save all the frames as a video
