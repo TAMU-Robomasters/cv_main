@@ -33,6 +33,7 @@ class trackingClass:
 
         # Attempts to start the tracker
         self.tracker.init(image, bbox)
+        self.exists = True
         print("TRACKER INIT")
         
         # returns the tracked bounding box if tracker was successful, otherwise None
@@ -43,5 +44,9 @@ class trackingClass:
         # Attempts to update the object's location
         ok, location = self.tracker.update(image)
         print("TRACKER CONTINUE",ok)
+        if ok == False:
+            self.exists = False
         # Returns the location if the location was updated, otherwise None
         return location if ok else None
+    def trackerAlive(self):
+        return self.exists

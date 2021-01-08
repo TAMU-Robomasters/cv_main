@@ -8,7 +8,7 @@ import multiprocessing
 import cv2
 import os
 from itertools import count
-from multiprocessing import Process,Value,Array
+from multiprocessing import Manager, Process,Value,Array
 from multiprocessing.managers import BaseManager
 # relative imports
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
@@ -131,12 +131,20 @@ def setup(
                 
     
 
-    def modelMulti(frame,confidence,threshold,best_bounding_box,track,model):
+    def modelMulti(frame,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames):
         #run the model and update best bounding box to the new bounding box if it exists, otherwise keep tracking the old bounding box
         boxes, confidences, classIDs, frame = model.get_bounding_boxes(frame, confidence, threshold)
         potentialbbox = track.init(frame,boxes)
-        if potentialbbox:
-            best_bounding_box[:] = potentialbbox
+
+        for f in range(len(betweenFrames)):
+            if potentialbbox is None:
+                break
+            potentialbbox = track.update(betweenFrames[f])
+            print(potentialbbox)
+
+        best_bounding_box[:] = potentialbbox if potentialbbox else [-1,-1,-1,-1]
+        betweenFrames[:] = []
+        collectFrames.value = False
         
     def multiprocessing_with_tracker():
         """
@@ -156,6 +164,10 @@ def setup(
         frameNumber = 0 # used for on_next_frame
         best_bounding_box = Array('d',[-1,-1,-1,-1]) # must be of Array type to be modified by multiprocess
         process = None
+        variableManager = multiprocessing.Manager()
+        betweenFrames = variableManager.list()
+        collectFrames = Value('b',False)
+
 
         # create shared instances of tracker and model between multiprocesses
         track = manager.tracker()
@@ -173,13 +185,15 @@ def setup(
                     break
                 else: # this means there are still frames to come
                     continue
-
+            if collectFrames.value:
+                betweenFrames.append(frame)
             realCounter+=1
             frameNumber+=1
             # run model if there is no current bounding box in another process
             if best_bounding_box[:] == [-1,-1,-1,-1]:
                 if process is None or process.is_alive()==False:
-                    process = Process(target=modelMulti,args=(frame,confidence,threshold,best_bounding_box,track,model))
+                    collectFrames.value = True
+                    process = Process(target=modelMulti,args=(frame,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames))
                     process.start() 
                     realCounter=1
 
@@ -188,12 +202,19 @@ def setup(
                 if realCounter % model_frequency == 0:
                     # call model and initialize tracker
                     if process is None or process.is_alive()==False:
-                        process = Process(target=modelMulti,args=(frame,confidence,threshold,best_bounding_box,track,model))
+                        collectFrames.value = True
+                        process = Process(target=modelMulti,args=(frame,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames))
                         process.start() 
                 
                 #track bounding box, even if we are modeling for a new one
-                potentialbbox = track.update(frame)
-                best_bounding_box[:] = potentialbbox if potentialbbox else [-1,-1,-1,-1]
+                if track.trackerAlive():
+                    try:
+                        potentialbbox = track.update(frame)
+                        best_bounding_box[:] = potentialbbox if potentialbbox else [-1,-1,-1,-1]
+                    except:
+                        best_bounding_box[:] = [-1,-1,-1,-1]
+                else:
+                    best_bounding_box[:] = [-1,-1,-1,-1]
 
             # figure out where to aim
             x, y = aiming.aim(best_bounding_box[:])
