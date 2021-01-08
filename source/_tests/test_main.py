@@ -76,7 +76,13 @@ simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setu
 # 
 # run mains (with simulated values)
 # 
-synchronous_with_tracker()
+main_function = PARAMETERS['testing']['main_function']
+if main_function == 0:
+    simple_synchronous()
+elif main_function == 1:
+    synchronous_with_tracker()
+else:
+    multiprocessing_with_tracker()
 
 # save all the frames as a video
 print("Starting process of saving frames to a video file")
