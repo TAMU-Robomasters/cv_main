@@ -12,11 +12,11 @@ parameters:
     videostream:
         testing:
             assumed_framerate: 30 # frames per second
-            grab_frame: 0 # 0 means grab next frame, 1 means grab latest frame
+            grab_frame: 1 # 0 means grab next frame, 1 means grab latest frame
     testing:
         save_frame_to_file: true
         open_each_frame: false
-        main_function: 1 # 0 is simple synchronous, 1 is synchronous with tracker, 2 is multiprocessing with tracker
+        main_function: 2 # 0 is simple synchronous, 1 is synchronous with tracker, 2 is multiprocessing with tracker
     embedded_communication:
         serial_port: 0 #replace 0 to "/dev/ttyACM0" to enable port on TX2
         serial_baudrate: 115200

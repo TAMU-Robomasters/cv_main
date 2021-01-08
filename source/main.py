@@ -39,13 +39,7 @@ def setup(
     this returns a list of the all the different main functions
     """
 
-    # Manager is required in order to share instances of classes between processes
-    class MyManager(BaseManager):
-        pass
-    MyManager.register('tracker', tracker.trackingClass)
-    MyManager.register('modeling', modeling.modelingClass)
-    manager = MyManager()
-    manager.start()
+    
     # 
     # option #1
     #
@@ -57,7 +51,7 @@ def setup(
         """
         frameNumber = 0 # used for on_next_frame
         # create instance of modeling
-        model = manager.modeling()
+        model = modeling.modelingClass()
 
         while True:
             # get the latest image from the camera
@@ -102,8 +96,8 @@ def setup(
         best_bounding_box = None
         
         # create shared instances of tracker and model between multiprocesses
-        track = manager.tracker()
-        model = manager.modeling()
+        track = tracker.trackingClass()
+        model = modeling.modelingClass()
 
         while True: # counts up infinitely starting at 0
             # grabs frame and ends loop if we reach the last one
@@ -150,6 +144,14 @@ def setup(
         - multiprocessing
         - does use the tracker(KCF)
         """
+        # Manager is required in order to share instances of classes between processes
+        class MyManager(BaseManager):
+            pass
+        MyManager.register('tracker', tracker.trackingClass)
+        MyManager.register('modeling', modeling.modelingClass)
+        manager = MyManager()
+        manager.start()
+
         realCounter = 1
         frameNumber = 0 # used for on_next_frame
         best_bounding_box = Array('d',[-1,-1,-1,-1]) # must be of Array type to be modified by multiprocess
