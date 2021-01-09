@@ -1,4 +1,6 @@
+import multiprocessing
 import cv2
+import time
 # import local
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 from toolbox.image_tools import Image
@@ -60,10 +62,10 @@ def debug_each_frame(frame_index, frame, model_ouput, aiming_output):
 # 
 # setup main(s)
 # 
-simple_synchronous, synchronous_with_tracker = setup(
+simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(
     # comment out lines (arguments) below to get closer
     # and closer to realistic output
-    get_latest_frame=get_next_video_frame, # can be swapped with get_latest_video_frame
+    get_frame=get_next_video_frame if PARAMETERS['videostream']['testing']['grab_frame']==0 else get_latest_video_frame, # 0 means grab next frame, 1 means grab latest frame
     on_next_frame=debug_each_frame,
     modeling=test_modeling,
     tracker=test_tracking,
@@ -74,8 +76,13 @@ simple_synchronous, synchronous_with_tracker = setup(
 # 
 # run mains (with simulated values)
 # 
-print('Starting synchronous_with_tracker() with simulated IO')
-synchronous_with_tracker()
+main_function = PARAMETERS['testing']['main_function']
+if main_function == 0:
+    simple_synchronous()
+elif main_function == 1:
+    synchronous_with_tracker()
+else:
+    multiprocessing_with_tracker()
 
 # save all the frames as a video
 print("Starting process of saving frames to a video file")
