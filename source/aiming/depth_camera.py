@@ -1,11 +1,17 @@
 import pyrealsense2 as rs
 import numpy as np
 import cv2
+from toolbox.globals import PARAMETERS,print
+
+streamWidth = PARAMETERS['aiming']['stream_width']
+streamHeight = PARAMETERS['aiming']['stream_height']
+framerate = PARAMETERS['aiming']['stream_framerate']
+gridSize = PARAMETERS['aiming']['grid_size']
 
 pipeline = rs.pipeline()                                            # declares and initializes the pipeline variable
 config = rs.config()                                                # declares and initializes the config variable for the pipeline
-config.enable_stream(rs.stream.depth, 848, 480, rs.format.z16, 60)  # this starts the depth stream and sets the size and format
-config.enable_stream(rs.stream.color, 848, 480, rs.format.bgr8, 60) # this starts the color stream and set the size and format
+config.enable_stream(rs.stream.depth, streamWidth, streamHeight, rs.format.z16, framerate)  # this starts the depth stream and sets the size and format
+config.enable_stream(rs.stream.color, streamWidth, streamHeight, rs.format.bgr8, framerate) # this starts the color stream and set the size and format
 profile = pipeline.start(config)
 
 # This creates a 9 by 9 grid of points within the given bounding box and stores each of the points distance in an array
@@ -15,16 +21,16 @@ def getDistFromArray(depth_frame_array, bbox):
     width = bbox[2]
     height = bbox[3]
     # this is used to add to the currentX and currentY so that we can get the different points in the 9x9 grid
-    x_interval = width/10
-    y_interval = height/10
+    x_interval = width/gridSize
+    y_interval = height/gridSize
     # stores the x and y of the last point in the grid we got the distance from
     currX = 0
     currY = 0
     distances = np.array([])
     # double for loop to go through 2D array of 9x9 grid
-    for i in range(10):
+    for i in range(gridSize):
         currX += x_interval # add the interval you calculated to traverse through the 9x9 grid
-        for j in range(10):
+        for j in range(gridSize):
             currY += y_interval # add the interval you calculated to traverse through the 9x9 grid
             # gets the distance of the point from the depth frame on the grid and appends to the array
             distances = np.append(distances, depth_frame_array[int(yTopLeft+currY)][int(xTopLeft+currX)]/1000)
