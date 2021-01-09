@@ -7,12 +7,16 @@ parameters:
         confidence: 0.5
         threshold: 0.3
         frequency: 40
+        gpu_acceleration: false # OpenCV must be Cuda Enabled
+        input_dimension: 416
     videostream:
         testing:
             assumed_framerate: 30 # frames per second
+            grab_frame: 0 # 0 means grab next frame, 1 means grab latest frame
     testing:
         save_frame_to_file: true
         open_each_frame: false
+        main_function: 0 # 0 is simple synchronous, 1 is synchronous with tracker, 2 is multiprocessing with tracker
     embedded_communication:
         serial_port: 0 #replace 0 to "/dev/ttyACM0" to enable port on TX2
         serial_baudrate: 115200
@@ -23,8 +27,9 @@ paths:
     main_test_video: ./source/_test_data/test.avi
     main_test_image: ./source/_test_data/test.png
     video_output: ./result.nosync.mp4
+    time_output: ./time.txt
     # model
-    model_weights: ./source/modeling/model/v3t.weights
-    model_config: ./source/modeling/model/v3t.cfg
-    model_labels: ./source/modeling/model/v3t.names
+    model_weights: ./source/modeling/model/v4t.weights
+    model_config: ./source/modeling/model/v4t.cfg
+    model_labels: ./source/modeling/model/v4t.names
     frame_save_location: ./source/modeling/_tests/test.nosync.png

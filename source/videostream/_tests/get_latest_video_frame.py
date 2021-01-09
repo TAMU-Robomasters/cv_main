@@ -12,6 +12,7 @@ all_frames = list(test_video.frames())
 print(f'Found {len(all_frames)} frames')
 start_time = None
 framerate = PARAMETERS["videostream"]["testing"]["assumed_framerate"]
+usedFrames = set([])
 
 def get_latest_video_frame():
     # kick of the start time if hasn't started yet
@@ -23,11 +24,16 @@ def get_latest_video_frame():
     seconds_since_start = time.time() - start_time 
     which_frame = int(seconds_since_start * framerate)
     
+    
     # get that frame from the list of all frames
     if which_frame < len(all_frames):
-        return all_frames[which_frame]
+        if which_frame not in usedFrames: # make sure we haven't used the frame already
+            usedFrames.add(which_frame)
+            return all_frames[which_frame]
+        else:
+            return 0 # indicate there are still frames to come
     else:
-        return None
+        return -1 # indicate the frames are over
 
 # 
 # smoketest for the simulated videostream
