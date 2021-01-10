@@ -53,18 +53,21 @@ def getDistFromArray(depth_frame_array, bbox):
 # bbox[x coordinate of the top left of the bounding box, y coordinate of the top left of the bounding box, width of box, height of box]
 def DistanceInBox(bbox):
     try:
-        while True: 
-            frames = pipeline.wait_for_frames()     # gets all frames
-            depth_frame = frames.get_depth_frame()  # gets the depth frame
-            color_frame = frames.get_color_frame()  # gets the color frame 
-            if not depth_frame or not color_frame:  # if there is no aligned_depth_frame or color_frame then leave the loop
-                continue
-            # we turn the depth and color frames into numpy arrays because we need to draw a rectangle and stack the two arrays
-            depth_image = np.asanyarray(depth_frame.get_data()) 
-            # causes 1FPS Drop
-            return getDistFromArray(depth_image, bbox)     # gets the distance for the normal depth image
-
+        frames = pipeline.wait_for_frames()     # gets all frames
+        depth_frame = frames.get_depth_frame()  # gets the depth frame
+        color_frame = frames.get_color_frame()  # gets the color frame 
+        if not depth_frame or not color_frame:  # if there is no aligned_depth_frame or color_frame then leave the loop
+            return None
+        # we turn the depth and color frames into numpy arrays because we need to draw a rectangle and stack the two arrays
+        depth_image = np.asanyarray(depth_frame.get_data()) 
+        # causes 1FPS Drop
+        return getDistFromArray(depth_image, bbox)     # gets the distance for the normal depth image
     finally:
         pipeline.stop()
-    return 0
+    return None
 
+
+#bbox = [410,140,65,120]
+
+#while True:
+#	print(DistanceInBox(bbox))
