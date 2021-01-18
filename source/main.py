@@ -55,7 +55,7 @@ def setup(
 
 
         while True:
-            if frameNumber == 100:
+            if frameNumber==100:
                 break
             # get the latest image from the camera
             frame = get_frame()
