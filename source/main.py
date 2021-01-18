@@ -16,7 +16,7 @@ from source.embedded_communication.embedded_main import embedded_communication
 import source.modeling.modeling_main as modeling
 import source.tracking.tracking_main as tracker
 import source.aiming.aiming_main as aiming
-
+import time
 # import parameters from the info.yaml file
 confidence = PARAMETERS["model"]["confidence"]
 threshold = PARAMETERS["model"]["threshold"]
@@ -53,7 +53,10 @@ def setup(
         # create instance of modeling
         model = modeling.modelingClass()
 
+
         while True:
+            if frameNumber == 100:
+                break
             # get the latest image from the camera
             frame = get_frame()
             # stop loop if using get_next_video_frame 
@@ -68,7 +71,9 @@ def setup(
 
             frameNumber+=1
             # run the model
+            t = time.time()
             boxes, confidences, classIDs, frame = model.get_bounding_boxes(frame, confidence, threshold)
+            print(time.time()-t)
             
             # figure out where to aim
             x, y = aiming.aim(boxes)

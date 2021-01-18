@@ -7,7 +7,7 @@ parameters:
         confidence: 0.5
         threshold: 0.3
         frequency: 40
-        gpu_acceleration: false # OpenCV must be Cuda Enabled
+        gpu_acceleration: true # OpenCV must be Cuda Enabled
         input_dimension: 416
     videostream:
         testing:
@@ -32,4 +32,5 @@ paths:
     model_weights: ./source/modeling/model/v4t.weights
     model_config: ./source/modeling/model/v4t.cfg
     model_labels: ./source/modeling/model/v4t.names
+    model_trt: ./source/modeling/model/v4t.trt
     frame_save_location: ./source/modeling/_tests/test.nosync.png
