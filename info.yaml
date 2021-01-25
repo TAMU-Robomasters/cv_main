@@ -9,6 +9,19 @@ parameters:
         frequency: 40
         gpu_acceleration: false # OpenCV must be Cuda Enabled
         input_dimension: 416
+    aiming:
+        # depth camera
+        stream_width: 848
+        stream_height: 480
+        stream_framerate: 60
+        grid_size: 10
+        #power rune
+        blue_light: [50,40,230]
+        blue_dark: [130,255,255]
+        area_arrow_bound: [30,500]
+        center_image_offset: 20
+        min_area: 400
+        r_timer: 10
     videostream:
         testing:
             assumed_framerate: 30 # frames per second
@@ -33,3 +46,6 @@ paths:
     model_config: ./source/modeling/model/v4t.cfg
     model_labels: ./source/modeling/model/v4t.names
     frame_save_location: ./source/modeling/_tests/test.nosync.png
+    #aiming
+    R_test_image: ./source/_test_data/mask_R_blur.png
+    rune_test_video: ./source/_test_data/rune3.mp4
