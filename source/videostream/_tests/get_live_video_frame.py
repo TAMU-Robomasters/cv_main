@@ -2,7 +2,7 @@ import time
 # relative imports
 from toolbox.video_tools import Video
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
-
+import pyrealsense2 as rs
 # 
 # initilize
 # 
@@ -18,17 +18,23 @@ config.enable_stream(rs.stream.color, streamWidth, streamHeight, rs.format.bgr8,
 profile = pipeline.start(config)
 counter = 0
 def get_live_video_frame():
+    global counter
+    global pipeline
     counter+=1
-    if counter == 500
+    if counter == 500:
+        print("FINISHED 500")
         return None
     try:
         frames = pipeline.wait_for_frames()     
         color_frame = frames.get_color_frame()  
         if not color_frame:
+            print("CONTINUE LOOP")
             return 0
         # we turn the depth and color frames into numpy arrays because we need to draw a rectangle and stack the two arrays
         color_image = np.asanyarray(color_frame.get_data()) 
+        print("COLOR IMAGE",color_image)
         # causes 1FPS Drop
         return color_image
     except:
+        print("EXCEPTION HERE")
         return None
