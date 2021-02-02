@@ -3,6 +3,8 @@ import numpy as np
 import cv2
 from toolbox.globals import PARAMETERS,print
 
+# PASS pipeline ON FUNCTION CALL WHEN INTEGRATED WITH MAIN SINCE CAMERA FEED IS INITIALIZED IN get_live_video_frame
+
 streamWidth = PARAMETERS['aiming']['stream_width']
 streamHeight = PARAMETERS['aiming']['stream_height']
 framerate = PARAMETERS['aiming']['stream_framerate']

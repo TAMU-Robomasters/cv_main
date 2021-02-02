@@ -58,13 +58,10 @@ def setup(
             frame = get_frame()
             # stop loop if using get_next_video_frame 
             if frame is None:
-                    break
+                break
             # stop loop if using get_latest_video_frame(required since there are 3 cases for get_latest_video_frame compared to the 2 cases in get_next_video_frame)
             if isinstance(frame,int):
-                if frame==-1:
-                    break
-                else: # this means there are still frames to come
-                    continue
+                continue
 
             frameNumber+=1
             # run the model
@@ -107,10 +104,7 @@ def setup(
                 break
             # stop loop if using get_latest_video_frame(required since there are 3 cases for get_latest_video_frame compared to the 2 cases in get_next_video_frame)
             if isinstance(frame,int):
-                if frame==-1:
-                    break
-                else: # this means there are still frames to come
-                    continue
+                continue
 
             frameNumber+=1
             counter+=1
@@ -181,10 +175,7 @@ def setup(
                 break
             # stop loop if using get_latest_video_frame(required since there are 3 cases for get_latest_video_frame compared to the 2 cases in get_next_video_frame)
             if isinstance(frame,int):
-                if frame==-1:
-                    break
-                else: # this means there are still frames to come
-                    continue
+                continue
             if collectFrames.value:
                 betweenFrames.append(frame)
             realCounter+=1

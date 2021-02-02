@@ -33,7 +33,7 @@ def get_latest_video_frame():
         else:
             return 0 # indicate there are still frames to come
     else:
-        return -1 # indicate the frames are over
+        return None # indicate the frames are over
 
 # 
 # smoketest for the simulated videostream
