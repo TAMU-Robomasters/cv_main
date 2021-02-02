@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-#ASSUMES CUDA and CUDNN IS ENABLED
+# ASSUMES CUDA and CUDNN IS ENABLED
+# NO NEED TO MODIFY IF ON TX2 WITH SD CARD
+# Modify: location of zip file installation, location for build folder, arch bin, extra modules path
 
 # make sure required libraries are up to date
 sudo apt-get update -y
@@ -41,7 +43,10 @@ cmake -D CMAKE_BUILD_TYPE=RELEASE \
 	-D WITH_CUBLAS=1 \
 	-D BUILD_LIBPROTOBUF_FROM_SOURCES=ON \
 	-D OPENCV_EXTRA_MODULES_PATH=/media/nvidia/SDCard/opencv_contrib/modules \
+	-D BUILD_NEW_PYTHON_SUPPORT=ON \
+	-D BUILD_opencv_python3=ON \
 	-D HAVE_opencv_python3=ON \
+	-D PYTHON_DEFAULT_EXECUTABLE=$(which python3) \
 	-D BUILD_EXAMPLES=OFF ..
 
 # build using all cores and install libraries
