@@ -7,7 +7,7 @@ parameters:
         confidence: 0.5
         threshold: 0.3
         frequency: 40
-        gpu_acceleration: false # OpenCV must be Cuda Enabled
+        gpu_acceleration: true # OpenCV must be Cuda Enabled
         input_dimension: 416
     aiming:
         # depth camera
@@ -26,6 +26,7 @@ parameters:
         testing:
             assumed_framerate: 30 # frames per second
             grab_frame: 0 # 0 means grab next frame, 1 means grab latest frame, 2 means camera feed
+            camera_frames: 350 # how many frames to do live video for
     testing:
         save_frame_to_file: true
         open_each_frame: false
