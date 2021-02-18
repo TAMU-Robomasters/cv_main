@@ -79,16 +79,17 @@ let
         definitions.mainPackages.unixtools.whereis
         definitions.mainPackages.unixtools.write
         definitions.mainPackages.unixtools.xxd
-    ];
-    
-    # TODO: add support for the info.json to have OS-specific packages (if statement inside package inclusion)
-    packagesForMacOnly = [] ++ definitions.mainPackages.lib.optionals (definitions.mainPackages.stdenv.isDarwin) [
+        
         # python and venv
         definitions.mainPackages.python37
         definitions.mainPackages.python37Packages.setuptools
         definitions.mainPackages.python37Packages.pip
         definitions.mainPackages.python37Packages.virtualenv
         definitions.mainPackages.python37Packages.wheel
+    ];
+    
+    # TODO: add support for the info.json to have OS-specific packages (if statement inside package inclusion)
+    packagesForMacOnly = [] ++ definitions.mainPackages.lib.optionals (definitions.mainPackages.stdenv.isDarwin) [
     ];
 # using those definitions
 in
