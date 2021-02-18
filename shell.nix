@@ -79,14 +79,19 @@ let
         definitions.mainPackages.unixtools.whereis
         definitions.mainPackages.unixtools.write
         definitions.mainPackages.unixtools.xxd
-        
-        # python and venv
-        definitions.mainPackages.python37
-        definitions.mainPackages.python37Packages.setuptools
-        definitions.mainPackages.python37Packages.pip
-        definitions.mainPackages.python37Packages.virtualenv
-        definitions.mainPackages.python37Packages.wheel
     ];
+    
+    majorCustomDependencies = rec {
+        python = [
+            definitions.mainPackages.python37
+            definitions.mainPackages.python37Packages.setuptools
+            definitions.mainPackages.python37Packages.pip
+            definitions.mainPackages.python37Packages.virtualenv
+            definitions.mainPackages.python37Packages.wheel
+        ];
+    };
+    
+    subDepedencies = [] ++ majorCustomDependencies.python;
     
     # TODO: add support for the info.json to have OS-specific packages (if statement inside package inclusion)
     packagesForMacOnly = [] ++ definitions.mainPackages.lib.optionals (definitions.mainPackages.stdenv.isDarwin) [
@@ -96,7 +101,7 @@ in
     # create a shell
     definitions.mainPackages.mkShell {
         # inside that shell, make sure to use these packages
-        buildInputs = nestedPackages ++ packagesForMacOnly ++ builtins.map (each: each.source) definitions.packagesWithSources;
+        buildInputs = subDepedencies ++ nestedPackages ++ packagesForMacOnly ++ builtins.map (each: each.source) definitions.packagesWithSources;
         
         # run some bash code before starting up the shell
         shellHook = ''
