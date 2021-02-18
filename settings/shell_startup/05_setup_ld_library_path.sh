@@ -13,3 +13,7 @@ output="$(
 )"
 # prevents the libstdc++.so.6 errors 
 export LD_LIBRARY_PATH="$output/lib/:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$(nix_path_for libglvnd)/lib/:$LD_LIBRARY_PATH"
+# export LD_LIBRARY_PATH="$(nix_path_for glib)/lib/:$LD_LIBRARY_PATH"
+# TODO: this shouldn't be hardcoded! should be something like the above
+export LD_LIBRARY_PATH="/nix/store/9yfbxys7srn3cgx9jsmfcyakwpkwr9fs-glib-2.64.1/lib/:$LD_LIBRARY_PATH"

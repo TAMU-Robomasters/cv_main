@@ -13,6 +13,14 @@
                 "from": "a332da8588aeea4feb9359d23f58d95520899e3c"
             },
             {
+                "load": "glib",
+                "from": "528d35bec0cb976a06cc0e8487c6e5136400b16b"
+            },
+            {
+                "load": "libglvnd",
+                "from": "559cf76fa3642106d9f23c9e845baf4d354be682"
+            },
+            {
                 "load": "zsh-syntax-highlighting",
                 "from": "a332da8588aeea4feb9359d23f58d95520899e3c"
             },
