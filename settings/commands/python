@@ -2,12 +2,7 @@
 
 # summary
     # this exists so that python for-sure 
-    # links to python3 and not python2
+    # links to the venv python
+    # and python3 instead of python2
 
-# linux is using the system python (for now)
-if [[ "$OSTYPE" == "linux-gnu" ]] 
-then
-    python3 $@
-else
-    "$PROJECT_FOLDER/.venv/bin/python3" $@
-fi
+"$PROJECT_FOLDER/.venv/bin/python3" $@
