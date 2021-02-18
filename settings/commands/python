@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 
 # summary
-    # this only exists so that python for-sure 
+    # this exists so that python for-sure 
     # links to python3 and not python2
 
-python3 $@
+# linux is using the system python (for now)
+if [[ "$OSTYPE" == "linux-gnu" ]] 
+then
+    python3 $@
+else
+    "$PROJECT_FOLDER/.venv/bin/python3" $@
+fi
