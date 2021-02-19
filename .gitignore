@@ -3,7 +3,8 @@
 # 
 \.idea
 *.nosync*
-*.dont-sync*
+**/*.dont-sync
+**/*.dont-sync.*
 
 # 
 # Linux
