@@ -3,24 +3,30 @@ import cv2
 import os
 import time
 import argparse
-import cv2
-import pycuda.autoinit  # This is needed for initializing CUDA driver
 
-from source.modeling.yolo_with_plugins import TrtYOLO
 # relative imports
 from toolbox.globals import ENVIRONMENT,PATHS,PARAMETERS,MODE,MODEL_COLORS,MODEL_LABELS, print
+
+if PARAMETERS['model']['gpu_acceleration'] == 2:
+    import pycuda.autoinit  # This is needed for initializing CUDA driver
+    from source.modeling.yolo_with_plugins import TrtYOLO
 
 class modelingClass:
     def __init__(self):
         self.input_dimension = PARAMETERS['model']['input_dimension']
         self.gpu = PARAMETERS['model']['gpu_acceleration']
         print("[INFO] loading YOLO from disk...")
-        if self.gpu:
+        if self.gpu==2: # tensorRT enabled
+            print("RUNNING WITH TENSORRT")
             self.trtYolo = TrtYOLO((self.input_dimension, self.input_dimension), 3, False)
         else:
             self.net = cv2.dnn.readNetFromDarknet(PATHS["model_config"], PATHS["model_weights"])  # init the model
-            self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-            self.net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+            if(self.gpu==1): # gpu enabled
+                print("RUNNING WITH GPU ACCELERATION")
+                self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+                self.net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+            else:
+                print("RUNNING WITHOUT GPU ACCELERATION")
             self.layer_names = self.net.getLayerNames()
             self.output_layer_names = [self.layer_names[index[0] - 1] for index in self.net.getUnconnectedOutLayers()]
             self.W, self.H = None, None
@@ -43,7 +49,7 @@ class modelingClass:
     
 
         # convert image to blob before running it in the model
-        if self.gpu:
+        if self.gpu == 2:
             boxes, confidences, classIDs = self.trtYolo.detect(frame, ithreshold)
             newBoxes = []
             for box in boxes:
