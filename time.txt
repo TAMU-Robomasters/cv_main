@@ -1,1 +1,1 @@
-Time Taken: 24.77111840248108 seconds
+Time Taken: 16.434062480926514 seconds

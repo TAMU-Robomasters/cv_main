@@ -9,6 +9,19 @@ parameters:
         frequency: 40
         gpu_acceleration: 0 # 0 for none, 1 for gpu only, 2 for tensorRT
         input_dimension: 416
+    aiming:
+        # depth camera
+        stream_width: 848
+        stream_height: 480
+        stream_framerate: 60
+        grid_size: 10
+        #power rune
+        blue_light: [50,40,230]
+        blue_dark: [130,255,255]
+        area_arrow_bound: [30,500]
+        center_image_offset: 20
+        min_area: 400
+        r_timer: 10
     videostream:
         testing:
             assumed_framerate: 30 # frames per second
@@ -34,3 +47,6 @@ paths:
     model_labels: ./source/modeling/model/yolov4-tiny-416.names
     model_trt: ./source/modeling/model/yolov4-tiny-416.trt
     frame_save_location: ./source/modeling/_tests/test.nosync.png
+    #aiming
+    R_test_image: ./source/_test_data/mask_R_blur.png
+    rune_test_video: ./source/_test_data/rune3.mp4
