@@ -19,6 +19,8 @@ class modelingClass:
             self.trtYolo = TrtYOLO((self.input_dimension, self.input_dimension), 3, False)
         else:
             self.net = cv2.dnn.readNetFromDarknet(PATHS["model_config"], PATHS["model_weights"])  # init the model
+            self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+            self.net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
             self.layer_names = self.net.getLayerNames()
             self.output_layer_names = [self.layer_names[index[0] - 1] for index in self.net.getUnconnectedOutLayers()]
             self.W, self.H = None, None

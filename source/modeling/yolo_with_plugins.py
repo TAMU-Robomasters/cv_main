@@ -13,7 +13,7 @@ from toolbox.globals import ENVIRONMENT,PATHS,PARAMETERS,MODE,MODEL_COLORS,MODEL
 
 
 try:
-    ctypes.cdll.LoadLibrary('./plugins/libyolo_layer.so')
+    ctypes.cdll.LoadLibrary('./source/modeling/plugins/libyolo_layer.so')
 except OSError as e:
     raise SystemExit('ERROR: failed to load ./plugins/libyolo_layer.so.  '
                      'Did you forget to do a "make" in the "./plugins/" '
