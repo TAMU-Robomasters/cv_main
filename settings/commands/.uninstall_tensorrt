@@ -1,0 +1,6 @@
+sudo apt-get purge "libnvinfer*"
+sudo apt-get purge graphsurgeon-tf onnx-graphsurgeon
+sudo pip3 uninstall tensorrt
+sudo pip3 uninstall uff
+sudo pip3 uninstall graphsurgeon
+sudo pip3 uninstall onnx-graphsurgeon
