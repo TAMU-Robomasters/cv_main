@@ -46,7 +46,8 @@
 # software must include, in the user documentation and internal
 # comments to the code, the above Disclaimer and U.S. Government End
 # Users Notice.
-#
+
+# Referenced from https://github.com/jkjung-avt/tensorrt_demos/blob/master/yolo/yolo_to_onnx.py
 
 
 from __future__ import print_function

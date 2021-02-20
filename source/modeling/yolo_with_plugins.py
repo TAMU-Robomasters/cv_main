@@ -3,6 +3,7 @@
 Implementation of TrtYOLO class with the yolo_layer plugins.
 """
 
+# Referenced from https://github.com/jkjung-avt/tensorrt_demos/blob/master/utils/yolo_with_plugins.py
 
 import ctypes
 import numpy as np

@@ -48,6 +48,7 @@
 # Users Notice.
 #
 
+# Referenced from https://github.com/jkjung-avt/tensorrt_demos/blob/master/yolo/onnx_to_tensorrt.py
 
 from __future__ import print_function
 

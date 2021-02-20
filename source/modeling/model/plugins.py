@@ -2,6 +2,7 @@
 I referenced the code from https://github.com/dongfangduoshou123/YoloV3-TensorRT/blob/master/seralizeEngineFromPythonAPI.py
 """
 
+# Referenced from https://github.com/jkjung-avt/tensorrt_demos/blob/master/yolo/plugins.py
 
 import ctypes
 
