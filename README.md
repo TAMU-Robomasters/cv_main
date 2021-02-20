@@ -40,6 +40,21 @@
 ## Setup GPU-Acceleration and TensorRT (Optional)
 ### Install OpenCV
 * Note: OpenCV must be compiled from source since the pip installable versions of OpenCV don't provide gpu support.
+* First we need to install Cuda and Cudnn
+    * If you are on a Jetson Product
+        * Cuda and Cudnn is automatically installed once you flash the product.
+    * If you are on Linux or WSL
+        * Download Cuda from https://developer.nvidia.com/cuda-downloads (You may need to make an Nvidia Developer Account).
+        * Install Cuda
+            * If on WSL follow https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#wsl-installation.
+            * If on Ubuntu follow https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#ubuntu-installation.
+        * Download Cudnn from https://developer.nvidia.com/cudnn (You may need to make an Nvidia Developer Account).
+        * To install Cudnn follow https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html#installlinux.
+* Add your cuda to PATH
+    * `nano ~/.bashrc`.
+    * Scroll all the way to the bottom and add the following:
+        * `export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}`.
+        * `export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}`.
 * Open the scipt located at `cv_main/settings/commands/.install_opencv`.
 * Modify the location of opencv installation, cuda arch bin version, and opencv_contrib_modules location
     * Location of OpenCV Installation - Personal Preference - This is to location where opencv and it's extra modules will be located.
@@ -51,7 +66,7 @@
 * Make sure you installed OpenCV from source as shown above.
 * Install TensorRT Version 6+.
 * If you are on a Jetson Product
-    * TensorRT is installed once you flash the product, only do the following steps if you are on an old version of tensorRT. You can check the version by running `dpkg -l | grep TensorRT`.
+    * TensorRT is automatically installed once you flash the product, only do the following steps if you are on an old version of tensorRT. You can check the version by running `dpkg -l | grep TensorRT`.
     * TensorRT cannot be installed normally. You must over-the-air (OTA) update the package or reflash with an updated SD Card Image. 
         * OTA Updates: https://docs.nvidia.com/jetson/archives/l4t-archived/l4t-3231/index.html#page/Tegra%2520Linux%2520Driver%2520Package%2520Development%2520Guide%2Fquick_start.html%23wwpID0EXHA.
         * Reflash: https://developer.nvidia.com/embedded/jetpack.
@@ -60,15 +75,15 @@
     * Navigate to the directory where you downloaded TensorRT and delete any old packages you may have of TensorRT from the directory.
     * Open the script located at `./settings/commands/.install_tensorrt` and modify the `os` and `tag` based on your system and the version you installed. 
     * Run the script using `./settings/commands/.install_tensorrt`.
-* Add your cuda to PATH
-    * `nano ~/.bashrc`
+* Add your cuda to PATH if you haven't already
+    * `nano ~/.bashrc`.
     * Scroll all the way to the bottom and add the following:
-        * `export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}`
-        * `export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}`
+        * `export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}`.
+        * `export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}`.
 * Install PyCuda by running `./settings/commands/.install_pycuda`. If this fails run `pip3 install pycuda`.
 * Install Onnx by running `./settings/commands/.install_onnx`.
 * Run the Makefile by navigating into `cv_main/source/modeling/plugins` and run `make`.
-* Navigate to `cv_main/source/modeling/model`
+* Navigate to `cv_main/source/modeling/model`.
 * Run `python3 yolo_to_onnx.py -m yolov4-tiny-416 --category_num 3` to convert from the current yolo model to an onnx model.
 * Run `python3 onnx_to_tensorrt.py -m yolov4-tiny-416 --category_num 3` to convert from the generated onnx model to a TensorRT model.
 * To test some code change the gpu acceleration parameter in the `info.yaml` to `gpu_acceleration: 2` and run test_main.
