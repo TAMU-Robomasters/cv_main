@@ -66,23 +66,23 @@
 * To test some code change the gpu acceleration parameter in the `info.yaml` to  `gpu_acceleration: 1` and run test_main.
 ### Setup TensorRT
 * Make sure you installed OpenCV from source as shown above.
-* Install TensorRT Version 6+.
-* If you are on Windows WSL you may face driver issues. I recommend switching to linux through dual boot.
-* If you are on a Jetson Product
-    * TensorRT is automatically installed once you flash the product, only do the following steps if you are on an old version of tensorRT. You can check the version by running `dpkg -l | grep TensorRT`.
-    * TensorRT cannot be installed normally. You must over-the-air (OTA) update the package or reflash with an updated SD Card Image. 
-        * OTA Updates: https://docs.nvidia.com/jetson/archives/l4t-archived/l4t-3231/index.html#page/Tegra%2520Linux%2520Driver%2520Package%2520Development%2520Guide%2Fquick_start.html%23wwpID0EXHA.
-        * Reflash: https://developer.nvidia.com/embedded/jetpack.
-* If you are on Linux
-    * Download TensorRT version 6+ from https://developer.nvidia.com/tensorrt (You may need to make an Nvidia Developer Account).
-    * Navigate to the directory where you downloaded TensorRT and delete any old packages you may have of TensorRT from the directory.
-    * Open the script located at `./settings/commands/.install_tensorrt` and modify the `os` and `tag` based on your system and the version you installed. 
-    * Run the script using `./settings/commands/.install_tensorrt`.
-* Add your cuda to PATH if you haven't already
-    * `nano ~/.bashrc`.
-    * Scroll all the way to the bottom and add the following:
-        * `export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}`.
-        * `export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}`.
+* Install TensorRT Version 6+
+    * If you are on Windows WSL you may face driver issues. I recommend switching to linux through dual boot.
+    * If you are on a Jetson Product
+        * TensorRT is automatically installed once you flash the product, only do the following steps if you are on an old version of tensorRT. You can check the version by running `dpkg -l | grep TensorRT`.
+        * TensorRT cannot be installed normally. You must over-the-air (OTA) update the package or reflash with an updated SD Card Image. 
+            * OTA Updates: https://docs.nvidia.com/jetson/archives/l4t-archived/l4t-3231/index.html#page/Tegra%2520Linux%2520Driver%2520Package%2520Development%2520Guide%2Fquick_start.html%23wwpID0EXHA.
+            * Reflash: https://developer.nvidia.com/embedded/jetpack.
+    * If you are on Linux
+        * Download TensorRT version 6+ from https://developer.nvidia.com/tensorrt (You may need to make an Nvidia Developer Account).
+        * Navigate to the directory where you downloaded TensorRT and delete any old packages you may have of TensorRT from the directory.
+        * Open the script located at `./settings/commands/.install_tensorrt` and modify the `os` and `tag` based on your system and the version you installed. 
+        * Run the script using `./settings/commands/.install_tensorrt`.
+    * Add your cuda to PATH if you haven't already
+        * `nano ~/.bashrc`.
+        * Scroll all the way to the bottom and add the following:
+            * `export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}`.
+            * `export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}`.
 * Install PyCuda by running `./settings/commands/.install_pycuda`. If this fails run `pip3 install pycuda`.
 * Install Onnx by running `./settings/commands/.install_onnx`.
 * Run the Makefile by navigating into `cv_main/source/modeling/plugins` and run `make`.
