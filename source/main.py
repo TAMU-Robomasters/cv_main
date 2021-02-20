@@ -55,8 +55,6 @@ def setup(
 
 
         while True:
-            if frameNumber==100:
-                break
             # get the latest image from the camera
             frame = get_frame()
             # stop loop if using get_next_video_frame 
@@ -73,14 +71,14 @@ def setup(
             # run the model
             t = time.time()
             boxes, confidences, classIDs, frame = model.get_bounding_boxes(frame, confidence, threshold)
-            print(time.time()-t)
+            modelTime = time.time()-t
             
             # figure out where to aim
             x, y = aiming.aim(boxes)
             
             # optional value for debugging/testing
             if not (on_next_frame is None):
-                on_next_frame(frameNumber, frame, (boxes, confidences), (x,y))
+                on_next_frame(frameNumber, frame, (boxes, confidences), (x,y),modelTime)
             
             # send data to embedded
             embedded_communication.send_output(x, y)
@@ -119,20 +117,27 @@ def setup(
 
             frameNumber+=1
             counter+=1
+            t1 = 0
+            t2 = 0
             # run model every model_frequency frames or whenever the tracker fails
             if counter % model_frequency == 0 or (best_bounding_box is None):
                 counter=1
                 # call model and initialize tracker
+                t0 = time.time();
                 boxes, confidences, classIDs, frame = model.get_bounding_boxes(frame, confidence, threshold)
                 best_bounding_box = track.init(frame,boxes)
-            else:
-                best_bounding_box = track.update(frame)
+                t1 = time.time();
 
+            else:
+                t0 = time.time()
+                best_bounding_box = track.update(frame)
+                t1 = time.time()
+            modelTime = t1-t0
             # optional value for debugging/testing
             x, y = aiming.aim([best_bounding_box] if best_bounding_box else [])
 
             if not (on_next_frame is None) :
-                on_next_frame(frameNumber, frame, ([best_bounding_box], [1])if best_bounding_box else ([], []), (x,y))
+                on_next_frame(frameNumber, frame, ([best_bounding_box], [1])if best_bounding_box else ([], []), (x,y),modelTime)
                 
     
 
