@@ -44,6 +44,7 @@
     * If you are on a Jetson Product
         * Cuda and Cudnn is automatically installed once you flash the product.
     * If you are on Linux or WSL
+        * If on WSL follow these steps first - https://docs.nvidia.com/cuda/wsl-user-guide/index.html#getting-started.
         * Download Cuda from https://developer.nvidia.com/cuda-downloads (You may need to make an Nvidia Developer Account).
         * Install Cuda
             * If on WSL follow https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#wsl-installation.
@@ -55,6 +56,7 @@
     * Scroll all the way to the bottom and add the following:
         * `export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}`.
         * `export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}`.
+* Before compiling OpenCV from source, uninstall pip's OpenCV using `pip3 uninstall opencv-contrib-python`.
 * Open the scipt located at `cv_main/settings/commands/.install_opencv`.
 * Modify the location of opencv installation, cuda arch bin version, and opencv_contrib_modules location
     * Location of OpenCV Installation - Personal Preference - This is to location where opencv and it's extra modules will be located.
