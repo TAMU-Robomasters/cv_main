@@ -3,7 +3,7 @@ regex==2020.7.14
 opencv-contrib-python==4.5.1.48
 PyYAML==5.1.2
 argparse==1.4.0
-Pillow==6.2.0
+Pillow==7.1.0
 filterpy==1.4.4
 scikit-build==0.11.1
 scipy==1.5.2
