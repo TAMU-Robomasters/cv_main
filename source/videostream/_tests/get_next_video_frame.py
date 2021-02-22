@@ -11,7 +11,7 @@ class nextFromVideo:
         test_video = Video(PATHS["main_test_video"])
         self.frame_generator = test_video.frames()
 
-    def get_next_video_frame(self):
+    def getFrame(self):
         try:
             return self.frame_generator.__next__()
         except StopIteration:

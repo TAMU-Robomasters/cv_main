@@ -18,7 +18,6 @@ from source.embedded_communication.embedded_main import embedded_communication
 import source.modeling._tests.test_modeling as test_modeling
 import source.tracking._tests.test_tracking as test_tracking
 import source.aiming._tests.test_aiming as test_aiming
-from source.videostream._tests.get_next_video_frame import get_next_video_frame
 
 # import parameters from the info.yaml file
 confidence = PARAMETERS["model"]["confidence"]

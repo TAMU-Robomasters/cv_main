@@ -12,8 +12,8 @@ from source.main import setup
 # 
 
 # simulated video
-from source.videostream._tests.get_next_video_frame import get_next_video_frame
-from source.videostream._tests.get_latest_video_frame import get_latest_video_frame
+import source.videostream._tests.get_next_video_frame as nextVideoFrame
+import source.videostream._tests.get_latest_video_frame as latestVideoFrame
 # simulated embedded output
 from source.embedded_communication._tests.simulated_output import send_output as simulated_send_output
 # simulated modeling
@@ -59,13 +59,21 @@ def debug_each_frame(frame_index, frame, model_ouput, aiming_output):
     if cv2.waitKey(1) & 0xFF == ord('q'):
         exit(0)
 
+# decide method of sending frames
+status =  PARAMETERS['videostream']['testing']['grab_frame']# 0 means grab next frame, 1 means grab latest frame, 2 means camera feed
+get_frame = None
+if status == 0:
+    get_frame = nextVideoFrame.nextFromVideo()
+elif status == 1:
+    get_frame = latestVideoFrame.latestFromVideo()
+
 # 
 # setup main(s)
 # 
 simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(
     # comment out lines (arguments) below to get closer
     # and closer to realistic output
-    get_frame=get_next_video_frame if PARAMETERS['videostream']['testing']['grab_frame']==0 else get_latest_video_frame, # 0 means grab next frame, 1 means grab latest frame
+    get_frame = get_frame.getFrame, 
     on_next_frame=debug_each_frame,
     modeling=test_modeling,
     tracker=test_tracking,
@@ -76,13 +84,17 @@ simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setu
 # 
 # run mains (with simulated values)
 # 
+
 main_function = PARAMETERS['testing']['main_function']
+print("MAIN",main_function)
 if main_function == 0:
     simple_synchronous()
 elif main_function == 1:
     synchronous_with_tracker()
 else:
     multiprocessing_with_tracker()
+
+
 
 # save all the frames as a video
 print("Starting process of saving frames to a video file")

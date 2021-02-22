@@ -12,8 +12,8 @@ from source.main import setup
 # 
 
 # simulated video
-from source.videostream._tests.get_next_video_frame import get_next_video_frame
-from source.videostream._tests.get_latest_video_frame import get_latest_video_frame
+import source.videostream._tests.get_next_video_frame as nextVideoFrame
+import source.videostream._tests.get_latest_video_frame as latestVideoFrame
 # simulated embedded output
 from source.embedded_communication._tests.simulated_output import send_output as simulated_send_output
 # simulated modeling
@@ -63,9 +63,9 @@ def debug_each_frame(frame_index, frame, model_ouput, aiming_output):
 status =  PARAMETERS['videostream']['testing']['grab_frame']# 0 means grab next frame, 1 means grab latest frame, 2 means camera feed
 get_frame = None
 if status == 0:
-    get_frame = get_next_video_frame
+    get_frame = nextVideoFrame.nextFromVideo()
 elif status == 1:
-    get_frame = get_latest_video_frame
+    get_frame = latestVideoFrame.latestFromVideo()
 
 # 
 # setup main(s)
@@ -73,7 +73,7 @@ elif status == 1:
 simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(
     # comment out lines (arguments) below to get closer
     # and closer to realistic output
-    get_frame, 
+    get_frame = get_frame.getFrame, 
     on_next_frame=debug_each_frame,
     modeling=test_modeling,
     tracker=test_tracking,

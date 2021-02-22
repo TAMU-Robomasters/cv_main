@@ -13,7 +13,7 @@ class latestFromVideo:
         self.framerate = PARAMETERS["videostream"]["testing"]["assumed_framerate"]
         self.usedFrames = set([])
 
-    def get_latest_video_frame(self):
+    def getFrame(self):
         # kick of the start time if hasn't started yet
         if self.start_time == None:
             self.start_time = time.time()
