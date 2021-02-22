@@ -7,12 +7,13 @@ Created on Tue Jan 28 19:43:04 2020
 import multiprocessing
 import cv2
 import os
+import numpy as np
 from itertools import count
 from multiprocessing import Manager, Process,Value,Array
 from multiprocessing.managers import BaseManager
 
 # relative imports
-from source.videostream._tests.get_live_video_frame import get_live_video_frame
+# import source.videostream._tests.get_live_video_frame as liveVideo
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 from source.embedded_communication.embedded_main import embedded_communication
 import source.modeling._tests.test_modeling as test_modeling
@@ -28,11 +29,11 @@ grabFrame = PARAMETERS['videostream']['testing']['grab_frame']
 def setup(
         get_frame = None,
         on_next_frame=None,
-        modeling=modeling,
-        tracker=tracker,
-        aiming=aiming,
-        #send_output=send_output
-        embedded_communication=embedded_communication
+        modeling=test_modeling,
+        tracker=test_tracking,
+        aiming=test_aiming,
+        embedded_communication=embedded_communication,
+        testing = True
     ):
     """
     this function is used to connect main with other modules
@@ -53,30 +54,39 @@ def setup(
         - no tracking
         - no multiprocessing/async/multithreading
         """
+
         frameNumber = 0 # used for on_next_frame
-        # create instance of modeling
-        model = modeling.modelingClass()
+        model = modeling.modelingClass() # create instance of modeling
 
         while True:
-            # get the latest image from the camera
-            frame = get_frame()
-            # stop loop if using get_next_video_frame 
-            if frame is None:
-                break
-            # stop loop if using get_latest_video_frame(required since there are 3 cases for get_latest_video_frame compared to the 2 cases in get_next_video_frame)
-            if isinstance(frame,int):
-                continue
+            frame = get_frame()  
+            color_frame = None
+            color_image = None           
+            depth_frame = None
+            depth_image = None
+
+            if testing == False:
+                color_frame = frame.get_color_frame()
+                color_image = np.asanyarray(color_frame.get_data()) 
+                depth_frame = frame.get_depth_frame() 
+                depth_image = np.asanyarray(depth_frame.get_data()) 
+            else:
+                if frame is None:
+                    break
+                if isinstance(frame,int):
+                    continue
+                color_image = frame
 
             frameNumber+=1
             # run the model
-            boxes, confidences, classIDs, frame = model.get_bounding_boxes(frame, confidence, threshold)
+            boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
             
             # figure out where to aim
             x, y = aiming.aim(boxes)
-            
+
             # optional value for debugging/testing
             if not (on_next_frame is None):
-                on_next_frame(frameNumber, frame, (boxes, confidences), (x,y))
+                on_next_frame(frameNumber, color_image, (boxes, confidences), (x,y))
             
             # send data to embedded
             embedded_communication.send_output(x, y)
@@ -106,7 +116,6 @@ def setup(
             # stop loop if using get_next_video_frame   
             if frame is None:
                 break
-            # stop loop if using get_latest_video_frame(required since there are 3 cases for get_latest_video_frame compared to the 2 cases in get_next_video_frame)
             if isinstance(frame,int):
                 continue
 
@@ -177,9 +186,9 @@ def setup(
             # stop loop if using get_next_video_frame   
             if frame is None:
                 break
-            # stop loop if using get_latest_video_frame(required since there are 3 cases for get_latest_video_frame compared to the 2 cases in get_next_video_frame)
             if isinstance(frame,int):
                 continue
+
             if collectFrames.value:
                 betweenFrames.append(frame)
             realCounter+=1
@@ -229,11 +238,14 @@ def setup(
 
 if __name__ == '__main__':
     # setup mains with real inputs/outputs
+    camera = liveVideo.liveFeed()
     simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(
-        get_frame = get_live_video_frame, 
+        get_frame = camera.get_live_video_frame, 
         modeling=test_modeling,
         tracker=test_tracking,
-        aiming=test_aiming
+        aiming=test_aiming,
+        testing = False
     )
-    
+    # CREATE INSTANCE OF AIMING CLASS WHERE IT INITIALIZES PIPELINE
+
     simple_synchronous()
