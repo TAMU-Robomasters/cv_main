@@ -32,7 +32,7 @@
     * `git clone https://github.com/TAMU-RoboMaster-Computer-Vision/cv_main`
     * `cd cv_main`
 * Actually run some code
-    * run `nix-shell` to get into the project enviornment
+    * run `./shell` to get into the project enviornment
         * Note: this will almost certainly take a while the first time because it will auto-install exact versions of everything: `python`, `pip`, the python virtual enviornment, all of the pip modules, and auto-setup the env variables like the PYTHONPATH.
     * run `commands` to see all of the project commands
     * run `python source/_tests/test_main.py` to try running the main program
