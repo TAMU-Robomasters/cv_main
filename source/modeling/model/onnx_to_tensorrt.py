@@ -65,7 +65,7 @@ MAX_BATCH_SIZE = 1
 
 def load_onnx(model_name):
     """Read the ONNX file."""
-    onnx_path = '%s.onnx' % model_name
+    onnx_path = '%s.dont-sync.onnx' % model_name
     if not os.path.isfile(onnx_path):
         print('ERROR: file (%s) not found!  You might want to run yolo_to_onnx.py first to generate it.' % onnx_path)
         return None
@@ -185,7 +185,7 @@ def main():
     if engine is None:
         raise SystemExit('ERROR: failed to build the TensorRT engine!')
 
-    engine_path = '%s.trt' % args.model
+    engine_path = '%s.dont-sync.trt' % args.model
     with open(engine_path, 'wb') as f:
         f.write(engine.serialize())
     print('Serialized the TensorRT engine to file: %s' % engine_path)
