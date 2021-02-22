@@ -112,12 +112,23 @@ def setup(
 
         while True: # counts up infinitely starting at 0
             # grabs frame and ends loop if we reach the last one
-            frame = get_frame()
-            # stop loop if using get_next_video_frame   
-            if frame is None:
-                break
-            if isinstance(frame,int):
-                continue
+            frame = get_frame()  
+            color_frame = None
+            color_image = None           
+            depth_frame = None
+            depth_image = None
+
+            if testing == False:
+                color_frame = frame.get_color_frame()
+                color_image = np.asanyarray(color_frame.get_data()) 
+                depth_frame = frame.get_depth_frame() 
+                depth_image = np.asanyarray(depth_frame.get_data()) 
+            else:
+                if frame is None:
+                    break
+                if isinstance(frame,int):
+                    continue
+                color_image = frame
 
             frameNumber+=1
             counter+=1
@@ -125,16 +136,16 @@ def setup(
             if counter % model_frequency == 0 or (best_bounding_box is None):
                 counter=1
                 # call model and initialize tracker
-                boxes, confidences, classIDs, frame = model.get_bounding_boxes(frame, confidence, threshold)
+                boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
                 best_bounding_box = track.init(frame,boxes)
             else:
-                best_bounding_box = track.update(frame)
+                best_bounding_box = track.update(color_image)
 
             # optional value for debugging/testing
             x, y = aiming.aim([best_bounding_box] if best_bounding_box else [])
 
             if not (on_next_frame is None) :
-                on_next_frame(frameNumber, frame, ([best_bounding_box], [1])if best_bounding_box else ([], []), (x,y))
+                on_next_frame(frameNumber, color_image, ([best_bounding_box], [1])if best_bounding_box else ([], []), (x,y))
                 
     
 
@@ -182,22 +193,33 @@ def setup(
 
         while True:
             # grabs frame and ends loop if we reach the last one
-            frame = get_frame()
-            # stop loop if using get_next_video_frame   
-            if frame is None:
-                break
-            if isinstance(frame,int):
-                continue
+            frame = get_frame()  
+            color_frame = None
+            color_image = None           
+            depth_frame = None
+            depth_image = None
+
+            if testing == False:
+                color_frame = frame.get_color_frame()
+                color_image = np.asanyarray(color_frame.get_data()) 
+                depth_frame = frame.get_depth_frame() 
+                depth_image = np.asanyarray(depth_frame.get_data()) 
+            else:
+                if frame is None:
+                    break
+                if isinstance(frame,int):
+                    continue
+                color_image = frame
 
             if collectFrames.value:
-                betweenFrames.append(frame)
+                betweenFrames.append(color_image)
             realCounter+=1
             frameNumber+=1
             # run model if there is no current bounding box in another process
             if best_bounding_box[:] == [-1,-1,-1,-1]:
                 if process is None or process.is_alive()==False:
                     collectFrames.value = True
-                    process = Process(target=modelMulti,args=(frame,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames))
+                    process = Process(target=modelMulti,args=(color_image,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames))
                     process.start() 
                     realCounter=1
 
@@ -207,13 +229,13 @@ def setup(
                     # call model and initialize tracker
                     if process is None or process.is_alive()==False:
                         collectFrames.value = True
-                        process = Process(target=modelMulti,args=(frame,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames))
+                        process = Process(target=modelMulti,args=(color_image,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames))
                         process.start() 
                 
                 #track bounding box, even if we are modeling for a new one
                 if track.trackerAlive():
                     try:
-                        potentialbbox = track.update(frame)
+                        potentialbbox = track.update(color_image)
                         best_bounding_box[:] = potentialbbox if potentialbbox else [-1,-1,-1,-1]
                     except:
                         best_bounding_box[:] = [-1,-1,-1,-1]
@@ -225,7 +247,7 @@ def setup(
             
             # optional value for debugging/testing
             if not (on_next_frame is None) :
-                on_next_frame(frameNumber, frame, ([best_bounding_box[:]], [1])if best_bounding_box[:] != [-1,-1,-1,-1] else ([], []), (x,y))
+                on_next_frame(frameNumber, color_image, ([best_bounding_box[:]], [1])if best_bounding_box[:] != [-1,-1,-1,-1] else ([], []), (x,y))
             
             # send data to embedded
             embedded_communication.send_output(x, y)
