@@ -18,7 +18,7 @@ class liveFeed:
         config.enable_stream(rs.stream.color, streamWidth, streamHeight, rs.format.bgr8, framerate) # this starts the color stream and set the size and format
         self.pipeline.start(config)
         
-    def get_live_video_frame():
+    def get_live_video_frame(self):
         try:
             frames = self.pipeline.wait_for_frames()     
             if not frames:

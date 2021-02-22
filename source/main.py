@@ -13,12 +13,12 @@ from multiprocessing import Manager, Process,Value,Array
 from multiprocessing.managers import BaseManager
 
 # relative imports
-# import source.videostream._tests.get_live_video_frame as liveVideo
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 from source.embedded_communication.embedded_main import embedded_communication
 import source.modeling._tests.test_modeling as test_modeling
 import source.tracking._tests.test_tracking as test_tracking
 import source.aiming._tests.test_aiming as test_aiming
+from source.videostream._tests.get_next_video_frame import get_next_video_frame
 
 # import parameters from the info.yaml file
 confidence = PARAMETERS["model"]["confidence"]
@@ -260,6 +260,7 @@ def setup(
 
 if __name__ == '__main__':
     # setup mains with real inputs/outputs
+    import source.videostream._tests.get_live_video_frame as liveVideo
     camera = liveVideo.liveFeed()
     simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(
         get_frame = camera.get_live_video_frame, 
@@ -268,6 +269,6 @@ if __name__ == '__main__':
         aiming=test_aiming,
         testing = False
     )
-    # CREATE INSTANCE OF AIMING CLASS WHERE IT INITIALIZES PIPELINE
+    # TODO: CREATE INSTANCE OF AIMING CLASS WHERE IT INITIALIZES PIPELINE, THIS WILL BE THE BEGINNING OF AIMING INTEGRATION
 
     simple_synchronous()
