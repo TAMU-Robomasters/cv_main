@@ -45,7 +45,7 @@ paths:
     model_weights: ./source/modeling/model/yolov4-tiny-416.weights
     model_config: ./source/modeling/model/yolov4-tiny-416.cfg
     model_labels: ./source/modeling/model/yolov4-tiny-416.names
-    model_trt: ./source/modeling/model/yolov4-tiny-416.trt
+    model_trt: ./source/modeling/model/yolov4-tiny-416.dont-sync.trt
     frame_save_location: ./source/modeling/_tests/test.nosync.png
     #aiming
     R_test_image: ./source/_test_data/mask_R_blur.png
