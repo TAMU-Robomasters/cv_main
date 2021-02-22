@@ -27,6 +27,7 @@ parameters:
             assumed_framerate: 30 # frames per second
             grab_frame: 0 # 0 means grab next frame, 1 means grab latest frame, 2 means camera feed
             camera_frames: 350 # how many frames to do live video for
+            record_time: 10 # seconds to record for
     testing:
         save_frame_to_file: true
         open_each_frame: false
@@ -41,6 +42,7 @@ paths:
     main_test_video: ./source/_test_data/test.avi
     main_test_image: ./source/_test_data/test.png
     video_output: ./result.nosync.mp4
+    record_video_output: ./recordedVideo.nosync.mp4
     time_output: ./time.txt
     # model
     model_weights: ./source/modeling/model/v4t.weights
