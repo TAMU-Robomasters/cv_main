@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 # summary
-    # this only exists so that python for-sure 
-    # links to python3 and not python2
+    # this exists so that python for-sure 
+    # links to the venv python
+    # and python3 instead of python2
 
-python3 $@
+"$PROJECT_FOLDER/.venv/bin/python3" $@
