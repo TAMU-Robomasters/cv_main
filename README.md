@@ -83,7 +83,7 @@
         * Scroll all the way to the bottom and add the following:
             * `export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}`.
             * `export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}`.
-* Install PyCuda by running `./settings/commands/.install_pycuda`. If this fails run `pip3 install pycuda`.
+* Install PyCuda by running `sudo pip3 install --global-option=build_ext --global-option="-I/usr/local/cuda/include" --global-option="-L/usr/local/cuda/lib64" pycuda`.
 * Install Onnx by running `./settings/commands/.install_onnx`.
 * Run the Makefile by navigating into `cv_main/source/modeling/plugins` and run `make`.
 * Navigate to `cv_main/source/modeling/model`.
