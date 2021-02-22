@@ -10,17 +10,21 @@ import os
 from itertools import count
 from multiprocessing import Manager, Process,Value,Array
 from multiprocessing.managers import BaseManager
+
 # relative imports
+from source.videostream._tests.get_live_video_frame import get_live_video_frame
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 from source.embedded_communication.embedded_main import embedded_communication
-import source.modeling.modeling_main as modeling
-import source.tracking.tracking_main as tracker
-import source.aiming.aiming_main as aiming
+import source.modeling._tests.test_modeling as test_modeling
+import source.tracking._tests.test_tracking as test_tracking
+import source.aiming._tests.test_aiming as test_aiming
 
 # import parameters from the info.yaml file
 confidence = PARAMETERS["model"]["confidence"]
 threshold = PARAMETERS["model"]["threshold"]
 model_frequency = PARAMETERS["model"]["frequency"]
+grabFrame = PARAMETERS['videostream']['testing']['grab_frame']
+
 def setup(
         get_frame = None,
         on_next_frame=None,
@@ -222,9 +226,14 @@ def setup(
     # return a list of the different main options
     return simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker
     
+
 if __name__ == '__main__':
     # setup mains with real inputs/outputs
-    simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup()
+    simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(
+        get_frame = get_live_video_frame, 
+        modeling=test_modeling,
+        tracker=test_tracking,
+        aiming=test_aiming
+    )
     
-    # for now, default to simple_synchronous
-    simple_synchronous
+    simple_synchronous()

@@ -14,7 +14,6 @@ from source.main import setup
 # simulated video
 from source.videostream._tests.get_next_video_frame import get_next_video_frame
 from source.videostream._tests.get_latest_video_frame import get_latest_video_frame
-from source.videostream._tests.get_live_video_frame import get_live_video_frame
 # simulated embedded output
 from source.embedded_communication._tests.simulated_output import send_output as simulated_send_output
 # simulated modeling
@@ -67,8 +66,7 @@ if status == 0:
     get_frame = get_next_video_frame
 elif status == 1:
     get_frame = get_latest_video_frame
-elif status == 2:
-    get_frame = get_live_video_frame
+
 # 
 # setup main(s)
 # 

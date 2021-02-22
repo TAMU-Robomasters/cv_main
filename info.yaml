@@ -25,7 +25,7 @@ parameters:
     videostream:
         testing:
             assumed_framerate: 30 # frames per second
-            grab_frame: 0 # 0 means grab next frame, 1 means grab latest frame, 2 means camera feed
+            grab_frame: 0 # 0 means grab next frame, 1 means grab latest frame
             camera_frames: 350 # how many frames to do live video for
             record_time: 10 # seconds to record for
     testing:
