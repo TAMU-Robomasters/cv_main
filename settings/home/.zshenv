@@ -5,14 +5,19 @@ DISABLE_UPDATE_PROMPT="true"
 
 # load custom user settings
 # if user just wants to add something (like an export) and not replace everything
-# they should use ./settings/shell_startup/.nosync.exports.sh 
-CUSTOM_USER_SETTINGS="./.nosync.zshrc"
+# they should use ./settings/shell_startup/.dont-sync.exports.sh 
+CUSTOM_USER_SETTINGS="./.dont-sync.zshrc"
 if [[ -f "$CUSTOM_USER_SETTINGS" ]]; then
     source "$CUSTOM_USER_SETTINGS"
 #
 # if no custom user settings, then use epic defaults 👌
 # 
 else
+    if [[ -z "$PROJECT_FOLDER" ]]
+    then
+        echo PROJECT_FOLDER is empty
+        export PROJECT_FOLDER="$PWD"
+    fi
     function nix_path_for {
         nix-instantiate --eval -E  '"${
             (
@@ -25,11 +30,11 @@ else
                                     builtins.import (
                                         builtins.fetchTarball {url="https://github.com/NixOS/nixpkgs/archive/${each.from}.tar.gz";}
                                     ) {
-                                        config = (builtins.fromJSON (builtins.readFile ./settings/info.json)).nix.config;
+                                        config = (builtins.fromJSON (builtins.readFile "'"$PROJECT_FOLDER"'/settings/requirements/simple_nix.json")).nix.config;
                                     }
                                 );
                             })
-                        ) (builtins.fromJSON (builtins.readFile ./settings/info.json)).nix.packages
+                        ) (builtins.fromJSON (builtins.readFile "'"$PROJECT_FOLDER"'/settings/requirements/simple_nix.json")).nix.packages
                     )
                 ) 0
             ).source
@@ -48,7 +53,7 @@ else
     # 
     # set fpath for zsh
     # 
-    local_zsh="$PWD/settings/zsh.nosync/site-functions/"
+    local_zsh="$PWD/settings/zsh.dont-sync/site-functions/"
     mkdir -p "$local_zsh"
     # export fpath=""
     export fpath=("$local_zsh")
@@ -79,7 +84,7 @@ else
     # 
     source "$zsh_auto_suggest__path/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
     
-    SPACESHIP_VENV_SYMBOL="🐍$(python -V | sed -E 's/Python//g' )"
+    SPACESHIP_VENV_SYMBOL="🐍$(python -V 2>&1 | sed -E 's/Python//g' )"
     SPACESHIP_VENV_PREFIX=""
     SPACESHIP_VENV_GENERIC_NAMES="."
     SPACESHIP_VENV_COLOR="green"
@@ -105,7 +110,7 @@ fi
 for file in ./settings/shell_startup/*
 do
     # make sure its a file
-    if [[ -f $file ]]; then
-        source $file
+    if [[ -f "$file" ]]; then
+        source "$file"
     fi
 done
