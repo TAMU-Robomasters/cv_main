@@ -133,9 +133,7 @@ def setup(
         while True: # counts up infinitely starting at 0
             # grabs frame and ends loop if we reach the last one
             frame = get_frame()  
-            color_frame = None
             color_image = None           
-            depth_frame = None
             depth_image = None
 
             if testing == False:
@@ -153,7 +151,7 @@ def setup(
 
             frameNumber+=1
             counter+=1
-            
+
             # run model every model_frequency frames or whenever the tracker fails
             if counter % model_frequency == 0 or (best_bounding_box is None):
                 counter=1
@@ -190,20 +188,31 @@ def setup(
                 
     
 
-    def modelMulti(frame,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames):
+    def modelMulti(color_image,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames):
         #run the model and update best bounding box to the new bounding box if it exists, otherwise keep tracking the old bounding box
-        boxes, confidences, classIDs, frame = model.get_bounding_boxes(frame, confidence, threshold)
-        potentialbbox = track.init(frame,boxes)
+        boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
+        bbox = None
 
-        for f in range(len(betweenFrames)):
-            if potentialbbox is None:
-                break
-            potentialbbox = track.update(betweenFrames[f])
-            print(potentialbbox)
+        if len(boxes) != 0:
+            # Finds the coordinate for the center of the screen
+            center = (color_image.shape[1] / 2, color_image.shape[0] / 2)
+            # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
+            bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
+            # Finds the centermost bounding box
+            bbox = min(bboxes, key=bboxes.get)
 
-        best_bounding_box[:] = potentialbbox if potentialbbox else [-1,-1,-1,-1]
-        betweenFrames[:] = []
-        collectFrames.value = False
+        if bbox:
+            potentialbbox = track.init(color_image,bbox)
+
+            for f in range(len(betweenFrames)):
+                if potentialbbox is None:
+                    break
+                potentialbbox = track.update(betweenFrames[f])
+                print(potentialbbox)
+
+            best_bounding_box[:] = potentialbbox if potentialbbox else [-1,-1,-1,-1]
+            betweenFrames[:] = []
+            collectFrames.value = False
         
     def multiprocessing_with_tracker():
         """
@@ -235,9 +244,7 @@ def setup(
         while True:
             # grabs frame and ends loop if we reach the last one
             frame = get_frame()  
-            color_frame = None
             color_image = None           
-            depth_frame = None
             depth_image = None
 
             if testing == False:
@@ -256,6 +263,7 @@ def setup(
                 betweenFrames.append(color_image)
             realCounter+=1
             frameNumber+=1
+            
             # run model if there is no current bounding box in another process
             if best_bounding_box[:] == [-1,-1,-1,-1]:
                 if process is None or process.is_alive()==False:
@@ -284,14 +292,18 @@ def setup(
                     best_bounding_box[:] = [-1,-1,-1,-1]
 
             # figure out where to aim
-            x, y = aiming.aim(best_bounding_box[:])
+            if testing == False:
+                z0 = cameraMethods.getDistFromArray(depth_image,best_bounding_box,gridSize)
+                kalmanBox = [best_bounding_box[0],best_bounding_box[1],z0] # Put data into format the kalman filter asks for
+                prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim
             
+                # send data to embedded
+                embedded_communication.send_output(prediction[0], prediction[1])
+
             # optional value for debugging/testing
             if not (on_next_frame is None) :
-                on_next_frame(frameNumber, color_image, ([best_bounding_box[:]], [1])if best_bounding_box[:] != [-1,-1,-1,-1] else ([], []), (x,y))
+                on_next_frame(frameNumber, color_image, ([best_bounding_box[:]], [1])if best_bounding_box[:] != [-1,-1,-1,-1] else ([], []), (0,0))
             
-            # send data to embedded
-            embedded_communication.send_output(x, y)
         process.join() # make sure process is complete to avoid errors being thrown
 
     # return a list of the different main options

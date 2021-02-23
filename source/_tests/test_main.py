@@ -21,7 +21,7 @@ import source.modeling._tests.test_modeling as test_modeling
 # simulated tracking
 import source.tracking._tests.test_tracking as test_tracking
 # simulated aiming 
-import source.aiming._tests.test_aiming as test_aiming
+import source.aiming.filter as test_aiming
 
 #
 # debugger option #1
@@ -93,8 +93,6 @@ elif main_function == 1:
     synchronous_with_tracker()
 else:
     multiprocessing_with_tracker()
-
-
 
 # save all the frames as a video
 print("Starting process of saving frames to a video file")
