@@ -17,13 +17,16 @@ from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 from source.embedded_communication.embedded_main import embedded_communication
 import source.modeling._tests.test_modeling as test_modeling
 import source.tracking._tests.test_tracking as test_tracking
-import source.aiming._tests.test_aiming as test_aiming
+import source.aiming.filter as test_aiming
+import source.aiming.depth_camera as cameraMethods
 
 # import parameters from the info.yaml file
 confidence = PARAMETERS["model"]["confidence"]
 threshold = PARAMETERS["model"]["threshold"]
 model_frequency = PARAMETERS["model"]["frequency"]
 grabFrame = PARAMETERS['videostream']['testing']['grab_frame']
+predictionTime = PARAMETERS['aiming']['prediction_time']
+gridSize = PARAMETERS['aiming']['grid_size']
 
 def setup(
         get_frame = None,
@@ -43,6 +46,11 @@ def setup(
     this returns a list of the all the different main functions
     """
 
+    def distance(point_1: tuple, point_2: tuple):
+        # Calculates the distance using Python spagettie
+        distance = (sum((p1 - p2) ** 2.0 for p1, p2 in zip(point_1, point_2))) ** (1 / 2)
+        # Returns the distance between two points
+        return distance
     
     # 
     # option #1
@@ -56,15 +64,15 @@ def setup(
 
         frameNumber = 0 # used for on_next_frame
         model = modeling.modelingClass() # create instance of modeling
+        kalmanFilter = None
 
         while True:
             frame = get_frame()  
-            color_frame = None
             color_image = None           
-            depth_frame = None
             depth_image = None
 
             if testing == False:
+                kalmanFilter = aiming.Filter(predictionTime)
                 color_frame = frame.get_color_frame()
                 color_image = np.asanyarray(color_frame.get_data()) 
                 depth_frame = frame.get_depth_frame() 
@@ -80,15 +88,27 @@ def setup(
             # run the model
             boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
             
-            # figure out where to aim
-            x, y = aiming.aim(boxes)
+            if len(boxes)!=0:
+                # Finds the coordinate for the center of the screen
+                center = (color_image.shape[1] / 2, color_image.shape[0] / 2)
+                # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
+                bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
+                # Finds the centermost bounding box
+                bbox = min(bboxes, key=bboxes.get)
 
+                prediction = [bbox[0],bbox[1],0]
+
+                if testing == False:
+                    z0 = cameraMethods.getDistFromArray(depth_image,bbox,gridSize)
+                    kalmanBox = [bbox[0],bbox[1],z0] # Put data into format the kalman filter asks for
+                    prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim
+                
+                # send data to embedded
+                embedded_communication.send_output(prediction[0], prediction[1])
+                
             # optional value for debugging/testing
             if not (on_next_frame is None):
-                on_next_frame(frameNumber, color_image, (boxes, confidences), (x,y))
-            
-            # send data to embedded
-            embedded_communication.send_output(x, y)
+                on_next_frame(frameNumber, color_image, (boxes, confidences), (0,0))
     
     # 
     # option #2
@@ -252,7 +272,6 @@ def setup(
             embedded_communication.send_output(x, y)
         process.join() # make sure process is complete to avoid errors being thrown
 
-    
     # return a list of the different main options
     return simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker
     
@@ -261,6 +280,9 @@ if __name__ == '__main__':
     # setup mains with real inputs/outputs
     import source.videostream._tests.get_live_video_frame as liveVideo
     camera = liveVideo.liveFeed()
+    kalman = kalman_filter.Filter(predictionTime)
+
+    # Must send classes so multiprocessing is possible
     simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(
         get_frame = camera.get_live_video_frame, 
         modeling=test_modeling,

@@ -1,23 +1,9 @@
-import pyrealsense2 as rs
 import numpy as np
 import cv2
 from toolbox.globals import PARAMETERS,print
 
-# PASS pipeline ON FUNCTION CALL WHEN INTEGRATED WITH MAIN SINCE CAMERA FEED IS INITIALIZED IN get_live_video_frame
 
-streamWidth = PARAMETERS['aiming']['stream_width']
-streamHeight = PARAMETERS['aiming']['stream_height']
-framerate = PARAMETERS['aiming']['stream_framerate']
-gridSize = PARAMETERS['aiming']['grid_size']
-
-pipeline = rs.pipeline()                                            # declares and initializes the pipeline variable
-config = rs.config()                                                # declares and initializes the config variable for the pipeline
-config.enable_stream(rs.stream.depth, streamWidth, streamHeight, rs.format.z16, framerate)  # this starts the depth stream and sets the size and format
-config.enable_stream(rs.stream.color, streamWidth, streamHeight, rs.format.bgr8, framerate) # this starts the color stream and set the size and format
-profile = pipeline.start(config)
-
-# This creates a 9 by 9 grid of points within the given bounding box and stores each of the points distance in an array
-def getDistFromArray(depth_frame_array, bbox):
+def getDistFromArray(depth_frame_array, bbox,gridSize):
     xTopLeft = bbox[0] 
     yTopLeft = bbox[1]
     width = bbox[2]
@@ -38,7 +24,6 @@ def getDistFromArray(depth_frame_array, bbox):
             distances = np.append(distances, depth_frame_array[int(yTopLeft+currY)][int(xTopLeft+currX)]/1000)
         currY = 0
     
-    distances = np.sort(distances)          # sorts the distances from least to greatest
     distances = distances[distances!=0.0]   # removes all occurances of 0.0 (areas where there is not enough data return 0.0 as depth)
     median = np.median(distances)           # gets the median from the array
     std = np.std(distances)                 # gets the standard deviation from th array
@@ -48,28 +33,5 @@ def getDistFromArray(depth_frame_array, bbox):
         if abs(distances[i] - median) < 1.5 * std: # tune the standard deviation range for better results
             modifiedDistances = np.append(modifiedDistances,distances[i])
 
-    modifiedDistances = np.sort(modifiedDistances)
     distance = (np.mean(modifiedDistances)+np.median(modifiedDistances))/2
     return distance
-
-# bbox[x coordinate of the top left of the bounding box, y coordinate of the top left of the bounding box, width of box, height of box]
-def DistanceInBox(bbox):
-    try:
-        frames = pipeline.wait_for_frames()     # gets all frames
-        depth_frame = frames.get_depth_frame()  # gets the depth frame
-        color_frame = frames.get_color_frame()  # gets the color frame 
-        if not depth_frame or not color_frame:  # if there is no aligned_depth_frame or color_frame then leave the loop
-            return None
-        # we turn the depth and color frames into numpy arrays because we need to draw a rectangle and stack the two arrays
-        depth_image = np.asanyarray(depth_frame.get_data()) 
-        # causes 1FPS Drop
-        return getDistFromArray(depth_image, bbox)     # gets the distance for the normal depth image
-    finally:
-        pipeline.stop()
-    return None
-
-
-#bbox = [410,140,65,120]
-
-#while True:
-#	print(DistanceInBox(bbox))

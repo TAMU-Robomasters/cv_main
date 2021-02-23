@@ -21,7 +21,7 @@ import source.modeling._tests.test_modeling as test_modeling
 # simulated tracking
 import source.tracking._tests.test_tracking as test_tracking
 # simulated aiming 
-import source.aiming._tests.test_aiming as test_aiming
+import source.aiming.filter as test_aiming
 
 #
 # debugger option #1

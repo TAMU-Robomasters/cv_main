@@ -10,6 +10,7 @@ parameters:
         gpu_acceleration: true # OpenCV must be Cuda Enabled
         input_dimension: 416
     aiming:
+        prediction_time: 2 # time interval in seconds to predict using kalman filters
         # depth camera
         stream_width: 848
         stream_height: 480
