@@ -94,13 +94,13 @@ def setup(
                 # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
                 bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
                 # Finds the centermost bounding box
-                bbox = min(bboxes, key=bboxes.get)
+                best_bounding_box = min(bboxes, key=bboxes.get)
 
-                prediction = [bbox[0],bbox[1],0]
+                prediction = [best_bounding_box[0],best_bounding_box[1],0]
 
                 if testing == False:
-                    z0 = cameraMethods.getDistFromArray(depth_image,bbox,gridSize)
-                    kalmanBox = [bbox[0],bbox[1],z0] # Put data into format the kalman filter asks for
+                    z0 = cameraMethods.getDistFromArray(depth_image,best_bounding_box,gridSize)
+                    kalmanBox = [best_bounding_box[0],best_bounding_box[1],z0] # Put data into format the kalman filter asks for
                     prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim
                 
                 # send data to embedded
@@ -128,6 +128,7 @@ def setup(
         # create shared instances of tracker and model between multiprocesses
         track = tracker.trackingClass()
         model = modeling.modelingClass()
+        kalmanFilter = None
 
         while True: # counts up infinitely starting at 0
             # grabs frame and ends loop if we reach the last one
@@ -138,6 +139,7 @@ def setup(
             depth_image = None
 
             if testing == False:
+                kalmanFilter = aiming.Filter(predictionTime)
                 color_frame = frame.get_color_frame()
                 color_image = np.asanyarray(color_frame.get_data()) 
                 depth_frame = frame.get_depth_frame() 
@@ -151,20 +153,40 @@ def setup(
 
             frameNumber+=1
             counter+=1
+            
             # run model every model_frequency frames or whenever the tracker fails
             if counter % model_frequency == 0 or (best_bounding_box is None):
                 counter=1
-                # call model and initialize tracker
+                # call model
                 boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
-                best_bounding_box = track.init(frame,boxes)
+
+                if len(boxes) != 0:
+                    # Finds the coordinate for the center of the screen
+                    center = (color_image.shape[1] / 2, color_image.shape[0] / 2)
+                    # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
+                    bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
+                    # Finds the centermost bounding box
+                    best_bounding_box = min(bboxes, key=bboxes.get)
+
+                    best_bounding_box = track.init(color_image,best_bounding_box)
             else:
                 best_bounding_box = track.update(color_image)
 
-            # optional value for debugging/testing
-            x, y = aiming.aim([best_bounding_box] if best_bounding_box else [])
 
-            if not (on_next_frame is None) :
-                on_next_frame(frameNumber, color_image, ([best_bounding_box], [1])if best_bounding_box else ([], []), (x,y))
+            if best_bounding_box is not None:
+                prediction = [best_bounding_box[0],best_bounding_box[1],0]
+
+                if testing == False:
+                    z0 = cameraMethods.getDistFromArray(depth_image,best_bounding_box,gridSize)
+                    kalmanBox = [best_bounding_box[0],best_bounding_box[1],z0] # Put data into format the kalman filter asks for
+                    prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim
+                
+                # send data to embedded
+                embedded_communication.send_output(prediction[0], prediction[1])
+                
+            # optional value for debugging/testing
+            if not (on_next_frame is None):
+                on_next_frame(frameNumber, color_image, ([best_bounding_box], [1])if best_bounding_box else ([], []), (0,0))
                 
     
 
