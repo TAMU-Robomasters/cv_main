@@ -96,24 +96,36 @@ def setup(
             boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)  
             
             # Finds the coordinate for the center of the screen
-            center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x/2 from columns/2,y/2 from rows/2)
-            print(center)
+            center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
+
             if len(boxes)!=0:
                 # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
                 bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
                 # Finds the centermost bounding box
                 best_bounding_box = min(bboxes, key=bboxes.get)
 
-                prediction = [best_bounding_box[0],best_bounding_box[1],0] # row, column, depth
+                prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]+best_bounding_box[3]/2,0] # xObjCenter, yObjCenter, depth
 
                 if testing == False:
                     z0 = cameraMethods.getDistFromArray(depth_image,best_bounding_box,gridSize)
-                    kalmanBox = [best_bounding_box[0],best_bounding_box[1],z0] # Put data into format the kalman filter asks for
-                    prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim, returns (row,column,depth,vRow,vCol,vDepth)
+                    kalmanBox = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
+                    prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim, returns (xObjCenter, yObjCenter, depth, vXObjCenter, vYObjCenter, vDepth)
                 
                 # send data to embedded
-                hAngle, vAngle = angleFromCenter(prediction[1],center[1]-prediction[0],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov)
-                print("ANGLES: ",hAngle,vAngle)
+                hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov)
+                text = "ANGLES: "+str(np.round(hAngle,2))+" "+str(np.round(vAngle,2))
+                font                   = cv2.FONT_HERSHEY_SIMPLEX
+                bottomLeftCornerOfText = (10,500)
+                fontScale              = 1
+                fontColor              = (255,255,255)
+                lineType               = 2
+
+                cv2.putText(color_image,text, 
+                    bottomLeftCornerOfText, 
+                    font, 
+                    fontScale,
+                    fontColor,
+                    lineType)
                 embedded_communication.send_output(hAngle, vAngle)
                 
             # optional value for debugging/testing
@@ -163,7 +175,7 @@ def setup(
             counter+=1
 
             # Finds the coordinate for the center of the screen
-            center = (color_image.shape[1] / 2, color_image.shape[0] / 2)
+            center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
 
             # run model every model_frequency frames or whenever the tracker fails
             if counter % model_frequency == 0 or (best_bounding_box is None):
@@ -183,15 +195,28 @@ def setup(
 
 
             if best_bounding_box is not None:
-                prediction = [best_bounding_box[0],best_bounding_box[1],0]
+                prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]+best_bounding_box[3]/2,0] # xObjCenter, yObjCenter, depth
 
                 if testing == False:
                     z0 = cameraMethods.getDistFromArray(depth_image,best_bounding_box,gridSize)
-                    kalmanBox = [best_bounding_box[0],best_bounding_box[1],z0] # Put data into format the kalman filter asks for
-                    prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim
+                    kalmanBox = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
+                    prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim, returns (xObjCenter, yObjCenter, depth, vXObjCenter, vYObjCenter, vDepth)
                 
                 # send data to embedded
-                hAngle, vAngle = angleFromCenter(prediction[1],prediction[0],center[0],center[1],horizontalFOV,verticalFOV) # send column,row since using array but calculating angle for image
+                hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov)
+                text = "ANGLES: "+str(np.round(hAngle,2))+" "+str(np.round(vAngle,2))
+                font                   = cv2.FONT_HERSHEY_SIMPLEX
+                bottomLeftCornerOfText = (10,500)
+                fontScale              = 1
+                fontColor              = (255,255,255)
+                lineType               = 2
+
+                cv2.putText(color_image,text, 
+                    bottomLeftCornerOfText, 
+                    font, 
+                    fontScale,
+                    fontColor,
+                    lineType)
                 embedded_communication.send_output(hAngle, vAngle)
                 
             # optional value for debugging/testing
@@ -276,7 +301,7 @@ def setup(
             frameNumber+=1
 
             # Finds the coordinate for the center of the screen
-            center = (color_image.shape[1] / 2, color_image.shape[0] / 2)
+            center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
             
             # run model if there is no current bounding box in another process
             if best_bounding_box[:] == [-1,-1,-1,-1]:
@@ -312,7 +337,7 @@ def setup(
                 prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim
             
                 # send data to embedded
-                hAngle, vAngle = angleFromCenter(prediction[1],prediction[0],center[0],center[1],horizontalFOV,verticalFOV) # send column,row since using array but calculating angle for image
+                hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov)
                 embedded_communication.send_output(hAngle, vAngle)
 
             # optional value for debugging/testing
