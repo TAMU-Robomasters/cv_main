@@ -27,6 +27,8 @@ model_frequency = PARAMETERS["model"]["frequency"]
 grabFrame = PARAMETERS['videostream']['testing']['grab_frame']
 predictionTime = PARAMETERS['aiming']['prediction_time']
 gridSize = PARAMETERS['aiming']['grid_size']
+horizontalFOV = PARAMETERS['aiming']['horizontal_fov']
+verticalFOV = PARAMETERS['aiming']['vertical_fov']
 
 def setup(
         get_frame = None,
@@ -51,6 +53,11 @@ def setup(
         distance = (sum((p1 - p2) ** 2.0 for p1, p2 in zip(point_1, point_2))) ** (1 / 2)
         # Returns the distance between two points
         return distance
+    
+    def angleFromCenter(xObject,yObject,xCamCenter,yCamCenter,hFOV,vFOV):
+        hAngle = ((xObject-xCamCenter)/xCamCenter)*(hFOV/2)
+        vAngle = ((yObject-yCamCenter)/yCamCenter)*(vFOV/2)
+        return hAngle,vAngle
     
     # 
     # option #1
@@ -86,11 +93,12 @@ def setup(
 
             frameNumber+=1
             # run the model
-            boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
+            boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)  
             
+            # Finds the coordinate for the center of the screen
+            center = (color_image.shape[1] / 2, color_image.shape[0] / 2)
+
             if len(boxes)!=0:
-                # Finds the coordinate for the center of the screen
-                center = (color_image.shape[1] / 2, color_image.shape[0] / 2)
                 # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
                 bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
                 # Finds the centermost bounding box
@@ -104,7 +112,8 @@ def setup(
                     prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim
                 
                 # send data to embedded
-                embedded_communication.send_output(prediction[0], prediction[1])
+                hAngle, vAngle = angleFromCenter(prediction[1],prediction[0],center[0],center[1],horizontalFOV,verticalFOV) # send column,row since using array but calculating angle for image
+                embedded_communication.send_output(hAngle, vAngle)
                 
             # optional value for debugging/testing
             if not (on_next_frame is None):
@@ -152,6 +161,9 @@ def setup(
             frameNumber+=1
             counter+=1
 
+            # Finds the coordinate for the center of the screen
+            center = (color_image.shape[1] / 2, color_image.shape[0] / 2)
+
             # run model every model_frequency frames or whenever the tracker fails
             if counter % model_frequency == 0 or (best_bounding_box is None):
                 counter=1
@@ -159,8 +171,6 @@ def setup(
                 boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
 
                 if len(boxes) != 0:
-                    # Finds the coordinate for the center of the screen
-                    center = (color_image.shape[1] / 2, color_image.shape[0] / 2)
                     # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
                     bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
                     # Finds the centermost bounding box
@@ -180,7 +190,8 @@ def setup(
                     prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim
                 
                 # send data to embedded
-                embedded_communication.send_output(prediction[0], prediction[1])
+                hAngle, vAngle = angleFromCenter(prediction[1],prediction[0],center[0],center[1],horizontalFOV,verticalFOV) # send column,row since using array but calculating angle for image
+                embedded_communication.send_output(hAngle, vAngle)
                 
             # optional value for debugging/testing
             if not (on_next_frame is None):
@@ -188,14 +199,12 @@ def setup(
                 
     
 
-    def modelMulti(color_image,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames):
+    def modelMulti(color_image,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames,center):
         #run the model and update best bounding box to the new bounding box if it exists, otherwise keep tracking the old bounding box
         boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
         bbox = None
 
         if len(boxes) != 0:
-            # Finds the coordinate for the center of the screen
-            center = (color_image.shape[1] / 2, color_image.shape[0] / 2)
             # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
             bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
             # Finds the centermost bounding box
@@ -203,12 +212,13 @@ def setup(
 
         if bbox:
             potentialbbox = track.init(color_image,bbox)
+            print(potentialbbox)
 
-            for f in range(len(betweenFrames)):
-                if potentialbbox is None:
-                    break
-                potentialbbox = track.update(betweenFrames[f])
-                print(potentialbbox)
+            # for f in range(len(betweenFrames)):
+            #     if potentialbbox is None:
+            #         break
+            #     potentialbbox = track.update(betweenFrames[f])
+            #     print(potentialbbox)
 
             best_bounding_box[:] = potentialbbox if potentialbbox else [-1,-1,-1,-1]
             betweenFrames[:] = []
@@ -263,12 +273,15 @@ def setup(
                 betweenFrames.append(color_image)
             realCounter+=1
             frameNumber+=1
+
+            # Finds the coordinate for the center of the screen
+            center = (color_image.shape[1] / 2, color_image.shape[0] / 2)
             
             # run model if there is no current bounding box in another process
             if best_bounding_box[:] == [-1,-1,-1,-1]:
                 if process is None or process.is_alive()==False:
                     collectFrames.value = True
-                    process = Process(target=modelMulti,args=(color_image,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames))
+                    process = Process(target=modelMulti,args=(color_image,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames,center))
                     process.start() 
                     realCounter=1
 
@@ -278,7 +291,7 @@ def setup(
                     # call model and initialize tracker
                     if process is None or process.is_alive()==False:
                         collectFrames.value = True
-                        process = Process(target=modelMulti,args=(color_image,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames))
+                        process = Process(target=modelMulti,args=(color_image,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames,center))
                         process.start() 
                 
                 #track bounding box, even if we are modeling for a new one
@@ -298,7 +311,8 @@ def setup(
                 prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim
             
                 # send data to embedded
-                embedded_communication.send_output(prediction[0], prediction[1])
+                hAngle, vAngle = angleFromCenter(prediction[1],prediction[0],center[0],center[1],horizontalFOV,verticalFOV) # send column,row since using array but calculating angle for image
+                embedded_communication.send_output(hAngle, vAngle)
 
             # optional value for debugging/testing
             if not (on_next_frame is None) :
@@ -314,7 +328,6 @@ if __name__ == '__main__':
     # setup mains with real inputs/outputs
     import source.videostream._tests.get_live_video_frame as liveVideo
     camera = liveVideo.liveFeed()
-    kalman = kalman_filter.Filter(predictionTime)
 
     # Must send classes so multiprocessing is possible
     simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(

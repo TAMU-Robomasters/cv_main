@@ -16,6 +16,9 @@ parameters:
         stream_height: 480
         stream_framerate: 60
         grid_size: 10
+        horizontal_fov: 86
+        vertical_fov: 57
+
         #power rune
         blue_light: [50,40,230]
         blue_dark: [130,255,255]
