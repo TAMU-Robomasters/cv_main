@@ -37,7 +37,18 @@ def debug_each_frame(frame_index, frame, model_ouput, aiming_output):
     
     # extract the output
     boxes, confidences = model_ouput
-    x, y = aiming_output
+    hAngle, vAngle = aiming_output
+    
+    # Display angle between center and bounding box in radians
+    # if hAngle is not None and vAngle is not None:
+    #     text                   = "ANGLE: "+str(np.round(hAngle,2))+" "+str(np.round(vAngle,2))
+    #     font                   = cv2.FONT_HERSHEY_SIMPLEX
+    #     bottomLeftCornerOfText = (10,500)
+    #     fontScale              = 1
+    #     fontColor              = (255,255,255)
+    #     lineType               = 2
+    #     cv2.putText(frame,text,bottomLeftCornerOfText,font,fontScale,fontColor,lineType)
+
     
     # load/show the image
     image = Image(frame)

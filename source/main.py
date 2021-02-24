@@ -11,6 +11,7 @@ import numpy as np
 from itertools import count
 from multiprocessing import Manager, Process,Value,Array
 from multiprocessing.managers import BaseManager
+import math
 
 # relative imports
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
@@ -57,7 +58,7 @@ def setup(
     def angleFromCenter(xObject,yObject,xCamCenter,yCamCenter,hFOV,vFOV):
         hAngle = ((xObject-xCamCenter)/xCamCenter)*(hFOV/2)
         vAngle = ((yObject-yCamCenter)/yCamCenter)*(vFOV/2)
-        return hAngle,vAngle
+        return math.radians(hAngle),math.radians(vAngle)
     
     # 
     # option #1
@@ -97,6 +98,8 @@ def setup(
             
             # Finds the coordinate for the center of the screen
             center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
+            hAngle = None
+            vAngle = None
 
             if len(boxes)!=0:
                 # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
@@ -112,25 +115,12 @@ def setup(
                     prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim, returns (xObjCenter, yObjCenter, depth, vXObjCenter, vYObjCenter, vDepth)
                 
                 # send data to embedded
-                hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov)
-                text = "ANGLES: "+str(np.round(hAngle,2))+" "+str(np.round(vAngle,2))
-                font                   = cv2.FONT_HERSHEY_SIMPLEX
-                bottomLeftCornerOfText = (10,500)
-                fontScale              = 1
-                fontColor              = (255,255,255)
-                lineType               = 2
-
-                cv2.putText(color_image,text, 
-                    bottomLeftCornerOfText, 
-                    font, 
-                    fontScale,
-                    fontColor,
-                    lineType)
+                hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov) and returns angles in radians
                 embedded_communication.send_output(hAngle, vAngle)
                 
             # optional value for debugging/testing
             if not (on_next_frame is None):
-                on_next_frame(frameNumber, color_image, (boxes, confidences), (0,0))
+                on_next_frame(frameNumber, color_image, (boxes, confidences), (hAngle,vAngle))
     
     # 
     # option #2
@@ -193,6 +183,8 @@ def setup(
             else:
                 best_bounding_box = track.update(color_image)
 
+            hAngle = None
+            vAngle = None
 
             if best_bounding_box is not None:
                 prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]+best_bounding_box[3]/2,0] # xObjCenter, yObjCenter, depth
@@ -203,25 +195,12 @@ def setup(
                     prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim, returns (xObjCenter, yObjCenter, depth, vXObjCenter, vYObjCenter, vDepth)
                 
                 # send data to embedded
-                hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov)
-                text = "ANGLES: "+str(np.round(hAngle,2))+" "+str(np.round(vAngle,2))
-                font                   = cv2.FONT_HERSHEY_SIMPLEX
-                bottomLeftCornerOfText = (10,500)
-                fontScale              = 1
-                fontColor              = (255,255,255)
-                lineType               = 2
-
-                cv2.putText(color_image,text, 
-                    bottomLeftCornerOfText, 
-                    font, 
-                    fontScale,
-                    fontColor,
-                    lineType)
+                hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov) and returns angles in radians
                 embedded_communication.send_output(hAngle, vAngle)
                 
             # optional value for debugging/testing
             if not (on_next_frame is None):
-                on_next_frame(frameNumber, color_image, ([best_bounding_box], [1])if best_bounding_box else ([], []), (0,0))
+                on_next_frame(frameNumber, color_image, ([best_bounding_box], [1])if best_bounding_box else ([], []), (hAngle,vAngle))
                 
     
 
