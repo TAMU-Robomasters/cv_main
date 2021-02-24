@@ -96,23 +96,24 @@ def setup(
             boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)  
             
             # Finds the coordinate for the center of the screen
-            center = (color_image.shape[1] / 2, color_image.shape[0] / 2)
-
+            center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x/2 from columns/2,y/2 from rows/2)
+            print(center)
             if len(boxes)!=0:
                 # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
                 bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
                 # Finds the centermost bounding box
                 best_bounding_box = min(bboxes, key=bboxes.get)
 
-                prediction = [best_bounding_box[0],best_bounding_box[1],0]
+                prediction = [best_bounding_box[0],best_bounding_box[1],0] # row, column, depth
 
                 if testing == False:
                     z0 = cameraMethods.getDistFromArray(depth_image,best_bounding_box,gridSize)
                     kalmanBox = [best_bounding_box[0],best_bounding_box[1],z0] # Put data into format the kalman filter asks for
-                    prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim
+                    prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim, returns (row,column,depth,vRow,vCol,vDepth)
                 
                 # send data to embedded
-                hAngle, vAngle = angleFromCenter(prediction[1],prediction[0],center[0],center[1],horizontalFOV,verticalFOV) # send column,row since using array but calculating angle for image
+                hAngle, vAngle = angleFromCenter(prediction[1],center[1]-prediction[0],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov)
+                print("ANGLES: ",hAngle,vAngle)
                 embedded_communication.send_output(hAngle, vAngle)
                 
             # optional value for debugging/testing
