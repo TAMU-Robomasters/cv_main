@@ -21,26 +21,20 @@ config.enable_stream(rs.stream.color, streamWidth, streamHeight, rs.format.bgr8,
 pipeline.start(config)
 
 t0 = time.time()
-framesa = []
+framesList = []
 status = True
 
 while (time.time()-t0) <timeRecord:
-    
-        frames = pipeline.wait_for_frames()     
-        color_frame = frames.get_color_frame()  
+    frames = pipeline.wait_for_frames()     
+    color_frame = frames.get_color_frame()  
 
-        if not color_frame:
-            print("INVALID FRAME, SKIPPING")
-            continue
+    if not color_frame:
+        print("INVALID FRAME, SKIPPING")
+        continue
 
-        color_image = np.asanyarray(color_frame.get_data())
-        image = Image(color_image) 
-        framesa.append(image.img)
-
-    
-    
-    
-    
+    color_image = np.asanyarray(color_frame.get_data())
+    image = Image(color_image) 
+    framesList.append(image.img)
 
 if status:
-    Video.create_from_frames(framesa, save_to=PATHS["record_video_output"])
+    Video.create_from_frames(framesList, save_to=PATHS["record_video_output"],fps=framerate)
