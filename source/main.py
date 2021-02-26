@@ -68,11 +68,11 @@ def setup(
         this function is the most simple version of CV
         - no tracking
         - no multiprocessing/async/multithreading
+        - no kalman filters since we need to track for that to be possible
         """
 
         frameNumber = 0 # used for on_next_frame
         model = modeling.modelingClass() # create instance of modeling
-        kalmanFilter = None
 
         while True:
             frame = get_frame()  
@@ -80,7 +80,6 @@ def setup(
             depth_image = None
 
             if testing == False:
-                kalmanFilter = aiming.Filter(predictionTime)
                 color_frame = frame.get_color_frame()
                 color_image = np.asanyarray(color_frame.get_data()) 
                 depth_frame = frame.get_depth_frame() 
@@ -109,11 +108,6 @@ def setup(
                 best_bounding_box = min(bboxes, key=bboxes.get)
 
                 prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]+best_bounding_box[3]/2,0] # xObjCenter, yObjCenter, depth
-
-                if testing == False:
-                    z0 = cameraMethods.getDistFromArray(depth_image,best_bounding_box,gridSize)
-                    kalmanBox = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
-                    prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim, returns (xObjCenter, yObjCenter, depth, vXObjCenter, vYObjCenter, vDepth)
                 
                 # send data to embedded
                 hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov) and returns angles in radians
@@ -131,6 +125,7 @@ def setup(
         the 2nd main function
         - no multiprocessing
         - does use the tracker(KCF)
+        - uses kalman filters
         """
 
         counter = 1
@@ -150,7 +145,6 @@ def setup(
             depth_image = None
 
             if testing == False:
-                kalmanFilter = aiming.Filter(predictionTime)
                 color_frame = frame.get_color_frame()
                 color_image = np.asanyarray(color_frame.get_data()) 
                 depth_frame = frame.get_depth_frame() 
@@ -183,6 +177,7 @@ def setup(
                     best_bounding_box = min(bboxes, key=bboxes.get)
 
                     best_bounding_box = track.init(color_image,best_bounding_box)
+                    kalmanFilter = aiming.Filter(predictionTime)
             else:
                 best_bounding_box = track.update(color_image)
 
