@@ -18,12 +18,12 @@ class trackingClass:
     def init(self,image, best_bounding_box):
         # creates the tracker and returns None if there are no bounding boxes to track
         self.tracker = cv2.TrackerKCF_create()
-        print("inside init for KCF")
+        print("Inside init for KCF Tracker.")
         
         # Attempts to start the tracker
         self.tracker.init(image, best_bounding_box)
         self.exists = True
-        print("TRACKER INIT")
+        print("Tracker initialization successful.")
         
         # returns the tracked bounding box if tracker was successful, otherwise None
         return best_bounding_box
@@ -32,7 +32,7 @@ class trackingClass:
     def update(self,image):
         # Attempts to update the object's location
         ok, location = self.tracker.update(image)
-        print("TRACKER CONTINUE",ok)
+        print("Tracker is good?",ok)
         if ok == False:
             self.exists = False
         # Returns the location if the location was updated, otherwise None

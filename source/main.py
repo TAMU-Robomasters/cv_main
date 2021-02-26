@@ -92,7 +92,9 @@ def setup(
                 color_image = frame
 
             frameNumber+=1
+            print()
             print(frameNumber)
+
             # run the model
             boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)  
             
@@ -108,14 +110,19 @@ def setup(
                 best_bounding_box = min(bboxes, key=bboxes.get)
 
                 prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]+best_bounding_box[3]/2,0] # xObjCenter, yObjCenter, depth
-                
+                print("Robot Location is:",prediction)
+
                 # send data to embedded
                 hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov) and returns angles in radians
+                print("Angles calculated are hAngle:",hAngle,"and vAngle:",vAngle)
                 embedded_communication.send_output(hAngle, vAngle)
-                
+            else:
+                print("No Bounding Boxes Found")
+
             # optional value for debugging/testing
             if not (on_next_frame is None):
                 on_next_frame(frameNumber, color_image, (boxes, confidences), (hAngle,vAngle))
+    
     
     # 
     # option #2
@@ -157,8 +164,8 @@ def setup(
                 color_image = frame
 
             frameNumber+=1
+            print()
             print(frameNumber)
-
             counter+=1
 
             # Finds the coordinate for the center of the screen
@@ -178,6 +185,7 @@ def setup(
 
                     best_bounding_box = track.init(color_image,best_bounding_box)
                     kalmanFilter = aiming.Filter(predictionTime)
+                    print("Now Tracking a New Object, reinitialized Kalman Filter.")
             else:
                 best_bounding_box = track.update(color_image)
 
@@ -185,23 +193,28 @@ def setup(
             vAngle = None
 
             if best_bounding_box is not None:
-                prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]+best_bounding_box[3]/2,0] # xObjCenter, yObjCenter, depth
+                prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]+best_bounding_box[3]/2] # xObjCenter, yObjCenter
+                print("Prediction is:",prediction)
 
+                # Comment this if branch out in case kalman filters doesn't work
                 if testing == False:
                     z0 = cameraMethods.getDistFromArray(depth_image,best_bounding_box,gridSize)
                     kalmanBox = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
-                    prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim, returns (xObjCenter, yObjCenter, depth, vXObjCenter, vYObjCenter, vDepth)
-                
+                    prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim, returns (xObjCenter, yObjCenter)
+                    print("Kalman Filter updated Prediction to:",prediction)
+
                 # send data to embedded
                 hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov) and returns angles in radians
+                print("Angles calculated are hAngle:",hAngle,"and vAngle:",vAngle)
                 embedded_communication.send_output(hAngle, vAngle)
-                
+            else:
+                print("No Bounding Boxes Found")
+
             # optional value for debugging/testing
             if not (on_next_frame is None):
                 on_next_frame(frameNumber, color_image, ([best_bounding_box], [1])if best_bounding_box else ([], []), (hAngle,vAngle))
                 
     
-
     def modelMulti(color_image,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames,center):
         #run the model and update best bounding box to the new bounding box if it exists, otherwise keep tracking the old bounding box
         boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
