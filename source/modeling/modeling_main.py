@@ -67,6 +67,8 @@ class modelingClass:
                     # actually returns the center (x, y)-coordinates of
                     # the bounding box followed by the boxes' width and
                     # height
+                    # the y coordinate has the top of the image as 0, so technically flipped
+
                     box = detection[0:4] * np.array([self.W,self. H, self.W, self.H])
                     (centerX, centerY, width, height) = box.astype("int")
 

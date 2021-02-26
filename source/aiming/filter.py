@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import filterpy
 from statistics import stdev
 from filterpy.kalman import KalmanFilter

@@ -93,6 +93,7 @@ def setup(
                 color_image = frame
 
             frameNumber+=1
+            print(frameNumber)
             # run the model
             boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)  
             
@@ -162,6 +163,8 @@ def setup(
                 color_image = frame
 
             frameNumber+=1
+            print(frameNumber)
+
             counter+=1
 
             # Finds the coordinate for the center of the screen
@@ -342,6 +345,5 @@ if __name__ == '__main__':
         aiming=test_aiming,
         testing = False
     )
-    # TODO: CREATE INSTANCE OF AIMING CLASS WHERE IT INITIALIZES PIPELINE, THIS WILL BE THE BEGINNING OF AIMING INTEGRATION
 
     simple_synchronous()
