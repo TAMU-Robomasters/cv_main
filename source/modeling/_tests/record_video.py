@@ -24,7 +24,7 @@ pipeline.start(config)
 
 frame_height, frame_width = 480,848
 frame_dimensions = (frame_width, frame_height)
-colorwriter = cv2.VideoWriter(videoLocation, cv2.VideoWriter_fourcc(*'mp4v'), 30, frame_dimensions)
+colorwriter = cv2.VideoWriter(videoLocation, cv2.VideoWriter_fourcc(*'mp4v'), framerate, frame_dimensions)
 
 t0 = time.time()
 try:
