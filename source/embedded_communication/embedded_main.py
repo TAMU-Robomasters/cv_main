@@ -12,15 +12,18 @@ class EmbeddedCommunication:
         else:
             self.port=Serial(port,baudrate=baudrate,timeout=3.0)
 
-    def send_output(self,x:int,y:int,padding_per_value=5):
+    def send_output(self,x,y):
         """
         Send data to DJI board via serial communication as a padded string
         e.g. given x=1080, y=500, and padding_per_value=5, it will send 0108000500 to DJI board.
         :param x: x coordinate of the target. Unit: pixel. Zero coordinate: upper left
         :param y: y coordinate of the target. Unit: pixel. Zero coordinate: upper left
         """
+        x = int(x*1000)
+        y = int(y*1000)
+
         if self.port is not None:
-            self.port.write((str(x).zfill(padding_per_value)+str(y).zfill(padding_per_value)).encode())
+            self.port.write(("s "+str(x)+" "+str(y)+" e ").encode())
 
     def read_input(self):
         """

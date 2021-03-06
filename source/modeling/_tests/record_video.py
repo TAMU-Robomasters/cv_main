@@ -22,8 +22,7 @@ config.enable_stream(rs.stream.depth, streamWidth, streamHeight, rs.format.z16, 
 config.enable_stream(rs.stream.color, streamWidth, streamHeight, rs.format.bgr8, framerate) 
 pipeline.start(config)
 
-frame_height, frame_width = 480,848
-frame_dimensions = (frame_width, frame_height)
+frame_dimensions = (streamWidth, streamHeight)
 colorwriter = cv2.VideoWriter(videoLocation, cv2.VideoWriter_fourcc(*'mp4v'), framerate, frame_dimensions)
 
 t0 = time.time()
