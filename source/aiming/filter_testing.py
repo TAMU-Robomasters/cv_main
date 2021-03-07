@@ -1,5 +1,6 @@
 from filter import Filter
 
+
 filter = Filter(0.1)
 print(filter.f.P)
 
