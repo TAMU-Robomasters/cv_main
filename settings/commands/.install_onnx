@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+# Install the prerequisite protobuf
+sudo pip3 install protobuf
+sudo pip3 install --upgrade protobuf
+sudo apt-get install protobuf-compiler libprotoc-dev
+
+# Install Onnx
+sudo pip3 install onnx==1.4.1

@@ -16,7 +16,7 @@ from source.embedded_communication.embedded_main import embedded_communication
 import source.modeling.modeling_main as modeling
 import source.tracking.tracking_main as tracker
 import source.aiming.aiming_main as aiming
-
+import time
 # import parameters from the info.yaml file
 confidence = PARAMETERS["model"]["confidence"]
 threshold = PARAMETERS["model"]["threshold"]
@@ -53,6 +53,7 @@ def setup(
         # create instance of modeling
         model = modeling.modelingClass()
 
+
         while True:
             # get the latest image from the camera
             frame = get_frame()
@@ -68,14 +69,16 @@ def setup(
 
             frameNumber+=1
             # run the model
+            t = time.time()
             boxes, confidences, classIDs, frame = model.get_bounding_boxes(frame, confidence, threshold)
+            modelTime = time.time()-t
             
             # figure out where to aim
             x, y = aiming.aim(boxes)
             
             # optional value for debugging/testing
             if not (on_next_frame is None):
-                on_next_frame(frameNumber, frame, (boxes, confidences), (x,y))
+                on_next_frame(frameNumber, frame, (boxes, confidences), (x,y),modelTime)
             
             # send data to embedded
             embedded_communication.send_output(x, y)
@@ -114,20 +117,27 @@ def setup(
 
             frameNumber+=1
             counter+=1
+            t1 = 0
+            t2 = 0
             # run model every model_frequency frames or whenever the tracker fails
             if counter % model_frequency == 0 or (best_bounding_box is None):
                 counter=1
                 # call model and initialize tracker
+                t0 = time.time();
                 boxes, confidences, classIDs, frame = model.get_bounding_boxes(frame, confidence, threshold)
                 best_bounding_box = track.init(frame,boxes)
-            else:
-                best_bounding_box = track.update(frame)
+                t1 = time.time();
 
+            else:
+                t0 = time.time()
+                best_bounding_box = track.update(frame)
+                t1 = time.time()
+            modelTime = t1-t0
             # optional value for debugging/testing
             x, y = aiming.aim([best_bounding_box] if best_bounding_box else [])
 
             if not (on_next_frame is None) :
-                on_next_frame(frameNumber, frame, ([best_bounding_box], [1])if best_bounding_box else ([], []), (x,y))
+                on_next_frame(frameNumber, frame, ([best_bounding_box], [1])if best_bounding_box else ([], []), (x,y),modelTime)
                 
     
 
