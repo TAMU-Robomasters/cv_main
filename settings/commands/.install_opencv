@@ -7,16 +7,20 @@
 # make sure required libraries are up to date
 sudo apt-get update -y
 sudo apt-get upgrade -y
-sudo apt-get install build-essential cmake unzip pkg-config -y
-sudo apt-get install libjpeg-dev libpng-dev libtiff-dev -y
-sudo apt-get install libavcodec-dev libavformat-dev libswscale-dev -y
-sudo apt-get install libv4l-dev libxvidcore-dev libx264-dev -y
-sudo apt-get install libgtk-3-dev -y
-sudo apt-get install libatlas-base-dev gfortran -y
-sudo apt-get install python3-dev -y
+sudo apt-get install -y build-essential make cmake cmake-curses-gui git g++ pkg-config curl
+sudo apt-get install -y libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libeigen3-dev libglew-dev libgtk2.0-dev
+sudo apt-get install -y libtbb2 libtbb-dev libv4l-dev v4l-utils qv4l2 v4l2ucp
+sudo apt-get install -y libdc1394-22-dev libxine2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+sudo apt-get install -y libjpeg8-dev libjpeg-turbo8-dev libtiff-dev libpng-dev
+sudo apt-get install -y libxvidcore-dev libx264-dev libgtk-3-dev
+sudo apt-get install -y libatlas-base-dev libopenblas-dev liblapack-dev liblapacke-dev gfortran
+sudo apt-get install -y qt5-default
+sudo apt-get install -y python3-dev python3-testresources
+sudo pip3 install protobuf
+sudo pip3 install -U numpy matplotlib
 
-# go to SDCard since it has space, install and unzip opencv and contrib
-cd /media/nvidia/SDCard
+# LOCATION OF OPENCV INSTALLATION, install and unzip opencv and contrib
+cd ~/Documents
 wget -O opencv.zip https://github.com/opencv/opencv/archive/4.5.0.zip
 wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/4.5.0.zip
 unzip opencv.zip
@@ -25,11 +29,12 @@ mv opencv-4.5.0 opencv
 mv opencv_contrib-4.5.0 opencv_contrib
 
 # make a build folder for opencv
-cd /media/nvidia/SDCard/opencv
+cd opencv
 mkdir build && cd build
 
 # generate build files
 cmake -D CMAKE_BUILD_TYPE=RELEASE \
+<<<<<<< HEAD
 	-D CMAKE_INSTALL_PREFIX=/usr/local \
 	-D INSTALL_PYTHON_EXAMPLES=OFF \
 	-D INSTALL_C_EXAMPLES=OFF \
@@ -48,6 +53,30 @@ cmake -D CMAKE_BUILD_TYPE=RELEASE \
 	-D HAVE_opencv_python3=ON \
 	-D PYTHON_DEFAULT_EXECUTABLE=$(which python3) \
 	-D BUILD_EXAMPLES=OFF ..
+=======
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D INSTALL_PYTHON_EXAMPLES=OFF \
+    -D INSTALL_C_EXAMPLES=OFF \
+    -D OPENCV_ENABLE_NONFREE=ON \
+    -D WITH_CUDA=ON \
+    -D WITH_CUDNN=ON \
+    -D OPENCV_DNN_CUDA=ON \
+    -D ENABLE_FAST_MATH=ON \
+    -D CUDA_FAST_MATH=ON \
+    -D CUDA_ARCH_BIN=7.2 \
+    -D WITH_CUBLAS=1 \
+    -D WITH_QT=ON \
+    -D WITH_GTK=ON \
+    -D WITH_OPENGL=ON \
+    -D BUILD_LIBPROTOBUF_FROM_SOURCES=ON \
+    -D OPENCV_EXTRA_MODULES_PATH=~/Documents/opencv_contrib/modules \
+    -D BUILD_NEW_PYTHON_SUPPORT=ON \
+    -D BUILD_opencv_python3=ON \
+    -D HAVE_opencv_python3=ON \
+	-D PYTHON_DEFAULT_EXECUTABLE=$(which python3) \
+    -D BUILD_EXAMPLES=OFF ..
+
+>>>>>>> origin
 
 # build using all cores and install libraries
 make -j$(nproc)

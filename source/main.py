@@ -20,6 +20,7 @@ import source.modeling._tests.test_modeling as test_modeling
 import source.tracking._tests.test_tracking as test_tracking
 import source.aiming.filter as test_aiming
 import source.aiming.depth_camera as cameraMethods
+import time
 
 # import parameters from the info.yaml file
 confidence = PARAMETERS["model"]["confidence"]
@@ -96,7 +97,9 @@ def setup(
             print(frameNumber)
 
             # run the model
-            boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)  
+            t = time.time()
+            boxes, confidences, classIDs, frame = model.get_bounding_boxes(frame, confidence, threshold)
+            modelTime = time.time()-t
             
             # Finds the coordinate for the center of the screen
             center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
@@ -121,8 +124,8 @@ def setup(
 
             # optional value for debugging/testing
             if not (on_next_frame is None):
-                on_next_frame(frameNumber, color_image, (boxes, confidences), (hAngle,vAngle))
-    
+                on_next_frame(frameNumber, color_image, (boxes, confidences), (hAngle,vAngle),modelTime)
+
     
     # 
     # option #2
@@ -170,13 +173,15 @@ def setup(
 
             # Finds the coordinate for the center of the screen
             center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
-
+            t1 = 0
+            t2 = 0
+            
             # run model every model_frequency frames or whenever the tracker fails
             if counter % model_frequency == 0 or (best_bounding_box is None):
                 counter=1
                 # call model
+                t1 = time.time()
                 boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
-
                 if len(boxes) != 0:
                     # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
                     bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
@@ -186,8 +191,11 @@ def setup(
                     best_bounding_box = track.init(color_image,best_bounding_box)
                     kalmanFilter = aiming.Filter(predictionTime)
                     print("Now Tracking a New Object, reinitialized Kalman Filter.")
+                t2 = time.time()
             else:
+                t1 = time.time()
                 best_bounding_box = track.update(color_image)
+                t2 = time.time()
 
             hAngle = None
             vAngle = None
@@ -210,9 +218,10 @@ def setup(
             else:
                 print("No Bounding Boxes Found")
 
-            # optional value for debugging/testing
+            # optional value for debugging/testing\
+            modelTime = t2-t1
             if not (on_next_frame is None):
-                on_next_frame(frameNumber, color_image, ([best_bounding_box], [1])if best_bounding_box else ([], []), (hAngle,vAngle))
+                on_next_frame(frameNumber, color_image, ([best_bounding_box], [1])if best_bounding_box else ([], []),(hAngle,vAngle), modelTime)
                 
     
     def modelMulti(color_image,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames,center):
