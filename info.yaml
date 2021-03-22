@@ -48,7 +48,6 @@ paths:
     video_output: ./result.nosync.mp4
     record_video_output_color: ./recordedVideoColor.nosync.mp4
     record_video_output_depth: ./recordedVideoDepth.nosync.mp4
-    time_output: ./time.txt
     # model
     model_weights: ./source/modeling/model/yolov4-tiny-416.weights
     model_config: ./source/modeling/model/yolov4-tiny-416.cfg

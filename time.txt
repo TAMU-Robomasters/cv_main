@@ -1,5 +1,0 @@
-<<<<<<< HEAD
-Time Taken: 10.725556373596191 seconds
-=======
-Time Taken: 16.499338150024414 seconds
->>>>>>> origin
