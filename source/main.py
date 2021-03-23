@@ -98,7 +98,7 @@ def setup(
 
             # run the model
             t = time.time()
-            boxes, confidences, classIDs, frame = model.get_bounding_boxes(frame, confidence, threshold)
+            boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
             modelTime = time.time()-t
             
             # Finds the coordinate for the center of the screen
@@ -122,9 +122,10 @@ def setup(
             else:
                 print("No Bounding Boxes Found")
 
+            print('Processing frame',frameNumber,'took',modelTime,"seconds for model only")
             # optional value for debugging/testing
             if not (on_next_frame is None):
-                on_next_frame(frameNumber, color_image, (boxes, confidences), (hAngle,vAngle),modelTime)
+                on_next_frame(frameNumber, color_image, (boxes, confidences), (hAngle,vAngle))
 
     
     # 
@@ -220,8 +221,10 @@ def setup(
 
             # optional value for debugging/testing\
             modelTime = t2-t1
+            print('Processing frame',frameNumber,'took',modelTime,"seconds for model+tracker")
+
             if not (on_next_frame is None):
-                on_next_frame(frameNumber, color_image, ([best_bounding_box], [1])if best_bounding_box else ([], []),(hAngle,vAngle), modelTime)
+                on_next_frame(frameNumber, color_image, ([best_bounding_box], [1])if best_bounding_box else ([], []),(hAngle,vAngle))
                 
     
     def modelMulti(color_image,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames,center):

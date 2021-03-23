@@ -17,7 +17,6 @@ timeRecord = PARAMETERS['videostream']['testing']['record_time']
 colorVideoLocation = PATHS['record_video_output_color']
 depthVideoLocation = PATHS['record_video_output_depth']
 
-
 pipeline = rs.pipeline()                                            
 config = rs.config()                                                
 config.enable_stream(rs.stream.depth, streamWidth, streamHeight, rs.format.z16, framerate)  
