@@ -6,19 +6,20 @@ import cv2
 # relative imports
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 import source.modeling.modeling_main as modeling
-import source.modeling.tracking_main as tracking
+import source.tracking.tracking_main as tracking
 import source.videostream._tests.get_next_video_frame as nextVideoFrame
 
 confidence = PARAMETERS["model"]["confidence"]
 threshold = PARAMETERS["model"]["threshold"]
 pathColor = PATHS["record_video_output_color"]
 pathDepth = PATHS["record_video_output_depth"]
-pathTxt = PATHS["record_video_output_depth"]
+pathTxt = PATHS["color_depth"]
+
 file = open(pathTxt,"w")
 model = modeling.modelingClass()
 track = tracking.trackingClass()
 colorVideo = nextVideoFrame.nextFromVideo(pathColor)
-depthVideo = nextVideoFrame.nextFromVideo(pathDepth)
+depthText = open(pathDepth,'r')
 best_bounding_box = None
 counter = 0
 
@@ -28,16 +29,15 @@ def distance(point_1: tuple, point_2: tuple):
     # Returns the distance between two points
     return distance
 
-while (color_image:=colorVideo.getFrame()) is not None and (depth_image:=depthVideo.getFrame()) is not None:
+color_image = colorVideo.getFrame()
+while color_image is not None:
+    content = ""
     for row in color_image:
         for col in row:
-            file.write(str(col)+" ")
-        file.write("\n")
+            content += str(col[0])+" " + str(col[1])+" " + str(col[2])+" "
+    file.write(content+"\n")
 
-    for row in depth_image:
-        for col in row:
-            file.write(str(col)+" ")
-        file.write("\n")
+    file.write(depthText.readline())
 
     center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
     counter+=1
