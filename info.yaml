@@ -57,3 +57,4 @@ paths:
     #aiming
     R_test_image: ./source/_test_data/mask_R_blur.png
     rune_test_video: ./source/_test_data/rune3.mp4
+    color_depth: ./output.dont_sync.txt

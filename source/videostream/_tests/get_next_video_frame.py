@@ -7,10 +7,9 @@ from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 # initilize
 # 
 class nextFromVideo:
-    def __init__(self):
-        test_video = Video(PATHS["main_test_video"])
+    def __init__(self,path):
+        test_video = Video(path)
         self.frame_generator = test_video.frames()
-
     def getFrame(self):
         try:
             return self.frame_generator.__next__()

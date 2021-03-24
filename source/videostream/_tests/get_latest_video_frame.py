@@ -4,8 +4,8 @@ from toolbox.video_tools import Video
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 
 class latestFromVideo:
-    def __init__(self):
-        test_video = Video(PATHS["main_test_video"])
+    def __init__(self,path):
+        test_video = Video(path)
         print('Loading all frames into ram for simulated testing')
         self.all_frames = list(test_video.frames())
         print(f'Found {len(all_frames)} frames')

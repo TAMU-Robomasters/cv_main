@@ -70,11 +70,12 @@ def debug_each_frame(frame_index, frame, model_ouput, aiming_output):
 
 # decide method of sending frames
 status =  PARAMETERS['videostream']['testing']['grab_frame']# 0 means grab next frame, 1 means grab latest frame, 2 means camera feed
+path = PATHS["main_test_video"]
 get_frame = None
 if status == 0:
-    get_frame = nextVideoFrame.nextFromVideo()
+    get_frame = nextVideoFrame.nextFromVideo(path)
 elif status == 1:
-    get_frame = latestVideoFrame.latestFromVideo()
+    get_frame = latestVideoFrame.latestFromVideo(path)
 
 # 
 # setup main(s)
