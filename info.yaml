@@ -47,7 +47,7 @@ paths:
     main_test_image: ./source/_test_data/test.png
     video_output: ./result.nosync.mp4
     record_video_output_color: ./recordedVideoColor.nosync.mp4
-    record_text_output_depth: ./recordedTextDepth.nosync.txt
+    record_file_output_depth: ./source/scripts/data/image    
     # model
     model_weights: ./source/modeling/model/yolov4-tiny-416.weights
     model_config: ./source/modeling/model/yolov4-tiny-416.cfg

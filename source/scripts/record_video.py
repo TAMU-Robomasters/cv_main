@@ -15,7 +15,7 @@ gridSize = PARAMETERS['aiming']['grid_size']
 frameAmount = PARAMETERS['videostream']['testing']['camera_frames']
 timeRecord = PARAMETERS['videostream']['testing']['record_time']
 colorVideoLocation = PATHS['record_video_output_color']
-depthTextLocation = PATHS['record_text_output_depth']
+depthfileLocation = PATHS['record_file_output_depth']
 
 pipeline = rs.pipeline()                                            
 config = rs.config()                                                
@@ -25,8 +25,6 @@ pipeline.start(config)
 
 frame_dimensions = (streamWidth, streamHeight)
 colorwriter = cv2.VideoWriter(colorVideoLocation, cv2.VideoWriter_fourcc(*'mp4v'), framerate, frame_dimensions)
-depthwriter = open(depthTextLocation,"w")
-
 t0 = time.time()
 counter = 0
 
@@ -41,18 +39,11 @@ try:
             continue
 
         color_image = np.asanyarray(color_frame.get_data())
-        depth_image = np.asanyarray(depth_frame.get_data())
+        depth_image = np.asanyarray(depth_frame.get_data()).flatten()
         colorwriter.write(color_image)
+        np.save(depthfileLocation+str(counter),depth_image)
 
-        content = ""
-        for row in depth_image:
-            for col in row:
-                content+=str(col)+" "
-        content+="\n"
-
-        depthwriter.write(content)
         print("FRAME:",counter)
 finally:
     colorwriter.release()
-    depthwriter.close()
     pipeline.stop()
