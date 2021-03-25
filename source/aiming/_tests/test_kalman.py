@@ -32,6 +32,5 @@ except Exception as e: # THIS WILL ALWAYS RUN SINCE WE RUN OUT OF FRAMES AND ARE
     print("FINISHED LOADING IMAGES")
     print("YOU CAN IGNORE THIS EXCEPTION IF YOUR DATA LOOKS GOOD (KEPT FOR DEBUGGING PURPOSES):",e)
 finally:
-    print(colors)
-    print(depths)
-    print(bboxs)
+    # DO WHATEVER YOU WANT WITH THE FRAMES
+    print(depths[1])

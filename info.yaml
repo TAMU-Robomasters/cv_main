@@ -7,7 +7,7 @@ parameters:
         confidence: 0.5
         threshold: 0.3
         frequency: 70
-        gpu_acceleration: 0 # 0 for none, 1 for gpu only, 2 for tensorRT
+        gpu_acceleration: 1 # 0 for none, 1 for gpu only, 2 for tensorRT
         input_dimension: 416
     aiming:
         prediction_time: 2 # time interval in seconds to predict using kalman filters
@@ -47,7 +47,7 @@ paths:
     main_test_image: ./source/_test_data/test.png
     video_output: ./result.nosync.mp4
     record_video_output_color: ./recordedVideoColor.nosync.mp4
-    npy_frames: ./source/scripts/data/image    
+    npy_frames: ./source/scripts/data
     # model
     model_weights: ./source/modeling/model/yolov4-tiny-416.weights
     model_config: ./source/modeling/model/yolov4-tiny-416.cfg
