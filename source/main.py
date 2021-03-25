@@ -180,6 +180,7 @@ def setup(
             # run model every model_frequency frames or whenever the tracker fails
             if counter % model_frequency == 0 or (best_bounding_box is None):
                 counter=1
+                best_bounding_box = None
                 # call model
                 t1 = time.time()
                 boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)

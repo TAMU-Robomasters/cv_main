@@ -84,6 +84,7 @@ while color_image is not None:
 
     if counter % model_frequency == 0 or (best_bounding_box is None):
         counter = 0
+        best_bounding_box = None
         boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
         print("MODEL")
         if len(boxes) != 0:
