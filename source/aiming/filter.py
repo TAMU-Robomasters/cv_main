@@ -21,7 +21,7 @@ class Filter():
                              [0, 0, 0, 0, 1, 0]])     # models to sensor data
         self.f.P *= 0.5                         # covariance matrix
         self.f.R = np.full((3, 3), 0.125)       # sensor noise
-        self.f.Q = Q_discrete_white_noise(dim=2, dt=t, var=2, block_size=3) + 1   # uncertainty 
+        # self.f.Q = Q_discrete_white_noise(dim=2, dt=t, var=2, block_size=3, order_by_dim = True) + 1   # uncertainty 
         # The error should be small compared to the actual value. How do we accomodate for that?    -- Carson
 
         # TODO: -- Carson

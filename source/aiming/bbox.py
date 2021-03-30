@@ -111,7 +111,11 @@ for t in bboxes:
     # draw the bounding box
     startpoint = (int(t[0]),int(t[1]))
     endpoint = (int(t[0]+t[2]),int(t[1]+t[3]))
+    centerX = int(startpoint[0]) + int((int(endpoint[0]) - int(startpoint[0])) / 2)
+    centerY = int(startpoint[1]) + int((int(endpoint[1]) - int(startpoint[1])) / 2)
     color = (0,255,0)
+    color1 = (0,0,255)
+
     thickness = 3
     img = np.zeros((408,848,3), np.uint8)
     cv.rectangle(img, startpoint, endpoint, color, thickness)
@@ -123,7 +127,9 @@ for t in bboxes:
     filter.predict([x,y,z])
     data = filter.f.x
     # abs(int(data[4])*10)
+    cv.circle(img, (centerX, centerY), 1, color1, 1)
     cv.circle(img, (int(data[0]), int(data[2])), 3, color, 1)
+    print("original:", z, "predicted", data[4])
     # cv.rectangle(img, startpoint, endpoint, color, thickness)
     time.sleep(0.05)
     cv.imshow("hello",img)
