@@ -1,5 +1,4 @@
 import time
-import pyrealsense2 as rs
 import numpy as np
 import sys
 import cv2
