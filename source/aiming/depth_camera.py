@@ -3,7 +3,7 @@ import cv2
 from toolbox.globals import PARAMETERS,print
 
 
-def getDistFromArray(depth_frame_array, bbox,gridSize):
+def getDistFromArray(depth_frame_array, bbox, gridSize):
     xTopLeft = bbox[0] 
     yTopLeft = bbox[1]
     width = bbox[2]
@@ -35,3 +35,15 @@ def getDistFromArray(depth_frame_array, bbox,gridSize):
 
     distance = (np.mean(modifiedDistances)+np.median(modifiedDistances))/2
     return distance
+
+
+# bbox[x coordinate of the top left of the bounding box, y coordinate of the top left of the bounding box, width of box, height of box]
+def WorldCoordinate(depth_frame, bbox):
+    depth_intrin = depth_frame.profile.as_video_stream_profile().intrinsics
+    depth_value = DistanceInBox(bbox)
+    # depth_pixel = [depth_intrin.ppx, depth_intrin.ppy]
+    depth_pixel = [bbox[0] + .5 * bbox[2], bbox[1] + .5 * bbox[3]]
+    depth_point = rs.rs2_deproject_pixel_to_point(depth_intrin, depth_pixel, depth_value)
+    return depth_point
+    if not depth_frame:                     # if there is no aligned_depth_frame or color_frame then leave the loop
+        return None
