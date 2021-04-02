@@ -5,7 +5,7 @@ from filterpy.kalman import KalmanFilter
 from filterpy.common import Q_discrete_white_noise
 
 class Filter():
-    def __init__(self, t):  # t = time interval
+    def __init__(self, t, xpos, xvel, ypos, yvel, zpos, zvel):  # t = time interval
         self.f = KalmanFilter(dim_x=6, dim_z=3)
   
         self.f.x = np.array([0., 0., 0., 0., 0., 0.])    # x_pos, x_vel, y_pos, y_vel, z_pos, z_vel
@@ -30,6 +30,7 @@ class Filter():
 
         self.f.predict()
 
+
     def predict(self, data):
         # center of bounding box given by (x, y, z)
         pos_x = int(data[0])
@@ -40,6 +41,6 @@ class Filter():
                                 [pos_y],
                                 [pos_z]]))
         self.f.predict()
-
+        
         return self.f.x
         
