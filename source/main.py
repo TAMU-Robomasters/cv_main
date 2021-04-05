@@ -27,7 +27,7 @@ confidence = PARAMETERS["model"]["confidence"]
 threshold = PARAMETERS["model"]["threshold"]
 model_frequency = PARAMETERS["model"]["frequency"]
 grabFrame = PARAMETERS['videostream']['testing']['grab_frame']
-predictionTime = PARAMETERS['aiming']['prediction_time']
+modelFPS = PARAMETERS['aiming']['model_fps']
 gridSize = PARAMETERS['aiming']['grid_size']
 horizontalFOV = PARAMETERS['aiming']['horizontal_fov']
 verticalFOV = PARAMETERS['aiming']['vertical_fov']
@@ -191,7 +191,7 @@ def setup(
                     best_bounding_box = min(bboxes, key=bboxes.get)
 
                     best_bounding_box = track.init(color_image,best_bounding_box)
-                    kalmanFilter = aiming.Filter(predictionTime)
+                    kalmanFilter = aiming.Filter(modelFPS)
                     print("Now Tracking a New Object, reinitialized Kalman Filter.")
                 t2 = time.time()
             else:

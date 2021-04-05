@@ -44,7 +44,7 @@ finally:
 
     # filter = f.Filter(5)
 
-    filter = f.Filter(0.033, 0, 0, 0, 0, 0, 0)
+    filter = f.Filter(33)
     print(filter.f.x)
     for i in range(len(depths)):
 
@@ -63,11 +63,10 @@ finally:
         X = filter.predict([bbox[0]+bbox[2]/2, bbox[1]+bbox[3]/2, depth_value])
         preds.append(np.array([X[0]-bbox[2]/2, X[2]-bbox[3]/2, bbox[2], bbox[3]]))
         print("0.033:",X)
+
         # 0.5 second filter
-        # filter_0_5 = f.Filter(0.5, X[0], X[1], X[2], X[3], X[4], X[5])
-        # filter_0_5.f.predict()
-        # X0_5 = filter_0_5.f.x
-        X0_5 = [X[0] + 0.5 * X[1], X[1], X[2] + 0.5 * X[3], X[3], X[4] + 0.5 * X[5], X[5]]
+        time = dc.travelTime(depth_value)
+        X0_5 = filter.timePredict(0.5)
         preds_0_5.append(np.array([X0_5[0]-bbox[2]/2, X0_5[2]-bbox[3]/2, bbox[2], bbox[3]]))
         print("0.5:",X0_5)
 
@@ -75,7 +74,8 @@ finally:
         # filter_1 = f.Filter(1, X[0], X[1], X[2], X[3], X[4], X[5])
         # filter_1.f.predict()
         # X1 = filter_1.f.x
-        X1 = [X[0] + 1 * X[1], X[1], X[2] + 1 * X[3], X[3], X[4] + 1 * X[5], X[5]]
+        X1 = filter.timePredict(1)
+        # X1 = [X[0] + 1 * X[1], X[1], X[2] + 1 * X[3], X[3], X[4] + 1 * X[5], X[5]]
         preds_1.append(np.array([X1[0]-bbox[2]/2, X1[2]-bbox[3]/2, bbox[2], bbox[3]]))
         print("1:",X1)
         print()

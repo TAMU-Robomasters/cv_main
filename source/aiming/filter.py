@@ -3,9 +3,12 @@ import filterpy
 from statistics import stdev
 from filterpy.kalman import KalmanFilter
 from filterpy.common import Q_discrete_white_noise
+import source.aiming.depth_camera as dc
+
 
 class Filter():
-    def __init__(self, t, xpos, xvel, ypos, yvel, zpos, zvel):  # t = time interval
+    def __init__(self, FPS):  # t = time interval
+        t = 1/FPS
         self.f = KalmanFilter(dim_x=6, dim_z=3)
   
         self.f.x = np.array([0., 0., 0., 0., 0., 0.])    # x_pos, x_vel, y_pos, y_vel, z_pos, z_vel
@@ -42,5 +45,11 @@ class Filter():
                                 [pos_z]]))
         self.f.predict()
         
-        return self.f.x
-        
+        X = timePredict(dc.travelTime(pos_z))
+        location = [X[0], X[2]]
+        return location
+
+    def timePredict(self, time):
+        X = self.f.x
+        X = [X[0] + time * X[1], X[1], X[2] + time * X[3], X[3], X[4] + time * X[5], X[5]]
+        return X

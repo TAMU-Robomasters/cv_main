@@ -3,6 +3,7 @@ import cv2
 from toolbox.globals import PARAMETERS,print
 
 
+
 def getDistFromArray(depth_frame_array, bbox, gridSize):
     xTopLeft = bbox[0] 
     yTopLeft = bbox[1]
@@ -18,9 +19,15 @@ def getDistFromArray(depth_frame_array, bbox, gridSize):
     # double for loop to go through 2D array of 9x9 grid
     for i in range(gridSize):
         currX += x_interval # add the interval you calculated to traverse through the 9x9 grid
+        # print(currX)
+        if (xTopLeft+currX >= len(depth_frame_array[0])):
+            break
         for j in range(gridSize):
             currY += y_interval # add the interval you calculated to traverse through the 9x9 grid
             # gets the distance of the point from the depth frame on the grid and appends to the array
+            # print(currY)
+            if (yTopLeft+currY >= len(depth_frame_array)):
+                break
             distances = np.append(distances, depth_frame_array[int(yTopLeft+currY)][int(xTopLeft+currX)]/1000)
         currY = 0
     
@@ -47,3 +54,7 @@ def WorldCoordinate(depth_frame, bbox):
     return depth_point
     if not depth_frame:                     # if there is no aligned_depth_frame or color_frame then leave the loop
         return None
+
+# calculates the travel time of the bullet to the robot given the depth
+def travelTime(depth):
+    return 0.5
