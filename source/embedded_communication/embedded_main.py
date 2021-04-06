@@ -1,5 +1,6 @@
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
-from serial import Serial
+import serial
+import time
 
 class EmbeddedCommunication:
     """
@@ -10,20 +11,22 @@ class EmbeddedCommunication:
             self.port=None  # disable port
             print('Embedded Communication: Port is set to None. No communication will be established.')
         else:
-            self.port=Serial(port,baudrate=baudrate,timeout=3.0)
+            print("Embedded Communication: Port is set to",port)
+            self.port=serial.Serial(port,baudrate=baudrate,timeout=3.0,bytesize=serial.EIGHTBITS,parity=serial.PARITY_NONE,stopbits=serial.STOPBITS_ONE)
 
-    def send_output(self,x,y):
+    def send_output(self,x,y,padding_per_value=5):
         """
         Send data to DJI board via serial communication as a padded string
         e.g. given x=1080, y=500, and padding_per_value=5, it will send 0108000500 to DJI board.
         :param x: x coordinate of the target. Unit: pixel. Zero coordinate: upper left
         :param y: y coordinate of the target. Unit: pixel. Zero coordinate: upper left
         """
+        print("Sending To Embedded")
         x = int(x*1000)
         y = int(y*1000)
 
         if self.port is not None:
-            self.port.write(("s "+str(x)+" "+str(y)+" e ").encode())
+            self.port.write(("s "+str(x).zfill(padding_per_value)+" "+str(y).zfill(padding_per_value)+" e ").encode())
 
     def read_input(self):
         """

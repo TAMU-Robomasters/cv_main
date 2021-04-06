@@ -7,7 +7,7 @@ parameters:
         confidence: 0.5
         threshold: 0.3
         frequency: 70
-        gpu_acceleration: 1 # 0 for none, 1 for gpu only, 2 for tensorRT
+        gpu_acceleration: 0 # 0 for none, 1 for gpu only, 2 for tensorRT
         input_dimension: 416
     aiming:
         prediction_time: 2 # time interval in seconds to predict using kalman filters
@@ -36,9 +36,9 @@ parameters:
     testing:
         save_frame_to_file: true
         open_each_frame: false
-        main_function: 1 # 0 is simple synchronous, 1 is synchronous with tracker, 2 is multiprocessing with tracker
+        main_function: 0 # 0 is simple synchronous, 1 is synchronous with tracker, 2 is multiprocessing with tracker
     embedded_communication:
-        serial_port: 0 #replace 0 to "/dev/ttyACM0" to enable port on TX2
+        serial_port: 0 # For TX2 -> Usb is "/dev/ttyACM0", Uart is"/dev/ttyTHS2". For Xavier -> Uart is"/dev/ttyTHS2"
         serial_baudrate: 115200
 
 paths:
