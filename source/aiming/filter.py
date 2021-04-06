@@ -33,6 +33,8 @@ class Filter():
 
         self.f.predict()
 
+    def timePredict(self, time):
+        return X
 
     def predict(self, data):
         # center of bounding box given by (x, y, z)
@@ -45,11 +47,12 @@ class Filter():
                                 [pos_z]]))
         self.f.predict()
         
-        X = timePredict(dc.travelTime(pos_z))
-        location = [X[0], X[2]]
+        X = self.f.x
+        print("pos_z:", pos_z)
+        time = dc.travelTime(pos_z)
+        print("time: ", time)
+        X = [X[0] + time * X[1], X[2] + time * X[3], X[4] + time * X[5]]
+        location = [X[0], X[1]]
         return location
 
-    def timePredict(self, time):
-        X = self.f.x
-        X = [X[0] + time * X[1], X[1], X[2] + time * X[3], X[3], X[4] + time * X[5], X[5]]
-        return X
+    

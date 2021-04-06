@@ -3,7 +3,18 @@ import cv2
 from toolbox.globals import PARAMETERS,print
 
 
-
+shooter_velocity = PARAMETERS['aiming']['shooter_velocity']
+def visualizeDepthFrame(depth_frame_array):
+    depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_frame_array, alpha = 0.04), cv2.COLORMAP_JET)# this puts a color efffect on the depth frame
+    images = depth_colormap                              # use this for individual streams
+    # cv2.namedWindow('Align Example', cv2.WINDOW_NORMAL)   # names and shows the streams
+    cv2.imwrite('depthmap.jpg', images)
+    # # if you press escape or q you can cancel the process
+    # key = cv2.waitKey(1)
+    # print("press escape to cancel")
+    # if key & 0xFF == ord('q') or key == 27:
+    #     cv2.destroyAllWindows()
+    
 def getDistFromArray(depth_frame_array, bbox, gridSize):
     xTopLeft = bbox[0] 
     yTopLeft = bbox[1]
@@ -57,4 +68,4 @@ def WorldCoordinate(depth_frame, bbox):
 
 # calculates the travel time of the bullet to the robot given the depth
 def travelTime(depth):
-    return 0.5
+    return depth/shooter_velocity
