@@ -38,7 +38,7 @@ parameters:
         open_each_frame: false
         main_function: 0 # 0 is simple synchronous, 1 is synchronous with tracker, 2 is multiprocessing with tracker
     embedded_communication:
-        serial_port: 0 # For TX2 -> Usb is "/dev/ttyACM0", Uart is"/dev/ttyTHS2". For Xavier -> Uart is"/dev/ttyTHS2"
+        serial_port: "/dev/ttyTHS2" # For TX2 -> Usb is "/dev/ttyACM0", Uart is "/dev/ttyTHS2". For Xavier -> Uart is"/dev/ttyTHS0".
         serial_baudrate: 115200
 
 paths:
