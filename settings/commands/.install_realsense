@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 # upgrade to cmake 3.12+ otherwise it won't work on jetson xaiver nx
+sudo apt-get install curl
+sudo apt-get install libssl-dev libcurl4-openssl-dev
 cd ~/Downloads
 wget http://www.cmake.org/files/v3.13/cmake-3.13.0.tar.gz
 tar xpvf cmake-3.13.0.tar.gz cmake-3.13.0/
@@ -27,4 +29,4 @@ mkdir build && cd build
 cmake ../ -DBUILD_PYTHON_BINDINGS:bool=true -DPYTHON_EXECUTABLE=/usr/bin/python3
 make -j$(nproc)
 sudo make install
-export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.6/pyrealsense2
+echo 'export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.6/pyrealsense2' >> ~/.bashrc
