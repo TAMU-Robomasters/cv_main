@@ -32,8 +32,8 @@ The managed environment is very reliable way to setup.<br>
     * (if you don't have git just run `nix-env -i git`)
 * Clone/Open the project
     * `cd wherever-you-want-to-save-this-project`<br>
-    * `git clone https://github.com/jeff-hykin/cpp-textmate-grammar`
-    * `cd cpp-textmate-grammar`
+    * `git clone https://github.com/jeff-hykin/*this-repo*`
+    * `cd *this-repo*`
 * Actually run some code
     * run `./shell` to get into the project environment
         * Note: this will almost certainly take a while the first time because it will auto-install exact versions of everything: `node`, `python`, `ruby`, all modules for them, etc
