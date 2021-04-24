@@ -27,6 +27,7 @@ class EmbeddedCommunication:
 
         if self.port is not None:
             self.port.write(("s "+str(x).zfill(padding_per_value)+" "+str(y).zfill(padding_per_value)+" e ").encode())
+        # print(("s "+str(x).zfill(padding_per_value)+" "+str(y).zfill(padding_per_value)+" e "))
 
     def read_input(self):
         """
