@@ -87,7 +87,8 @@ simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setu
     on_next_frame=debug_each_frame,
     modeling=test_modeling,
     tracker=test_tracking,
-    aiming=test_aiming
+    aiming=test_aiming,
+    testing = 3
     # send_output=simulated_send_output, # this should be commented in once we actually add aiming 
 )
 

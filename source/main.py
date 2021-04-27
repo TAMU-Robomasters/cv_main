@@ -39,7 +39,7 @@ def setup(
         tracker=test_tracking,
         aiming=test_aiming,
         embedded_communication=embedded_communication,
-        testing = True
+        testing = 1
     ):
     """
     this function is used to connect main with other modules
@@ -80,7 +80,7 @@ def setup(
             color_image = None           
             depth_image = None
 
-            if testing == False:
+            if testing != 3:
                 color_frame = frame.get_color_frame()
                 color_image = np.asanyarray(color_frame.get_data()) 
                 depth_frame = frame.get_depth_frame() 
@@ -119,13 +119,16 @@ def setup(
                 hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov) and returns angles in radians
                 print("Angles calculated are hAngle:",hAngle,"and vAngle:",vAngle)
                 embedded_communication.send_output(hAngle, vAngle)
-                cv2.rectangle(color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (255,0,0), 2)
+                if testing == 2:
+                    cv2.rectangle(color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (255,0,0), 2)
 
             else:
                 print("No Bounding Boxes Found")
                 embedded_communication.send_output(0, 0)
-            cv2.imshow("feed",color_image)
-            cv2.waitKey(10)
+
+            if testing == 2:
+                cv2.imshow("feed",color_image)
+                cv2.waitKey(10)
 
             # print('Processing frame',frameNumber,'took',modelTime,"seconds for model only")
             # optional value for debugging/testing
@@ -160,7 +163,7 @@ def setup(
             color_image = None           
             depth_image = None
 
-            if testing == False:
+            if testing != 3:
                 color_frame = frame.get_color_frame()
                 color_image = np.asanyarray(color_frame.get_data()) 
                 depth_frame = frame.get_depth_frame() 
@@ -212,17 +215,18 @@ def setup(
                 print("Prediction is:",prediction)
 
                 # Comment this if branch out in case kalman filters doesn't work
-                # if testing == False:
-                #     z0 = cameraMethods.getDistFromArray(depth_image,best_bounding_box,gridSize)
-                #     kalmanBox = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
-                #     prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim, returns (xObjCenter, yObjCenter)
-                #     print("Kalman Filter updated Prediction to:",prediction)
+                if testing == 0:
+                    z0 = cameraMethods.getDistFromArray(depth_image,best_bounding_box,gridSize)
+                    kalmanBox = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
+                    prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim, returns (xObjCenter, yObjCenter)
+                    print("Kalman Filter updated Prediction to:",prediction)
 
                 # send data to embedded
                 hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov) and returns angles in radians
                 print("Angles calculated are hAngle:",hAngle,"and vAngle:",vAngle)
                 embedded_communication.send_output(hAngle, vAngle)
-                cv2.rectangle(color_image, (int(best_bounding_box[0]), int(best_bounding_box[1])), (int(best_bounding_box[0]) + int(best_bounding_box[2]), int(best_bounding_box[1]) + int(best_bounding_box[3])), (255,0,0), 2)
+                if testing == 2:
+                    cv2.rectangle(color_image, (int(best_bounding_box[0]), int(best_bounding_box[1])), (int(best_bounding_box[0]) + int(best_bounding_box[2]), int(best_bounding_box[1]) + int(best_bounding_box[3])), (255,0,0), 2)
 
             else:
                 print("No Bounding Boxes Found")
@@ -231,8 +235,9 @@ def setup(
             modelTime = t2-t1
             print('Processing frame',frameNumber,'took',modelTime,"seconds for model+tracker")
 
-            cv2.imshow("feed",color_image)
-            cv2.waitKey(10)
+            if testing == 2:
+                cv2.imshow("feed",color_image)
+                cv2.waitKey(10)
 
             if not (on_next_frame is None):
                 on_next_frame(frameNumber, color_image, ([best_bounding_box], [1])if best_bounding_box else ([], []),(hAngle,vAngle))
@@ -374,7 +379,7 @@ if __name__ == '__main__':
         modeling=test_modeling,
         tracker=test_tracking,
         aiming=test_aiming,
-        testing = False
+        testing = 1
     )
-
+    # testing 0 real competition, 1 without kalman, 2 with gui, 3 video
     synchronous_with_tracker()

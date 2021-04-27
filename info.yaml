@@ -6,7 +6,7 @@ parameters:
     model:
         confidence: 0.75
         threshold: 0.3
-        frequency: 70
+        frequency: 40
         gpu_acceleration: 2 # 0 for none, 1 for gpu only, 2 for tensorRT
         input_dimension: 416
     aiming:
@@ -44,7 +44,7 @@ parameters:
 paths:
     project_root: ./
     source_dir: ./source
-    main_test_video: ./source/_test_data/recordedVideoColor1.mp4
+    main_test_video: ./source/_test_data/recordedVideoColor2.mp4
     main_test_image: ./source/_test_data/test.png
     video_output: ./result.nosync.mp4
     record_video_output_color: ./recordedVideoColor.nosync.mp4
