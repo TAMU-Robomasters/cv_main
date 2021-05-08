@@ -1,6 +1,7 @@
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 import serial
 import time
+import numpy as np
 
 class EmbeddedCommunication:
     """
@@ -22,11 +23,23 @@ class EmbeddedCommunication:
         :param y: y coordinate of the target. Unit: pixel. Zero coordinate: upper left
         """
         print("Sending To Embedded")
-        x = int(x*1000)
-        y = int(y*1000)
+        x = np.uint16(int(x*10000)+32768)
+        y = np.uint16(int(y*10000)+32768)
+
+        x1 = np.uint8(x>>8)
+        x2 = np.uint8(x)
+        y1 = np.uint8(y>>8)
+        y2 = np.uint8(y)
 
         if self.port is not None:
-            self.port.write(("s "+str(x).zfill(padding_per_value)+" "+str(y).zfill(padding_per_value)+" e ").encode())
+            self.port.write("a".encode())
+            self.port.write(x1.tobytes())
+            self.port.write(x2.tobytes())
+            self.port.write(y1.tobytes())
+            self.port.write(y2.tobytes())
+            self.port.write('e'.encode())
+
+            # self.port.write(("s "+str(x).zfill(padding_per_value)+" "+str(y).zfill(padding_per_value)+" e ").encode())
         # print(("s "+str(x).zfill(padding_per_value)+" "+str(y).zfill(padding_per_value)+" e "))
 
     def read_input(self):

@@ -382,4 +382,4 @@ if __name__ == '__main__':
         testing = 1
     )
     # testing 0 real competition, 1 without kalman, 2 with gui, 3 video
-    synchronous_with_tracker()
+    simple_synchronous()
