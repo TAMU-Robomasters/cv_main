@@ -11,8 +11,21 @@ connection=serial.Serial(port_param,baudrate=baudrate_param,bytesize=serial.EIGH
 print("Opened:",connection.name)
 
 while True:
-    connection.write(("s 00000 -0500 e ").encode(encoding="ascii"))
+    x = np.uint16(int(1.23*10000)+32768)
+    y = np.uint16(int(2.34*10000)+32768)
 
+    x1 = np.uint8(x>>8)
+    x2 = np.uint8(x)
+    y1 = np.uint8(y>>8)
+    y2 = np.uint8(y)
+
+    connection.write("a".encode())
+    connection.write(x1.tobytes())
+    connection.write(x2.tobytes())
+    connection.write(y1.tobytes())
+    connection.write(y2.tobytes())
+    connection.write('e'.encode())
+    print("WROTE")
     time.sleep(.01)
 # def convert(x,amp= 30,off = 115, b=90):
 #     x = math.radians(x)

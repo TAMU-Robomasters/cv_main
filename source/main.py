@@ -124,7 +124,6 @@ def setup(
 
             else:
                 print("No Bounding Boxes Found")
-                embedded_communication.send_output(0, 0)
 
             if testing == 2:
                 cv2.imshow("feed",color_image)
@@ -379,7 +378,7 @@ if __name__ == '__main__':
         modeling=test_modeling,
         tracker=test_tracking,
         aiming=test_aiming,
-        testing = 1
+        testing = 2
     )
     # testing 0 real competition, 1 without kalman, 2 with gui, 3 video
-    simple_synchronous()
+    synchronous_with_tracker()
