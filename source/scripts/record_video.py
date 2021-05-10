@@ -53,7 +53,7 @@ try:
         color_image = np.asanyarray(color_frame.get_data())
         depth_image = np.asanyarray(depth_frame.get_data()).flatten()
         colorwriter.write(color_image)
-        np.save(npyFramesLocation+"/"+str(counter)+"depth.nosync.npy",depth_image)
+        np.save(npyFramesLocation+"/"+str(counter)+"depth.dont-sync.npy",depth_image)
     
         print("FRAME ORIGINAL:",counter)
 finally:
@@ -79,7 +79,7 @@ while color_image is not None:
     counter+=1
     realCounter+=1
     print("FRAME PROCESSING:",realCounter)
-    np.save(npyFramesLocation+"/"+str(realCounter)+"color.nosync.npy",color_image.flatten())
+    np.save(npyFramesLocation+"/"+str(realCounter)+"color.dont-sync.npy",color_image.flatten())
     center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
 
     if counter % model_frequency == 0 or (best_bounding_box is None):
@@ -97,5 +97,5 @@ while color_image is not None:
     else:
         best_bounding_box = track.update(color_image)
         print("TRACKER")
-    np.save(npyFramesLocation+"/"+str(realCounter)+"bbox.nosync.npy",np.array(best_bounding_box if best_bounding_box else [-1,-1,-1,-1]).flatten())
+    np.save(npyFramesLocation+"/"+str(realCounter)+"bbox.dont-sync.npy",np.array(best_bounding_box if best_bounding_box else [-1,-1,-1,-1]).flatten())
     color_image = colorVideo.getFrame()
