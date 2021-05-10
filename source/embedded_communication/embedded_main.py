@@ -8,12 +8,19 @@ class EmbeddedCommunication:
     Jetson <-> DJI board communication
     """
     def __init__(self, port, baudrate):
-        if port is None or port==0:
-            self.port=None  # disable port
+        if not port:
+            self.port = None # disable port
             print('Embedded Communication: Port is set to None. No communication will be established.')
         else:
-            print("Embedded Communication: Port is set to",port)
-            self.port=serial.Serial(port,baudrate=baudrate,timeout=3.0,bytesize=serial.EIGHTBITS,parity=serial.PARITY_NONE,stopbits=serial.STOPBITS_ONE)
+            print("Embedded Communication: Port is set to", port)
+            self.port=serial.Serial(
+                port,
+                baudrate=baudrate,
+                timeout=3.0,
+                bytesize=serial.EIGHTBITS,
+                parity=serial.PARITY_NONE,
+                stopbits=serial.STOPBITS_ONE
+            )
 
     def send_output(self,x,y,padding_per_value=5):
         """
