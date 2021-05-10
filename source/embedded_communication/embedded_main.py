@@ -2,6 +2,7 @@ from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 import serial
 import time
 import numpy as np
+import time
 
 class EmbeddedCommunication:
     """
@@ -15,13 +16,14 @@ class EmbeddedCommunication:
             print("Embedded Communication: Port is set to",port)
             self.port=serial.Serial(port,baudrate=baudrate,timeout=3.0,bytesize=serial.EIGHTBITS,parity=serial.PARITY_NONE,stopbits=serial.STOPBITS_ONE)
 
-    def send_output(self,x,y,padding_per_value=5):
+    def send_output(self,x,y,t1,padding_per_value=5):
         """
         Send data to DJI board via serial communication as a padded string
         e.g. given x=1080, y=500, and padding_per_value=5, it will send 0108000500 to DJI board.
         :param x: x coordinate of the target. Unit: pixel. Zero coordinate: upper left
         :param y: y coordinate of the target. Unit: pixel. Zero coordinate: upper left
         """
+        modelTime = 0
         print("Sending To Embedded")
         x = np.uint16(int(x*10000)+32768)
         y = np.uint16(int(y*10000)+32768)
@@ -38,7 +40,8 @@ class EmbeddedCommunication:
             self.port.write(y1.tobytes())
             self.port.write(y2.tobytes())
             self.port.write('e'.encode())
-
+            modelTime = time.time()-t1
+        return modelTime
             # self.port.write(("s "+str(x).zfill(padding_per_value)+" "+str(y).zfill(padding_per_value)+" e ").encode())
         # print(("s "+str(x).zfill(padding_per_value)+" "+str(y).zfill(padding_per_value)+" e "))
 

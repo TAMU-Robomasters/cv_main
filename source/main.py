@@ -31,6 +31,7 @@ modelFPS = PARAMETERS['aiming']['model_fps']
 gridSize = PARAMETERS['aiming']['grid_size']
 horizontalFOV = PARAMETERS['aiming']['horizontal_fov']
 verticalFOV = PARAMETERS['aiming']['vertical_fov']
+withGUI = PARAMETERS['testing']['open_each_frame']
 
 def setup(
         get_frame = None,
@@ -76,6 +77,8 @@ def setup(
         model = modeling.modelingClass() # create instance of modeling
 
         while True:
+            t = time.time()
+            modelTime = 0
             frame = get_frame()  
             color_image = None           
             depth_image = None
@@ -93,13 +96,9 @@ def setup(
                 color_image = frame
 
             frameNumber+=1
-            # print()
-            # print(frameNumber)
 
             # run the model
-            t = time.time()
             boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
-            modelTime = time.time()-t
             
             # Finds the coordinate for the center of the screen
             center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
@@ -118,18 +117,20 @@ def setup(
                 # send data to embedded
                 hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov) and returns angles in radians
                 print("Angles calculated are hAngle:",hAngle,"and vAngle:",vAngle)
-                embedded_communication.send_output(hAngle, vAngle)
-                if testing == 2:
+                modelTime = embedded_communication.send_output(hAngle, vAngle,t1)
+
+                if withGUI:
                     cv2.rectangle(color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (255,0,0), 2)
 
             else:
                 print("No Bounding Boxes Found")
 
-            if testing == 2:
+            if withGUI:
                 cv2.imshow("feed",color_image)
                 cv2.waitKey(10)
 
-            # print('Processing frame',frameNumber,'took',modelTime,"seconds for model only")
+            modelTime = time.time()-t
+            print('Processing frame',frameNumber,'took',modelTime,"seconds for model only")
             # optional value for debugging/testing
             if not (on_next_frame is None):
                 on_next_frame(frameNumber, color_image, (boxes, confidences), (hAngle,vAngle))
@@ -159,6 +160,7 @@ def setup(
         while True: # counts up infinitely starting at 0
             # grabs frame and ends loop if we reach the last one
             t1 = time.time()
+            modelTime = 0
 
             frame = get_frame()  
             color_image = None           
@@ -219,18 +221,17 @@ def setup(
                 # send data to embedded
                 hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov) and returns angles in radians
                 print("Angles calculated are hAngle:",hAngle,"and vAngle:",vAngle)
-                embedded_communication.send_output(hAngle, vAngle)
-                if testing == 2:
+                modelTime = embedded_communication.send_output(hAngle, vAngle,t1)
+                if withGUI:
                     cv2.rectangle(color_image, (int(best_bounding_box[0]), int(best_bounding_box[1])), (int(best_bounding_box[0]) + int(best_bounding_box[2]), int(best_bounding_box[1]) + int(best_bounding_box[3])), (255,0,0), 2)
 
             else:
                 print("No Bounding Boxes Found")
 
             # optional value for debugging/testing\
-            modelTime = time.time()-t1
             print('Processing frame',frameNumber,'took',modelTime,"seconds for model+tracker")
 
-            if testing == 2:
+            if withGUI:
                 cv2.imshow("feed",color_image)
                 cv2.waitKey(10)
 
@@ -376,5 +377,5 @@ if __name__ == '__main__':
         aiming=test_aiming,
         testing = 1
     )
-    # testing 0 real competition, 1 without kalman, 2 with gui, 3 video
+    # testing 0 with kalman, 1 without kalman, 3 video
     synchronous_with_tracker()
