@@ -158,6 +158,8 @@ def setup(
 
         while True: # counts up infinitely starting at 0
             # grabs frame and ends loop if we reach the last one
+            t1 = time.time()
+
             frame = get_frame()  
             color_image = None           
             depth_image = None
@@ -181,15 +183,12 @@ def setup(
 
             # Finds the coordinate for the center of the screen
             center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
-            t1 = 0
-            t2 = 0
             
             # run model every model_frequency frames or whenever the tracker fails
             if counter % model_frequency == 0 or (best_bounding_box is None):
                 counter=1
                 best_bounding_box = None
                 # call model
-                t1 = time.time()
                 boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
                 if len(boxes) != 0:
                     # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
@@ -200,11 +199,8 @@ def setup(
                     best_bounding_box = track.init(color_image,best_bounding_box)
                     kalmanFilter = aiming.Filter(modelFPS)
                     print("Now Tracking a New Object, reinitialized Kalman Filter.")
-                t2 = time.time()
             else:
-                t1 = time.time()
                 best_bounding_box = track.update(color_image)
-                t2 = time.time()
 
             hAngle = None
             vAngle = None
@@ -231,7 +227,7 @@ def setup(
                 print("No Bounding Boxes Found")
 
             # optional value for debugging/testing\
-            modelTime = t2-t1
+            modelTime = time.time()-t1
             print('Processing frame',frameNumber,'took',modelTime,"seconds for model+tracker")
 
             if testing == 2:
@@ -378,7 +374,7 @@ if __name__ == '__main__':
         modeling=test_modeling,
         tracker=test_tracking,
         aiming=test_aiming,
-        testing = 2
+        testing = 1
     )
     # testing 0 real competition, 1 without kalman, 2 with gui, 3 video
     synchronous_with_tracker()
