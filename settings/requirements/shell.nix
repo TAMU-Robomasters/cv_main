@@ -88,6 +88,7 @@ let
             definitions.mainPackages.python37Packages.pip
             definitions.mainPackages.python37Packages.virtualenv
             definitions.mainPackages.python37Packages.wheel
+            definitions.mainPackages.python37Packages.pyrealsense2
         ];
     };
     
