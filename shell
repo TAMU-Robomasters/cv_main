@@ -5,6 +5,11 @@
 #   they tell the system to process this using nix-shell
 #   specifically using the exact version of bash to use
 
+
+echo "=============================="
+echo " Setting up your Environment!"
+echo "=============================="
+
 # if no arguments (just starting the shell) give the welcome message
 export PROJECTR_ARGS="$@"
 
