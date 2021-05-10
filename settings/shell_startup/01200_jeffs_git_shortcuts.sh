@@ -1,13 +1,10 @@
 # version 2.0 is at least the minimum (may have a higher minimum like 2.21)
 
-# this is not actually global because the home var is changed
-git config --global core.editor nano 
-
-function git_log {
+git_log () {
     git log --oneline
 }
 
-function git_current_commit_hash {
+git_current_commit_hash () {
     # https://stackoverflow.com/questions/949314/how-to-retrieve-the-hash-for-the-current-commit-in-git
     git rev-parse HEAD
 }
@@ -15,7 +12,7 @@ function git_current_commit_hash {
 # 
 # sync
 # 
-function git_sync { # git push && git pull
+git_sync () { # git push && git pull
     args="$@"
     if [[ "$args" = "" ]]; then
         args="-"
@@ -24,12 +21,12 @@ function git_sync { # git push && git pull
     git add -A; git commit -m "$args"; git pull --no-edit; git submodule update --init --recursive && git push
 }
 
-function git_force_push {
+git_force_push () {
     args="$@"
     git push origin $args --force
 }
 
-function git_force_pull { 
+git_force_pull () { 
     # get the latest
     git fetch --all
     # delete changes
@@ -38,7 +35,7 @@ function git_force_pull {
     git reset --hard "origin/$(git_current_branch_name)"
 }
 
-function git_delete_changes {
+git_delete_changes () {
     # reset all the submodules
     git submodule foreach --recursive 'git stash save --keep-index --include-untracked'
     git submodule foreach --recursive 'git reset --hard'
@@ -55,13 +52,13 @@ function git_delete_changes {
     fi
 }
 
-function git_keep_mine {
+git_keep_mine () {
     git checkout --ours .
     git add -u
     git commit -m "_Keeping all existing changes $@"
 }
 
-function git_keep_theirs { # git keep theirs 
+git_keep_theirs () { # git keep theirs 
     git checkout --theirs .
     git add -u
     git commit -m "_Accepting all incoming changes $@"
@@ -70,33 +67,95 @@ function git_keep_theirs { # git keep theirs
 # 
 # Branch
 # 
-function git_current_branch_name {
+git_current_branch_name () {
     git rev-parse --abbrev-ref HEAD
 }
 
-function git_new_branch {
+git_new_branch () {
     branch_name="$1"
     git checkout "$(git_current_branch_name)" && git checkout -b "$branch_name" && git push --set-upstream origin "$branch_name"
 }
 
-function git_delete_branch {
-    git push origin --delete "$@"
-    git branch -D "$@"
+git_delete_branch () {
+    git push origin --delete $@
+    git branch -D $@
 }
 
-function git_delete_local_branch {
-    git branch -D "$@"
+git_delete_local_branch () {
+    git branch -D $@
+}
+
+git_add_external_branch () {
+    # example:
+    #     git_add_external_branch "slowfast" 'https://github.com/facebookresearch/SlowFast.git' 'master'
+    #     git checkout 'slowfast/master'
+    __temp_var__name_for_repo="$1"
+    __temp_var__url_for_repo="$2"
+    __temp_var__branch_of_repo="$3"
+    if [[ -z "$__temp_var__branch_of_repo" ]]
+    then
+        __temp_var__branch_of_repo="master"
+    fi
+    
+    git remote add "@$__temp_var__name_for_repo" "$__temp_var__url_for_repo"
+    git fetch "@$__temp_var__name_for_repo" "$__temp_var__branch_of_repo"
+    git checkout -b "@$__temp_var__name_for_repo/$__temp_var__branch_of_repo" "remotes/@$__temp_var__name_for_repo/$__temp_var__branch_of_repo"
+    echo "new branch is named: @$__temp_var__name_for_repo/$__temp_var__branch_of_repo"
+}
+
+git_steal_external_branch () {
+    # example:
+    #     git_steal_external_branch "slowfast" 'https://github.com/facebookresearch/SlowFast.git' 'master'
+    #     git checkout 'slowfast/master'
+    __temp_var__name_for_repo="$1"
+    __temp_var__url_for_repo="$2"
+    __temp_var__branch_of_repo="$3"
+    if [[ -z "$__temp_var__branch_of_repo" ]]
+    then
+        __temp_var__branch_of_repo="master"
+    fi
+    
+    __temp_var__new_branch_name="$__temp_var__name_for_repo/$__temp_var__branch_of_repo"
+    
+    # 
+    # create the local/origin one
+    # 
+    echo "create an empty local branch" && \
+    git checkout --orphan "$__temp_var__new_branch_name" && \
+    echo "ignoring any files from other branches" && \
+    echo "making initial commit, otherwise things break" && \
+    git reset && \
+    touch .keep && \
+    git add .keep && \
+    git commit -m 'init' && \
+    echo "creating upstream branch" && \
+    git push --set-upstream origin "$__temp_var__new_branch_name"
+    # 
+    # create the external one with @
+    # 
+    echo "pulling in the external data" && \
+    git remote add "@$__temp_var__name_for_repo" "$__temp_var__url_for_repo" && \
+    git fetch "@$__temp_var__name_for_repo" "$__temp_var__branch_of_repo" && \
+    git checkout -b "@$__temp_var__name_for_repo/$__temp_var__branch_of_repo" "remotes/@$__temp_var__name_for_repo/$__temp_var__branch_of_repo" && \
+    echo "merging external branch with local branch" && \
+    git checkout "$__temp_var__new_branch_name" && \
+    git merge --allow-unrelated-histories --no-edit heads/"@$__temp_var__new_branch_name" && \
+    git push  && \
+    git status && \
+    echo "you're now on branch: $__temp_var__new_branch_name" && \
+    echo "" && \
+    echo "you probably want to add all the untracked^ files to the .gitignore file"
 }
 
 # 
 # submodules
 # 
-function git_pull_submodules {
+git_pull_submodules () {
     git submodule update --init --recursive
     git submodule update --recursive --remote
 }
 
-function git_push_submodules {
+git_push_submodules () {
     args="$@"
     if [[ "$args" = "" ]]; then
         args="-"
@@ -107,7 +166,7 @@ function git_push_submodules {
 # 
 # tags 
 # 
-function git_new_tag {
+git_new_tag () {
     tag_name="$1"
     # local
     git tag "$tag_name"
@@ -115,7 +174,7 @@ function git_new_tag {
     git push origin "$tag_name"
 }
 
-function git_move_tag {
+git_move_tag () {
     tag_name="$1"
     new_commit_hash="$2"
     if [[ -z "$2" ]]
@@ -126,7 +185,7 @@ function git_move_tag {
     git push --force origin "$tag_name"
 }
 
-function git_delete_tag {
+git_delete_tag () {
     tag_name="$1"
     # global
     git push --delete origin "$tag_name"
@@ -137,7 +196,7 @@ function git_delete_tag {
 # 
 # misc
 # 
-function git_delete_large_file {
+git_delete_large_file () {
     filepath="$1"
     if [[ -z "$filepath" ]]
     then
@@ -167,7 +226,7 @@ function git_delete_large_file {
     echo 
 }
 
-function git_mixin {
+git_mixin () {
     url="$1"
     branch="$2"
     commit="$3"
@@ -189,9 +248,9 @@ function git_mixin {
     fi
     
     # remove any leftover ones (caused by git merge conflicts)
-    git remote remove __mixin__ &>/dev/null
-    git remote add __mixin__ "$url"
-    git fetch __mixin__ "$branch"
+    git remote remove "@__temp__" &>/dev/null
+    git remote add "@__temp__" "$url"
+    git fetch "@__temp__" "$branch"
     # if there was a commit
     if ! [[ -z "$commit" ]]
     then    
@@ -199,11 +258,26 @@ function git_mixin {
         git cherry-pick "$commit"
     else
         # merge the entire history
-        git pull --allow-unrelated-histories __mixin__ "$branch"
+        git pull --allow-unrelated-histories "@__temp__" "$branch"
     fi
     git submodule update --init --recursive
-    git remote remove __mixin__ &>/dev/null
+    git remote remove "@__temp__" &>/dev/null
 }
+
+git_list_untracked () {
+    git add -A -n
+}
+
+git_list_untracked_or_ignored () {
+    git add -fAn
+}
+
+git_url_of_origin () {
+    git config --get remote.origin.url
+}
+
+# self submodule
+# git submodule add -b jirl --name "jirl" -- https://github.com/jeff-hykin/model_racer.git ./source/jirl
 
 # 
 # short names
@@ -215,7 +289,7 @@ alias gm="git merge"
 alias gfpull="git_force_pull"
 alias gfpush="git_force_push"
 alias gc="git checkout"
-alias gb="git branch"
+alias gb="git branch -a"
 alias gnb="git_new_branch"
 alias gd="git_delete_changes"
 alias gcp="git add -A;git stash"
