@@ -1,4 +1,4 @@
-# Basica Auto Setup (Prefered way)
+# Basic Auto Setup (Prefered way)
 
 TLDR:
 - install nix
@@ -35,7 +35,7 @@ TLDR:
     * run `commands` to see all of the project commands
     * run `python source/_tests/test_main.py` to try running the main program
 
-# Basic Manual Setup
+# Basic Manual Setup (Alternative to Auto Setup)
 * install python3
 * install the pip modules in `requirements.txt`
 * add the project directory to your `PYTHONPATH` env variable

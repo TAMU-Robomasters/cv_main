@@ -4,7 +4,7 @@ Set [documentation/SETUP.md](https://github.com/TAMU-RoboMaster-Computer-Vision/
 
 ### What is this repo?
 
-Its the home of all Tamu RoboMaster's cool code. (If you're looking for *boring* low-level C code you'll have to the embedded teams repo)<br>
+Its the home of all Tamu RoboMaster's cool code. (If you're looking for *boring* low-level C code you'll have to find the embedded teams repo)<br>
 <br>
 
 ### How does the code work?
