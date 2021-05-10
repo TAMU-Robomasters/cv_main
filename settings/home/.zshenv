@@ -5,7 +5,7 @@ DISABLE_UPDATE_PROMPT="true"
 
 # load custom user settings
 # if user just wants to add something (like an export) and not replace everything
-# they should use ./settings/shell_startup/.dont-sync.exports.sh 
+# they should use settings/shell_startup/.dont-sync.exports.sh 
 CUSTOM_USER_SETTINGS="./.dont-sync.zshrc"
 if [[ -f "$CUSTOM_USER_SETTINGS" ]]; then
     source "$CUSTOM_USER_SETTINGS"
@@ -13,10 +13,10 @@ if [[ -f "$CUSTOM_USER_SETTINGS" ]]; then
 # if no custom user settings, then use epic defaults 👌
 # 
 else
-    if [[ -z "$PROJECT_FOLDER" ]]
+    if [[ -z "$PROJECTR_FOLDER" ]]
     then
-        echo PROJECT_FOLDER is empty
-        export PROJECT_FOLDER="$PWD"
+        echo PROJECTR_FOLDER is empty
+        export PROJECTR_FOLDER="$PWD"
     fi
     function nix_path_for {
         nix-instantiate --eval -E  '"${
@@ -30,11 +30,11 @@ else
                                     builtins.import (
                                         builtins.fetchTarball {url="https://github.com/NixOS/nixpkgs/archive/${each.from}.tar.gz";}
                                     ) {
-                                        config = (builtins.fromJSON (builtins.readFile "'"$PROJECT_FOLDER"'/settings/requirements/simple_nix.json")).nix.config;
+                                        config = (builtins.fromJSON (builtins.readFile "'"$PROJECTR_FOLDER"'/settings/requirements/simple_nix.json")).nix.config;
                                     }
                                 );
                             })
-                        ) (builtins.fromJSON (builtins.readFile "'"$PROJECT_FOLDER"'/settings/requirements/simple_nix.json")).nix.packages
+                        ) (builtins.fromJSON (builtins.readFile "'"$PROJECTR_FOLDER"'/settings/requirements/simple_nix.json")).nix.packages
                     )
                 ) 0
             ).source
@@ -84,6 +84,8 @@ else
     # 
     source "$zsh_auto_suggest__path/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
     
+    # TODO: make this increase with depth, maybe use parent process: ps -o ppid= -p $$
+    SPACESHIP_CHAR_SYMBOL="∫ " # ☣ ⁂ ⌘ ∴ ∮ ֎ Ͽ ♫ ⛬ ⚿ ♦ ♢ ⛶ ✾ ❒ ⟩ ⟡ ⟜ ⟦ ⦊ ⦒ ⪢ ⪾ ∫ ∬ ∭
     SPACESHIP_VENV_SYMBOL="🐍$(python -V 2>&1 | sed -E 's/Python//g' )"
     SPACESHIP_VENV_PREFIX=""
     SPACESHIP_VENV_GENERIC_NAMES="."
@@ -107,7 +109,7 @@ fi
 # 
 # find and run all the startup scripts in alphabetical order
 # 
-for file in ./settings/shell_startup/*
+for file in $PROJECTR_FOLDER/settings/shell_startup/*
 do
     # make sure its a file
     if [[ -f "$file" ]]; then

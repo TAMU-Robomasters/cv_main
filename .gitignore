@@ -3,6 +3,11 @@
 # 
 \.idea
 *.nosync*
+
+
+# 
+# standard
+# 
 **/*.dont-sync
 **/*.dont-sync.*
 
@@ -58,6 +63,7 @@ Temporary Items
 # visual studio projects
 *.cache/*
 **/*.cache/*
+\.idea
 
 # Windows thumbnail cache files
 Thumbs.db
