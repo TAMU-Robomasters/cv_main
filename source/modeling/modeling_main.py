@@ -5,23 +5,26 @@ import time
 import argparse
 
 # relative imports
-from toolbox.globals import ENVIRONMENT,PATHS,PARAMETERS,MODE,MODEL_COLORS,MODEL_LABELS, print
+from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, MODE, MODEL_COLORS, MODEL_LABELS, print
 
-if PARAMETERS['model']['gpu_acceleration'] == 2:
+hardware_acceleration = PARAMETERS['model']['hardware_acceleration']
+should_use_tensor_rt = hardware_acceleration == 'tensor_rt'
+should_use_gpu       = hardware_acceleration == 'gpu'
+
+if should_use_tensor_rt:
     import pycuda.autoinit  # This is needed for initializing CUDA driver
     from source.modeling.yolo_with_plugins import TrtYOLO
 
 class modelingClass:
     def __init__(self):
         self.input_dimension = PARAMETERS['model']['input_dimension']
-        self.gpu = PARAMETERS['model']['gpu_acceleration']
         print("[INFO] loading YOLO from disk...")
-        if self.gpu==2: # tensorRT enabled
+        if should_use_tensor_rt: # tensorRT enabled
             print("RUNNING WITH TENSORRT")
             self.trtYolo = TrtYOLO((self.input_dimension, self.input_dimension), 3, False)
         else:
             self.net = cv2.dnn.readNetFromDarknet(PATHS["model_config"], PATHS["model_weights"])  # init the model
-            if(self.gpu==1): # gpu enabled
+            if should_use_gpu:
                 print("RUNNING WITH GPU ACCELERATION")
                 self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
                 self.net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
@@ -49,7 +52,7 @@ class modelingClass:
     
 
         # convert image to blob before running it in the model
-        if self.gpu == 2:
+        if should_use_tensor_rt:
             boxes, confidences, classIDs = self.trtYolo.detect(frame, ithreshold)
             newBoxes = []
             for box in boxes:
@@ -130,7 +133,7 @@ class modelingClass:
         if MODE == "production":
             return boxes, confidences, class_ids
         
-        if self.gpu == False:
+        if not hardware_acceleration:
             # apply non-maxima suppression to suppress weak, overlapping
             # bounding boxes
             idxs = cv2.dnn.NMSBoxes(boxes, confidences, iconfidence, ithreshold)
@@ -149,4 +152,4 @@ class modelingClass:
                     text = "{}: {:.4f}".format(MODEL_LABELS[class_ids[i]],confidences[i])
                     cv2.putText(frame, text, (x, y - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
         
-        return boxes, confidences, class_ids,frame
+        return boxes, confidences, class_ids, frame

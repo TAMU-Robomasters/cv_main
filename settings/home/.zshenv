@@ -53,7 +53,7 @@ else
     # 
     # set fpath for zsh
     # 
-    local_zsh="$PWD/settings/zsh.dont-sync/site-functions/"
+    local_zsh="$PROJECTR_FOLDER/settings/zsh.dont-sync/site-functions/"
     mkdir -p "$local_zsh"
     # export fpath=""
     export fpath=("$local_zsh")
@@ -109,7 +109,7 @@ fi
 # 
 # find and run all the startup scripts in alphabetical order
 # 
-for file in $PROJECTR_FOLDER/settings/shell_startup/*
+for file in "$PROJECTR_FOLDER/settings/shell_startup"/*
 do
     # make sure its a file
     if [[ -f "$file" ]]; then

@@ -1,24 +1,22 @@
 #! /usr/bin/env nix-shell
 #! nix-shell -i bash -p bash_5 -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/046f8835dcb9082beb75bb471c28c832e1b067b6.tar.gz
 
-# if no arguments (just starting the shell) give the welcome message
-export PROJECTR_ARGS="$@"
 # the comments above^ are special
 #   they tell the system to process this using nix-shell
 #   specifically using the exact version of bash to use
-export PROJECTR_FOLDER="$PWD"
-export PROJECTR_HOME="$PROJECTR_FOLDER/settings/home/"
-export PROJECTR_COMMANDS_FOLDER="$PROJECTR_FOLDER/settings/commands/"
-#
-# find and run all the startup scripts in alphabetical order
-#
-for file in "$PROJECTR_FOLDER/settings/shell_startup/#pre_changing_home/"*
-do
-    # make sure its a file
-    if [[ -f "$file" ]]; then
-        source "$file"
-    fi
-done
+
+# if no arguments (just starting the shell) give the welcome message
+export PROJECTR_ARGS="$@"
+
+# 
+# load the basic env first
+# 
+source ./basic_setup
+
+
+# 
+# then load the full env
+# 
 
 # create a dummy home folder to prevent any problems when starting up
 __dummy_home="$PWD/settings/.cache/home/"

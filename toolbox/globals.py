@@ -19,19 +19,13 @@ from toolbox.file_system_tools import FS
 
 
 # 
-# mode and environment
-# 
-import os
-
-# laptop or tx2 (default laptop), and it to be overridden by the 'PROJECT_ENVIRONMENT' environment variable
-ENVIRONMENT = os.environ.get('PROJECT_ENVIRONMENT',"laptop")
-# development or production (default to development), and allow for it to be overridden as well
-MODE = os.environ.get('PROJECT_MODE',"development")
-
-# 
-# load the info.yaml and some of its data
+# load the info.yaml
 # 
 INFO = yaml.unsafe_load(FS.read(FS.join(FS.dirname(__file__),'..','info.yaml')))
+
+# 
+# load PATHS
+# 
 PATHS = INFO["paths"]
 # make paths absolute if they're relative
 for each_key in PATHS.keys():
@@ -45,7 +39,22 @@ for each_key in PATHS.keys():
             _, *folders = folders
         PATHS[each_key] = FS.absolute_path(PATHS[each_key])
 
-PARAMETERS = INFO["parameters"]
+# 
+# MODE and ENVIRONMENT
+# 
+import os
+# laptop or tx2 (default laptop), and it to be overridden by the 'PROJECT_ENVIRONMENT' environment variable
+ENVIRONMENT = os.environ.get('PROJECT_ENVIRONMENT',"laptop")
+# development or production (default to development), and allow for it to be overridden as well
+MODE = os.environ.get('PROJECT_MODE',"development")
+
+# 
+# PARAMETERS
+# 
+PARAMETERS = INFO["default_parameters"]
+ENVIRONMENT_PARAMETERS = INFO["environment_parameters"][ENVIRONMENT]
+from dict_recursive_update import recursive_update
+PARAMETERS = recursive_update(PARAMETERS, ENVIRONMENT_PARAMETERS)
 
 # 
 # modeling

@@ -2,13 +2,34 @@
     name: CV Main
     description: The Master Control repo of the TAMU RoboMaster 2020 team
 
-parameters:
+paths:
+    project_root: ./
+    source_dir: ./source
+    main_test_video: ./source/_test_data/recordedVideoColor2.mp4
+    main_test_image: ./source/_test_data/test.png
+    video_output: ./result.nosync.mp4
+    record_video_output_color: ./recordedVideoColor.nosync.mp4
+    kalman_video: ./kalmanVideo.nosync.mp4
+    npy_frames: ./source/scripts/data1 # replace with whichever frame set you want to use in the source/scripts/data<num> directory
+    # model
+    model_weights: ./source/modeling/model/yolov4-tiny-416.weights
+    model_config: ./source/modeling/model/yolov4-tiny-416.cfg
+    model_labels: ./source/modeling/model/yolov4-tiny-416.names
+    model_trt: ./source/modeling/model/yolov4-tiny-416.dont-sync.trt
+    frame_save_location: ./source/modeling/_tests/test.nosync.png
+    #aiming
+    R_test_image: ./source/_test_data/mask_R_blur.png
+    rune_test_video: ./source/_test_data/rune3.mp4
+    color_depth_bbox: ./output.dont_sync.txt
+
+# NOTE: these are overridden by environments (below)
+default_parameters:
     model:
         confidence: 0.75
         threshold: 0.3
         frequency: 40
-        gpu_acceleration: 2 # 0 for none, 1 for gpu only, 2 for tensorRT
         input_dimension: 416
+        hardware_acceleration: "tensor_rt" # one of: [ null, "gpu", "tensor_rt" ]
     aiming:
         prediction_time: 2 # time interval in seconds to predict using kalman filters
         # depth camera
@@ -38,25 +59,28 @@ parameters:
         open_each_frame: false
         main_function: 0 # 0 is simple synchronous, 1 is synchronous with tracker, 2 is multiprocessing with tracker
     embedded_communication:
-        serial_port: "/dev/ttyTHS0" # For TX2 -> Usb is "/dev/ttyACM0", Uart is "/dev/ttyTHS2". For Xavier -> Uart is"/dev/ttyTHS0".
         serial_baudrate: 115200
+        serial_port: null
 
-paths:
-    project_root: ./
-    source_dir: ./source
-    main_test_video: ./source/_test_data/recordedVideoColor2.mp4
-    main_test_image: ./source/_test_data/test.png
-    video_output: ./result.nosync.mp4
-    record_video_output_color: ./recordedVideoColor.nosync.mp4
-    kalman_video: ./kalmanVideo.nosync.mp4
-    npy_frames: ./source/scripts/data1 # replace with whichever frame set you want to use in the source/scripts/data<num> directory
-    # model
-    model_weights: ./source/modeling/model/yolov4-tiny-416.weights
-    model_config: ./source/modeling/model/yolov4-tiny-416.cfg
-    model_labels: ./source/modeling/model/yolov4-tiny-416.names
-    model_trt: ./source/modeling/model/yolov4-tiny-416.dont-sync.trt
-    frame_save_location: ./source/modeling/_tests/test.nosync.png
-    #aiming
-    R_test_image: ./source/_test_data/mask_R_blur.png
-    rune_test_video: ./source/_test_data/rune3.mp4
-    color_depth_bbox: ./output.dont_sync.txt
+environment_parameters:
+    laptop:
+        model:
+            hardware_acceleration: null
+    
+    gpu_laptop:
+        model:
+            hardware_acceleration: "gpu"
+    
+    tx2:
+        model:
+            hardware_acceleration: "tensor_rt"
+        embedded_communication:
+            # serial_port: "/dev/ttyACM0" # USB serial
+            serial_port: "/dev/ttyTHS2" # UART serial
+    
+    xavier:
+        model:
+            hardware_acceleration: "tensor_rt"
+        embedded_communication:
+            serial_port: "/dev/ttyTHS0" # UART serial
+        
