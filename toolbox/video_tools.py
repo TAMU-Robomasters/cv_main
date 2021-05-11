@@ -1,9 +1,6 @@
-from subprocess import call
 import cv2
 # local imports
 from toolbox.file_system_tools import FS
-
-
 
 class Video(object):
     def __init__(self, path=None):
