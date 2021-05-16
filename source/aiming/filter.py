@@ -21,6 +21,16 @@ class Filter():
         self.f.H = np.array([[1, 0, 0, 0, 0, 0],
                              [0, 0, 1, 0, 0, 0],
                              [0, 0, 0, 0, 1, 0]])     # models to sensor data
+
+        
+        self.f.u = np.array([0., 0., 0.])             # x_acc, y_acc, z_acc
+        self.f.B = np.array([[0.5 * t**2, 0, 0],
+                             [t, 0, 0],
+                             [0, 0.5 * t**2, 0],
+                             [0, t, 0],
+                             [0, 0, 0.5 * t**2],
+                             [0, 0, t]])
+
         self.f.P *= 0.5                         # covariance matrix
         self.f.R = np.full((3, 3), 0.125)       # sensor noise
         # self.f.Q = Q_discrete_white_noise(dim=2, dt=t, var=2, block_size=3, order_by_dim = True) + 1   # uncertainty 
@@ -48,10 +58,14 @@ class Filter():
         self.f.predict()
         
         X = self.f.x
-        print("pos_z:", pos_z)
-        time = dc.travelTime(pos_z)
-        print("time: ", time)
+        U = self.f.u
+        # print("pos_z:", pos_z)
+        # time = dc.travelTime(pos_z)
+        time = 1
+        # print("time: ", time)
+        print(U)
         X = [X[0] + time * X[1], X[2] + time * X[3], X[4] + time * X[5]]
+        # X = [X[0] + time * X[1] + 0.5 * U[0] * time**2, X[2] + time * X[3] + 0.5 * U[1] * time**2, X[4] + time * X[5] + 0.5 * U[2] * time**2]
         location = [X[0], X[1]]
         return location
 
