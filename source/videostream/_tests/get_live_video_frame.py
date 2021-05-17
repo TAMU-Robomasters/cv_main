@@ -20,10 +20,12 @@ class liveFeed:
         
     def get_live_video_frame(self):
         try:
+            t1 = time.time()
             frames = self.pipeline.wait_for_frames()     
             if not frames:
                 print("CONTINUE LOOP")
                 return 0
+            print("TIME",time.time()-t1)
             return frames
         except:
             print("Unexpected error:", sys.exc_info()[0])
