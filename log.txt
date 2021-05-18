@@ -1,0 +1,13 @@
+[1621299026404] Embedded Communication: Port is set to /dev/ttyTHS0
+[1621299027549] [INFO] loading YOLO from disk...
+[1621299027549] RUNNING WITH TENSORRT
+[1621299031124] TIME 0.00020885467529296875
+[1621299031124] 
+[1621299031124] 1
+[1621299031170] Inside init for KCF Tracker.
+[1621299031172] Tracker initialization successful.
+[1621299031173] Now Tracking a New Object, reinitialized Kalman Filter.
+[1621299031173] Prediction is: [445.5, 250.0]
+[1621299031173] Angles calculated are hAngle: 0.03805558711011221 and vAngle: 0.020725784867432664
+[1621299031173] Sending To Embedded
+[1621299031174] PARAMETERS['testing']['debugging_use_round_trip_timing'] =  True

@@ -64,5 +64,6 @@ def print(*args,**kwargs):
     global MODE
     if MODE == "development":
         current_time = int(now() * 1000)
-        return original_print(f'[{current_time}] ', *args, **kwargs)
+        original_print(f'[{current_time}] ', end='')
+        return original_print(*args, **kwargs)
     # if not in development (e.g. production) don't print anything

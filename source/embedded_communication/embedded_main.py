@@ -33,21 +33,26 @@ class EmbeddedCommunication:
         y1 = np.uint8(y>>8)
         y2 = np.uint8(y)
 
-        if self.port is not None:
-            print('sending to embedded')
-            self.port.write("a".encode())
-            self.port.write(x1.tobytes())
-            self.port.write(x2.tobytes())
-            self.port.write(y1.tobytes())
-            self.port.write(y2.tobytes())
-            self.port.write('e'.encode())
-            modelTime = time.time()-t1
-        
-        if PARAMETERS['debugging_use_round_trip_timing']:
-            output = self.port.readline()
-            print('received from embedded')
-            print('incoming message:', output)
-            self.port.write("s_blah_e".encode())
+        # if self.port is not None:
+        #     self.port.write("a".encode())
+        #     self.port.write(x1.tobytes())
+        #     self.port.write(x2.tobytes())
+        #     self.port.write(y1.tobytes())
+        #     self.port.write(y2.tobytes())
+        #     self.port.write('e'.encode())
+        #     modelTime = time.time()-t1
+        self.port.write("s_blah_e".encode())
+        if PARAMETERS['testing']['debugging_use_round_trip_timing']:
+            while True:
+                output = self.port.readline()
+                try:
+                    output = str(output)
+                    if output[-4] + output[-3] + output[-2] + output[-1] != "abc\n":
+                        print('incoming message:', output)
+                        self.port.write("s_blah_e".encode())
+                except:
+                    pass
+                
             
         return modelTime
             # self.port.write(("s "+str(x).zfill(padding_per_value)+" "+str(y).zfill(padding_per_value)+" e ").encode())
