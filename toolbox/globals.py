@@ -58,9 +58,11 @@ MODEL_COLORS = np.random.randint(0, 255, size=(len(MODEL_LABELS), 3), dtype="uin
 COLOR_GREEN = (0, 255, 0)
 COLOR_YELLOW = (255, 255, 00)
 
+from time import time as now
 original_print = print
 def print(*args,**kwargs):
     global MODE
     if MODE == "development":
-        return original_print(*args,**kwargs)
+        current_time = int(now() * 1000)
+        return original_print(f'[{current_time}] ', *args, **kwargs)
     # if not in development (e.g. production) don't print anything
