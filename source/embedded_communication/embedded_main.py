@@ -34,6 +34,7 @@ class EmbeddedCommunication:
         y2 = np.uint8(y)
 
         if self.port is not None:
+            print('sending to embedded')
             self.port.write("a".encode())
             self.port.write(x1.tobytes())
             self.port.write(x2.tobytes())
@@ -41,6 +42,13 @@ class EmbeddedCommunication:
             self.port.write(y2.tobytes())
             self.port.write('e'.encode())
             modelTime = time.time()-t1
+        
+        if PARAMETERS['debugging_use_round_trip_timing']:
+            output = self.port.readline()
+            print('received from embedded')
+            print('incoming message:', output)
+            self.port.write("s_blah_e".encode())
+            
         return modelTime
             # self.port.write(("s "+str(x).zfill(padding_per_value)+" "+str(y).zfill(padding_per_value)+" e ").encode())
         # print(("s "+str(x).zfill(padding_per_value)+" "+str(y).zfill(padding_per_value)+" e "))
