@@ -1,15 +1,30 @@
-from subprocess import call
 import cv2
 # local imports
 from toolbox.file_system_tools import FS
 
-
-
 class Video(object):
     def __init__(self, path=None):
         self.path = path
-    
-    
+        self._cached_video_capture = None # not always used
+        
+        # a helper method
+        def _cv_get(value):
+            if self._cached_video_capture is None:
+                video_capture = cv2.VideoCapture(self.path)
+            else:
+                video_capture = self._cached_video_capture
+            # Check if video opened successfully
+            if (video_capture.isOpened()== False): 
+                raise Exception(f"Error, tried opening {self.path} with cv2 but wasn't able to")
+            
+            output = video_capture.get(value)
+            
+            # if cached, then dont release cause something else is using it
+            if self._cached_video_capture is None:
+                video_capture.release()
+            return output
+        self._cv_get = _cv_get
+            
     def frames(self):
         """
         returns: a generator, where each element is a image as a numpyarray 
@@ -26,44 +41,68 @@ class Video(object):
         # print('video_format = ', video_format)
         
         # Path to video file 
-        video_capture = cv2.VideoCapture(self.path)
+        self._cached_video_capture = cv2.VideoCapture(self.path)
         # Check if video opened successfully
-        if (video_capture.isOpened()== False): 
+        if (self._cached_video_capture.isOpened()== False): 
             raise Exception(f"Error, tried opening {self.path} with cv2 but wasn't able to")
         
         # checks whether frames were extracted 
         success = 1
         while True: 
             # function extract frames 
-            success, image = video_capture.read()
+            success, image = self._cached_video_capture.read()
             if not success:
-                video_capture.release()
+                self._cached_video_capture.release()
                 return None
             yield image
     
-    def fps(self):
-        video_capture = cv2.VideoCapture(self.path)
-        # Find OpenCV version
-        (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
-        if int(major_ver) < 3:
-            fps = video_capture.get(cv2.cv.CV_CAP_PROP_FPS)
+    def duration_estimate(self):
+        frame_count = self.frame_count()
+        fps = self.fps()
+        duration = frame_count / fps
+        if duration > 0:
+            return duration
         else:
-            fps = video_capture.get(cv2.CAP_PROP_FPS)
-        video_capture.release()
-        return fps
+            return None
+    
+    def frames_with_info(self):
+        """
+        Example:
+            for each_frame, each_index, each_time in video.frames_with_info():
+                print('time in seconds:', each_time)
+        """
+        # 
+        # each frame
+        # 
+        for each_index, each_frame in enumerate(self.frames()):
+            # handle frame
+            if type(each_frame) != type(None):
+                miliseconds = self._cv_get(cv2.CAP_PROP_POS_MSEC)
+                time = miliseconds/1000
+            else:
+                time = None
+            yield each_frame, each_index, time
+    
+    def frame_count(self):
+        frame_count = int(self._cv_get(cv2.CAP_PROP_FRAME_COUNT))
+        # cv fails dangerously
+        if int(frame_count) < 0:
+            # do it the inefficient manual way, cause 21st centry software development is trash
+            frame_count = 0
+            for each in self.frames():
+                frame_count += 1
+            return frame_count
+        return frame_count
+        
+    def fps(self):
+        return self._cv_get(cv2.CAP_PROP_FPS)
 
     def frame_width(self):
-        video_capture = cv2.VideoCapture(self.path)
-        frame_width  = int(video_capture.get(3))
-        video_capture.release()
-        return frame_width
+        return int(self._cv_get(cv2.CAP_PROP_FRAME_WIDTH))
     
-    def frame_height(self):
-        video_capture = cv2.VideoCapture(self.path)
-        frame_height = int(video_capture.get(4))
-        video_capture.release()
-        return frame_height
-    
+    def frame_width(self):
+        return int(self._cv_get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
     def save_with_labels(self, list_of_labels, to=None):
         # 
         # extract video data
@@ -73,10 +112,7 @@ class Video(object):
         frame_height = int(video_capture.get(4))
         # Find OpenCV version
         (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
-        if int(major_ver) < 3:
-            fps = video_capture.get(cv2.cv.CV_CAP_PROP_FPS)
-        else:
-            fps = video_capture.get(cv2.CAP_PROP_FPS)
+        fps = video_capture.get(cv2.CAP_PROP_FPS)
         video_capture.release()
         
         # 
@@ -103,9 +139,20 @@ class Video(object):
         
         # combine the resulting frames into a video
         new_video.release()
+    
+    def save_clip(self, start, end, save_to):
+        # todo: delete existing file in save_to
+        # todo: validate start and end
+        list_of_frames = []
+        fps = self.fps()
+        for each_frame, each_index, each_time in self.frames_with_time():
+            if each_time >= start and each_time <= end:
+                list_of_frames.append(each_frame)
+        return Video.create_from_frames(list_of_frames, save_to=save_to, fps=fps)
 
     @classmethod
     def create_from_frames(self, list_of_frames, save_to=None, fps=30):
+        # TODO: make this work with a generator
         # check
         if len(list_of_frames) == 0:
             raise Exception('The Video.create_from_frames was given an empty list (no frames)\nso a video cannot be made')
@@ -124,4 +171,3 @@ class Video(object):
         
         # combine the resulting frames into a video, which will write to a file
         new_video.release()
-

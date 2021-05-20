@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# if PROJECTR_FOLDER is not set, then assume the current folder
+if [[ -z "$PROJECTR_FOLDER" ]]
+then
+    PROJECTR_FOLDER="$PWD"
+fi
+
 # main inputs
 name_of_check="pip modules"
 file_to_watch="requirements.txt"
@@ -20,7 +26,7 @@ echo "Running $name_of_check check"
 if ! [[ -f "./$file_to_watch" ]]; then
     generate_file_command
 fi
-location_of_hash="./settings/.cache/.$hash_check_name.cleanable.hash"
+location_of_hash="$PROJECTR_FOLDER/settings/.cache/.$hash_check_name.cleanable.hash"
 if ! [[ -f "$location_of_hash" ]]; then
     # make sure the folder exists
     mkdir -p "$(dirname "$location_of_hash")"

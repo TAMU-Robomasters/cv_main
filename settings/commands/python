@@ -5,4 +5,4 @@
     # links to the venv python
     # and python3 instead of python2
 
-"$PROJECT_FOLDER/.venv/bin/python3" $@
+"$PROJECTR_FOLDER/.venv/bin/python3" $@

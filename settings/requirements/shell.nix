@@ -88,6 +88,7 @@ let
             definitions.mainPackages.python37Packages.pip
             definitions.mainPackages.python37Packages.virtualenv
             definitions.mainPackages.python37Packages.wheel
+            definitions.mainPackages.python37Packages.pyrealsense2
         ];
     };
     
@@ -106,27 +107,17 @@ in
         
         # run some bash code before starting up the shell
         shellHook = ''
-        export PROJECT_HOME="settings/home"
-        export PROJECT_FOLDER="$PWD"
+        export PROJECTR_FOLDER="$PWD"
+        export PROJECTR_HOME="$PROJECTR_FOLDER/settings/home/"
+        export PROJECTR_COMMANDS_FOLDER="$PROJECTR_FOLDER/settings/commands/"
         # we don't want to give nix or other apps our home folder
-        if [[ "$HOME" != "$(pwd)/$PROJECT_HOME" ]] 
+        if [[ "$HOME" != "$PROJECTR_HOME" ]] 
         then
-            #
-            # find and run all the startup scripts in alphabetical order
-            #
-            # for file in ./settings/shell_startup/#pre_changing_home/*
-            # do
-            #    # make sure its a file
-            #    if [[ -f "$file" ]]; then
-            #        source "$file"
-            #    fi
-            # done
-            
-            mkdir -p "$PROJECT_HOME/.cache/"
-            ln -s "$HOME/.cache/nix" "$PROJECT_HOME/.cache/" &>/dev/null
+            mkdir -p "$PROJECTR_HOME/.cache/"
+            ln -s "$HOME/.cache/nix" "$PROJECTR_HOME/.cache/" &>/dev/null
             
             # so make the home folder the same as the project folder
-            export HOME="$(pwd)/$PROJECT_HOME"
+            export HOME="$PROJECTR_HOME"
             # make it explicit which nixpkgs we're using
             export NIX_PATH="nixpkgs=${definitions.mainRepo}:."
         fi

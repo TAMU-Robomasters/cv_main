@@ -1,1 +1,2 @@
-/usr/bin/sudo
+#!/usr/bin/env bash
+        HOME='/Users/jeffhykin' '/usr/bin/sudo' "$@"

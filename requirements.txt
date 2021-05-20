@@ -7,5 +7,5 @@ filterpy==1.4.4
 scikit-build==0.11.1
 scipy==1.5.2
 pyserial==3.4
-pyrealsense2
 opencv-contrib-python==4.5.1.48
+dict_recursive_update==1.0.1

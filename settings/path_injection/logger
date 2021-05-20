@@ -1,1 +1,2 @@
-/usr/bin/logger
+#!/usr/bin/env bash
+        HOME='/Users/jeffhykin' '/usr/bin/logger' "$@"
