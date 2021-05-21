@@ -35,12 +35,14 @@ withGUI = PARAMETERS['testing']['open_each_frame']
 
 def setup(
         get_frame = None,
-        on_next_frame=None,
-        modeling=test_modeling,
-        tracker=test_tracking,
-        aiming=test_aiming,
-        embedded_communication=embedded_communication,
-        testing = 1
+        on_next_frame = None,
+        modeling = test_modeling,
+        tracker = test_tracking,
+        aiming = test_aiming,
+        embedded_communication = embedded_communication,
+        live_camera = False,
+        kalman_filters = False,
+        with_gui = False
     ):
     """
     this function is used to connect main with other modules
@@ -78,12 +80,11 @@ def setup(
 
         while True:
             t = time.time()
-            modelTime = 0
             frame = get_frame()  
             color_image = None           
             depth_image = None
 
-            if testing != 3:
+            if live_camera:
                 color_frame = frame.get_color_frame()
                 color_image = np.asanyarray(color_frame.get_data()) 
                 depth_frame = frame.get_depth_frame() 
@@ -111,27 +112,27 @@ def setup(
                 # Finds the centermost bounding box
                 best_bounding_box = min(bboxes, key=bboxes.get)
 
-                prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]+best_bounding_box[3]/2,0] # xObjCenter, yObjCenter, depth
-                # print("Robot Location is:",prediction)
+                prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]+best_bounding_box[3]/2] # location to shoot [xObjCenter, yObjCenter]
+                print("Prediction is:",prediction)
 
-                # send data to embedded
+
                 hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov) and returns angles in radians
                 print("Angles calculated are hAngle:",hAngle,"and vAngle:",vAngle)
-                modelTime = embedded_communication.send_output(hAngle, vAngle,t1)
+                embedded_communication.send_output(hAngle, vAngle)
 
-                if withGUI:
+                if with_gui:
                     cv2.rectangle(color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (255,0,0), 2)
-
             else:
                 print("No Bounding Boxes Found")
 
-            if withGUI:
+            if with_gui:
                 cv2.imshow("feed",color_image)
                 cv2.waitKey(10)
 
-            modelTime = time.time()-t
-            print('Processing frame',frameNumber,'took',modelTime,"seconds for model only")
-            # optional value for debugging/testing
+            iterationTime = time.time()-t
+            print('Processing frame',frameNumber,'took',iterationTime,"seconds for model only\n")
+
+            # optional value for debugging/testing for video footage only
             if not (on_next_frame is None):
                 on_next_frame(frameNumber, color_image, (boxes, confidences), (hAngle,vAngle))
 
@@ -149,24 +150,21 @@ def setup(
 
         counter = 1
         frameNumber = 0 # used for on_next_frame
-        # model needs to run on first iteration
         best_bounding_box = None
         
-        # create shared instances of tracker and model between multiprocesses
+        # initialize model and tracker classes
         track = tracker.trackingClass()
         model = modeling.modelingClass()
         kalmanFilter = None
 
         while True: # counts up infinitely starting at 0
             # grabs frame and ends loop if we reach the last one
-            t1 = time.time()
-            modelTime = 0
-
+            t = time.time()
             frame = get_frame()  
             color_image = None           
             depth_image = None
 
-            if testing != 3:
+            if live_camera:
                 color_frame = frame.get_color_frame()
                 color_image = np.asanyarray(color_frame.get_data()) 
                 depth_frame = frame.get_depth_frame() 
@@ -179,8 +177,6 @@ def setup(
                 color_image = frame
 
             frameNumber+=1
-            print()
-            print(frameNumber)
             counter+=1
 
             # Finds the coordinate for the center of the screen
@@ -197,10 +193,12 @@ def setup(
                     bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
                     # Finds the centermost bounding box
                     best_bounding_box = min(bboxes, key=bboxes.get)
-
                     best_bounding_box = track.init(color_image,best_bounding_box)
-                    kalmanFilter = aiming.Filter(modelFPS)
-                    print("Now Tracking a New Object, reinitialized Kalman Filter.")
+
+                    print("Now Tracking a New Object.")
+                    if kalman_filters:
+                        kalmanFilter = aiming.Filter(modelFPS)
+                        print("Reinitialized Kalman Filter.")
             else:
                 best_bounding_box = track.update(color_image)
 
@@ -212,7 +210,7 @@ def setup(
                 print("Prediction is:",prediction)
 
                 # Comment this if branch out in case kalman filters doesn't work
-                if testing == 0:
+                if kalman_filters:
                     z0 = cameraMethods.getDistFromArray(depth_image,best_bounding_box,gridSize)
                     kalmanBox = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
                     prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim, returns (xObjCenter, yObjCenter)
@@ -221,17 +219,17 @@ def setup(
                 # send data to embedded
                 hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov) and returns angles in radians
                 print("Angles calculated are hAngle:",hAngle,"and vAngle:",vAngle)
-                modelTime = embedded_communication.send_output(hAngle, vAngle,t1)
-                if withGUI:
-                    cv2.rectangle(color_image, (int(best_bounding_box[0]), int(best_bounding_box[1])), (int(best_bounding_box[0]) + int(best_bounding_box[2]), int(best_bounding_box[1]) + int(best_bounding_box[3])), (255,0,0), 2)
 
+                if with_gui:
+                    cv2.rectangle(color_image, (int(best_bounding_box[0]), int(best_bounding_box[1])), (int(best_bounding_box[0]) + int(best_bounding_box[2]), int(best_bounding_box[1]) + int(best_bounding_box[3])), (255,0,0), 2)
             else:
                 print("No Bounding Boxes Found")
 
-            # optional value for debugging/testing\
-            print('Processing frame',frameNumber,'took',modelTime,"seconds for model+tracker")
+            # optional value for debugging/testing
+            iterationTime = time.time() - t
+            print('Processing frame',frameNumber,'took',iterationTime,"seconds for model+tracker")
 
-            if withGUI:
+            if with_gui:
                 cv2.imshow("feed",color_image)
                 cv2.waitKey(10)
 
@@ -372,10 +370,11 @@ if __name__ == '__main__':
     # Must send classes so multiprocessing is possible
     simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(
         get_frame = camera.get_live_video_frame, 
-        modeling=test_modeling,
-        tracker=test_tracking,
-        aiming=test_aiming,
-        testing = 1
+        modeling = test_modeling,
+        tracker = test_tracking,
+        aiming = test_aiming,
+        liveCamera = True,
+        kalman_filters = False,
+        withGUI = False
     )
-    # testing 0 with kalman, 1 without kalman, 3 video
     synchronous_with_tracker()

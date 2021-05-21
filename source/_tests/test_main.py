@@ -56,13 +56,6 @@ def debug_each_frame(frame_index, frame, model_ouput, aiming_output):
     
     if PARAMETERS["testing"]["save_frame_to_file"]:
         frames.append(image.img)
-    
-    if PARAMETERS["testing"]["open_each_frame"]:
-        # NOTE: this currently fails in nix-shell on Mac with error message:
-        #     qt.qpa.plugin: Could not find the Qt platform plugin "cocoa" in ""
-        #     its fixable, see "qt.qpa.plugin: Could not find the Qt" on https://nixos.wiki/wiki/Qt
-        #     but its hard to fix
-        image.show("frame")
 
     # allow user to quit by pressing q (at least I think thats what this checks)
     if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -88,7 +81,9 @@ simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setu
     modeling=test_modeling,
     tracker=test_tracking,
     aiming=test_aiming,
-    testing = 3
+    live_camera = False,
+    kalman_filters = False,
+    with_gui = PARAMETERS["testing"]["open_each_frame"]
     # send_output=simulated_send_output, # this should be commented in once we actually add aiming 
 )
 

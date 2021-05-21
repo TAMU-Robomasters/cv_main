@@ -11,7 +11,6 @@ from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 streamWidth = PARAMETERS['aiming']['stream_width']
 streamHeight = PARAMETERS['aiming']['stream_height']
 framerate = PARAMETERS['aiming']['stream_framerate']
-frameAmount = PARAMETERS['videostream']['testing']['camera_frames']
 timeRecord = PARAMETERS['videostream']['testing']['record_time']
 colorVideoLocation = PATHS['record_video_output_color']
 

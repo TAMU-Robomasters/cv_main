@@ -51,13 +51,12 @@ default_parameters:
     videostream:
         testing:
             assumed_framerate: 30 # frames per second
-            grab_frame: 0 # 0 means grab next frame, 1 means grab latest frame
-            camera_frames: 350 # how many frames to do live video for
+            grab_frame: 0 # For video feed only: 0 means grab next frame, 1 means grab latest frame
             record_time: 10 # seconds to record for
     testing:
         save_frame_to_file: true
         open_each_frame: false
-        main_function: 0 # 0 is simple synchronous, 1 is synchronous with tracker, 2 is multiprocessing with tracker
+        main_function: 1 # 0 is simple synchronous, 1 is synchronous with tracker, 2 is multiprocessing with tracker
     embedded_communication:
         serial_baudrate: 115200
         serial_port: null
