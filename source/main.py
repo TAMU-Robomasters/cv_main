@@ -373,8 +373,8 @@ if __name__ == '__main__':
         modeling = test_modeling,
         tracker = test_tracking,
         aiming = test_aiming,
-        liveCamera = True,
+        live_camera = True,
         kalman_filters = False,
-        withGUI = False
+        with_gui = False
     )
-    synchronous_with_tracker()
+    simple_synchronous()
