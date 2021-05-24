@@ -46,12 +46,17 @@ class Filter():
     def timePredict(self, time):
         return X
 
-    def predict(self, data):
+    def predict(self, data, gyro_data):
         # center of bounding box given by (x, y, z)
         pos_x = int(data[0])
         pos_y = int(data[1])
         pos_z = int(data[2])
+        
+        data = np.array(data)
+        gyro_data = np.array(gyro_data)
+        gyro_vel = np.cross(gyro_data, data)
 
+        # convert to v from w (v = r*w)
         self.f.update(np.array([[pos_x], 
                                 [pos_y],
                                 [pos_z]]))
@@ -59,12 +64,10 @@ class Filter():
         
         X = self.f.x
         U = self.f.u
-        # print("pos_z:", pos_z)
-        # time = dc.travelTime(pos_z)
+    
         time = 1
-        # print("time: ", time)
-        print(U)
-        X = [X[0] + time * X[1], X[2] + time * X[3], X[4] + time * X[5]]
+
+        X = [X[0] + time * (X[1] + gyro_vel[0]), X[2] + time * (X[3] + gyro_vel[1]), X[4] + time * (X[5] + gyro_vel[2])]
         # X = [X[0] + time * X[1] + 0.5 * U[0] * time**2, X[2] + time * X[3] + 0.5 * U[1] * time**2, X[4] + time * X[5] + 0.5 * U[2] * time**2]
         location = [X[0], X[1]]
         return location

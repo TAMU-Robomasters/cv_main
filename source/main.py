@@ -154,12 +154,15 @@ def setup(
             frame = get_frame()  
             color_image = None           
             depth_image = None
+            gyro_data = None
 
             if testing == False:
                 color_frame = frame.get_color_frame()
                 color_image = np.asanyarray(color_frame.get_data()) 
                 depth_frame = frame.get_depth_frame() 
                 depth_image = np.asanyarray(depth_frame.get_data()) 
+                if gyro_frame = frames.first_or_default(RS2_STREAM_GYRO):
+                    gyro_data = gyro_frame.get_motion_data()
             else:
                 if frame is None:
                     break
@@ -210,7 +213,7 @@ def setup(
                 if testing == False:
                     z0 = cameraMethods.getDistFromArray(depth_image,best_bounding_box,gridSize)
                     kalmanBox = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
-                    prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim, returns (xObjCenter, yObjCenter)
+                    prediction = kalmanFilter.predict(kalmanBox, gyro_data) # figure out where to aim, returns (xObjCenter, yObjCenter)
                     print("Kalman Filter updated Prediction to:",prediction)
 
                 # send data to embedded

@@ -16,7 +16,14 @@ def DistanceInBox(bbox):
         while True: 
 
             frames = pipeline.wait_for_frames()     
-            motion_frame = frames.as_motion_frame().get_motion_data()
+            # motion_data = frames.as_motion_frame().get_motion_data()
+            if accel_frame = frames.first_or_default(RS2_STREAM_ACCEL):
+                accel_data = accel_frame.get_motion_data() 
+            if gyro_frame = frames.first_or_default(RS2_STREAM_GYRO):
+                gyro_data = gyro_frame.get_motion_data()
+            if pose_frame = frames.first_or_default(RS2_STREAM_pose):
+                pose_data = pose_frame.get_motion_data()
+            
             # do whatever with the frames
 
     finally:
