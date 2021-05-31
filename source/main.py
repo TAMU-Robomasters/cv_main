@@ -32,6 +32,11 @@ gridSize = PARAMETERS['aiming']['grid_size']
 horizontalFOV = PARAMETERS['aiming']['horizontal_fov']
 verticalFOV = PARAMETERS['aiming']['vertical_fov']
 withGUI = PARAMETERS['testing']['open_each_frame']
+streamWidth = PARAMETERS['aiming']['stream_width']
+streamHeight = PARAMETERS['aiming']['stream_height']
+framerate = PARAMETERS['aiming']['stream_framerate']
+colorVideoLocation = PATHS['record_video_output_color']
+record_interval = PARAMETERS['videostream']['testing']['record_interval']
 
 def setup(
         get_frame = None,
@@ -77,65 +82,77 @@ def setup(
 
         frameNumber = 0 # used for on_next_frame
         model = modeling.modelingClass() # create instance of modeling
-
-        while True:
-            t = time.time()
-            frame = get_frame()  
-            color_image = None           
-            depth_image = None
-
+        
+        try:
             if live_camera:
-                color_frame = frame.get_color_frame()
-                color_image = np.asanyarray(color_frame.get_data()) 
-                depth_frame = frame.get_depth_frame() 
-                depth_image = np.asanyarray(depth_frame.get_data()) 
-            else:
-                if frame is None:
-                    break
-                if isinstance(frame,int):
-                    continue
-                color_image = frame
+                gst_out = "appsrc ! video/x-raw, format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc ! h264parse ! matroskamux ! filesink location="+colorVideoLocation
+                out = cv2.VideoWriter(gst_out, cv2.CAP_GSTREAMER, 0, float(framerate), (int(streamWidth), int(streamHeight)))
+                if not out.isOpened():
+                    print("Failed to open output")
+        
+            while True:
+                t = time.time()
+                frame = get_frame()  
+                color_image = None           
+                depth_image = None
 
-            frameNumber+=1
+                if live_camera:
+                    color_frame = frame.get_color_frame()
+                    color_image = np.asanyarray(color_frame.get_data()) 
+                    depth_frame = frame.get_depth_frame() 
+                    depth_image = np.asanyarray(depth_frame.get_data()) 
 
-            # run the model
-            boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
-            
-            # Finds the coordinate for the center of the screen
-            center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
-            hAngle = None
-            vAngle = None
+                    if frameNumber % record_interval == 0:
+                        out.write(color_image)
+                else:
+                    if frame is None:
+                        break
+                    if isinstance(frame,int):
+                        continue
+                    color_image = frame
 
-            if len(boxes)!=0:
-                # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
-                bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
-                # Finds the centermost bounding box
-                best_bounding_box = min(bboxes, key=bboxes.get)
+                frameNumber+=1
 
-                prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]+best_bounding_box[3]/2] # location to shoot [xObjCenter, yObjCenter]
-                print("Prediction is:",prediction)
+                # run the model
+                boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
+                
+                # Finds the coordinate for the center of the screen
+                center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
+                hAngle = None
+                vAngle = None
+
+                if len(boxes)!=0:
+                    # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
+                    bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
+                    # Finds the centermost bounding box
+                    best_bounding_box = min(bboxes, key=bboxes.get)
+
+                    prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]+best_bounding_box[3]/2] # location to shoot [xObjCenter, yObjCenter]
+                    print("Prediction is:",prediction)
 
 
-                hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov) and returns angles in radians
-                print("Angles calculated are hAngle:",hAngle,"and vAngle:",vAngle)
-                embedded_communication.send_output(hAngle, vAngle)
+                    hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov) and returns angles in radians
+                    print("Angles calculated are hAngle:",hAngle,"and vAngle:",vAngle)
+                    embedded_communication.send_output(hAngle, vAngle)
+
+                    if with_gui:
+                        cv2.rectangle(color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (255,0,0), 2)
+                else:
+                    print("No Bounding Boxes Found")
 
                 if with_gui:
-                    cv2.rectangle(color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (255,0,0), 2)
-            else:
-                print("No Bounding Boxes Found")
+                    cv2.imshow("feed",color_image)
+                    cv2.waitKey(10)
 
-            if with_gui:
-                cv2.imshow("feed",color_image)
-                cv2.waitKey(10)
+                iterationTime = time.time()-t
+                print('Processing frame',frameNumber,'took',iterationTime,"seconds for model only\n")
 
-            iterationTime = time.time()-t
-            print('Processing frame',frameNumber,'took',iterationTime,"seconds for model only\n")
-
-            # optional value for debugging/testing for video footage only
-            if not (on_next_frame is None):
-                on_next_frame(frameNumber, color_image, (boxes, confidences), (hAngle,vAngle))
-
+                # optional value for debugging/testing for video footage only
+                if not (on_next_frame is None):
+                    on_next_frame(frameNumber, color_image, (boxes, confidences), (hAngle,vAngle))
+        finally:
+            if live_camera:
+                out.release()
     
     # 
     # option #2
