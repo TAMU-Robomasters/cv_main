@@ -47,7 +47,8 @@ def setup(
         embedded_communication = embedded_communication,
         live_camera = False,
         kalman_filters = False,
-        with_gui = False
+        with_gui = False,
+        filter_team_color = False
     ):
     """
     this function is used to connect main with other modules
@@ -114,8 +115,8 @@ def setup(
                 frameNumber+=1
 
                 # run the model
-                boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
-                
+                boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold, filter_team_color)
+
                 # Finds the coordinate for the center of the screen
                 center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
                 hAngle = None
@@ -204,7 +205,7 @@ def setup(
                 counter=1
                 best_bounding_box = None
                 # call model
-                boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
+                boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold,filter_team_color)
                 if len(boxes) != 0:
                     # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
                     bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
@@ -392,6 +393,7 @@ if __name__ == '__main__':
         aiming = test_aiming,
         live_camera = True,
         kalman_filters = False,
-        with_gui = False
+        with_gui = False,
+        filter_team_color = True
     )
     simple_synchronous()

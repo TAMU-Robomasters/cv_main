@@ -10,6 +10,8 @@ from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, MODE, MODEL_COLORS, 
 hardware_acceleration = PARAMETERS['model']['hardware_acceleration']
 should_use_tensor_rt = hardware_acceleration == 'tensor_rt'
 should_use_gpu       = hardware_acceleration == 'gpu'
+team_color = PARAMETERS['embedded_communication']['team_color']
+
 
 if should_use_tensor_rt:
     import pycuda.autoinit  # This is needed for initializing CUDA driver
@@ -33,7 +35,19 @@ class modelingClass:
             self.layer_names = self.net.getLayerNames()
             self.output_layer_names = [self.layer_names[index[0] - 1] for index in self.net.getUnconnectedOutLayers()]
             self.W, self.H = None, None
-        
+
+    def filter_team(self,boxes,confidences,classIDs):
+        index = 0
+        while index < len(boxes):
+            if classIDs[index] == team_color:
+                boxes.pop(index)
+                confidences.pop(index)
+                classIDs.pop(index) 
+            else:
+                index+=1
+
+        return boxes,confidences,classIDs
+
     def original_get_bounding_boxes(self,frame, iconfidence, ithreshold):
         """
         ex: boxes, confidences, class_ids = get_bounding_boxes(frame, 0.5, 0.3)
@@ -110,7 +124,7 @@ class modelingClass:
 
         return boxes, confidences, classIDs
         
-    def get_bounding_boxes(self,frame, iconfidence, ithreshold):
+    def get_bounding_boxes(self,frame, iconfidence, ithreshold, filter_team_color):
         """	
         this function is the debugging counterpart to the actual get_bounding_boxes()	
             
@@ -130,26 +144,29 @@ class modelingClass:
         # 
         boxes, confidences, class_ids = self.original_get_bounding_boxes(frame, iconfidence, ithreshold)
 
-        if MODE == "production":
-            return boxes, confidences, class_ids
-        
-        if not hardware_acceleration:
-            # apply non-maxima suppression to suppress weak, overlapping
-            # bounding boxes
-            idxs = cv2.dnn.NMSBoxes(boxes, confidences, iconfidence, ithreshold)
-            
-            # ensure at least one detection exists
-            if len(idxs) > 0:
-                # loop over the indexes we are keeping
-                for i in idxs.flatten():
-                    # extract the bounding box coordinates
+        if filter_team_color:
+            boxes, confidences, class_ids = self.filter_team(boxes, confidences, class_ids)
 
-                    (x, y) = (boxes[i][0], boxes[i][1])
-                    (w, h) = (boxes[i][2], boxes[i][3])
-                    # draw a bounding box rectangle and label on the frame
-                    color = [int(c) for c in MODEL_COLORS[class_ids[i]]]
-                    cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
-                    text = "{}: {:.4f}".format(MODEL_LABELS[class_ids[i]],confidences[i])
-                    cv2.putText(frame, text, (x, y - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-        
+        # if MODE == "production":
         return boxes, confidences, class_ids, frame
+        
+        # if not hardware_acceleration:
+        #     # apply non-maxima suppression to suppress weak, overlapping
+        #     # bounding boxes
+        #     idxs = cv2.dnn.NMSBoxes(boxes, confidences, iconfidence, ithreshold)
+            
+        #     # ensure at least one detection exists
+        #     if len(idxs) > 0:
+        #         # loop over the indexes we are keeping
+        #         for i in idxs.flatten():
+        #             # extract the bounding box coordinates
+
+        #             (x, y) = (boxes[i][0], boxes[i][1])
+        #             (w, h) = (boxes[i][2], boxes[i][3])
+        #             # draw a bounding box rectangle and label on the frame
+        #             color = [int(c) for c in MODEL_COLORS[class_ids[i]]]
+        #             cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
+        #             text = "{}: {:.4f}".format(MODEL_LABELS[class_ids[i]],confidences[i])
+        #             cv2.putText(frame, text, (x, y - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+        
+        # return boxes, confidences, class_ids, frame
