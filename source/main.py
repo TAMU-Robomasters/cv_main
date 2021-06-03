@@ -21,6 +21,7 @@ import source.tracking._tests.test_tracking as test_tracking
 import source.aiming.filter as test_aiming
 import source.aiming.depth_camera as cameraMethods
 import time
+import datetime
 
 # import parameters from the info.yaml file
 confidence = PARAMETERS["model"]["confidence"]
@@ -48,7 +49,8 @@ def setup(
         live_camera = False,
         kalman_filters = False,
         with_gui = False,
-        filter_team_color = False
+        filter_team_color = False,
+        videoOutput = None
     ):
     """
     this function is used to connect main with other modules
@@ -83,78 +85,69 @@ def setup(
 
         frameNumber = 0 # used for on_next_frame
         model = modeling.modelingClass() # create instance of modeling
-        
-        try:
+
+        while True:
+            t = time.time()
+            frame = get_frame()  
+            color_image = None           
+            depth_image = None
+
             if live_camera:
-                gst_out = "appsrc ! video/x-raw, format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc ! h264parse ! matroskamux ! filesink location="+colorVideoLocation
-                out = cv2.VideoWriter(gst_out, cv2.CAP_GSTREAMER, 0, float(framerate), (int(streamWidth), int(streamHeight)))
-                if not out.isOpened():
-                    print("Failed to open output")
-        
-            while True:
-                t = time.time()
-                frame = get_frame()  
-                color_image = None           
-                depth_image = None
+                color_frame = frame.get_color_frame()
+                color_image = np.asanyarray(color_frame.get_data()) 
+                depth_frame = frame.get_depth_frame() 
+                depth_image = np.asanyarray(depth_frame.get_data()) 
 
-                if live_camera:
-                    color_frame = frame.get_color_frame()
-                    color_image = np.asanyarray(color_frame.get_data()) 
-                    depth_frame = frame.get_depth_frame() 
-                    depth_image = np.asanyarray(depth_frame.get_data()) 
+                if videoOutput and frameNumber % record_interval == 0:
+                    print("Saving Frame",frameNumber)
+                    videoOutput.write(color_image)
+            else:
+                if frame is None:
+                    break
+                if isinstance(frame,int):
+                    continue
+                color_image = frame
 
-                    if frameNumber % record_interval == 0:
-                        out.write(color_image)
-                else:
-                    if frame is None:
-                        break
-                    if isinstance(frame,int):
-                        continue
-                    color_image = frame
+            frameNumber+=1
 
-                frameNumber+=1
+            # run the model
+            boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold, filter_team_color)
 
-                # run the model
-                boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold, filter_team_color)
+            # Finds the coordinate for the center of the screen
+            center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
+            hAngle = None
+            vAngle = None
 
-                # Finds the coordinate for the center of the screen
-                center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
-                hAngle = None
-                vAngle = None
+            if len(boxes)!=0:
+                # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
+                bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
+                # Finds the centermost bounding box
+                best_bounding_box = min(bboxes, key=bboxes.get)
 
-                if len(boxes)!=0:
-                    # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
-                    bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
-                    # Finds the centermost bounding box
-                    best_bounding_box = min(bboxes, key=bboxes.get)
-
-                    prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]+best_bounding_box[3]/2] # location to shoot [xObjCenter, yObjCenter]
-                    print("Prediction is:",prediction)
+                prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]+best_bounding_box[3]/2] # location to shoot [xObjCenter, yObjCenter]
+                print("Prediction is:",prediction)
 
 
-                    hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov) and returns angles in radians
-                    print("Angles calculated are hAngle:",hAngle,"and vAngle:",vAngle)
-                    embedded_communication.send_output(hAngle, vAngle)
-
-                    if with_gui:
-                        cv2.rectangle(color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (255,0,0), 2)
-                else:
-                    print("No Bounding Boxes Found")
+                hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov) and returns angles in radians
+                print("Angles calculated are hAngle:",hAngle,"and vAngle:",vAngle)
+                embedded_communication.send_output(hAngle, vAngle)
 
                 if with_gui:
-                    cv2.imshow("feed",color_image)
-                    cv2.waitKey(10)
+                    cv2.rectangle(color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (255,0,0), 2)
+            else:
+                print("No Bounding Boxes Found")
 
-                iterationTime = time.time()-t
-                print('Processing frame',frameNumber,'took',iterationTime,"seconds for model only\n")
+            if with_gui:
+                cv2.imshow("feed",color_image)
+                cv2.waitKey(10)
 
-                # optional value for debugging/testing for video footage only
-                if not (on_next_frame is None):
-                    on_next_frame(frameNumber, color_image, (boxes, confidences), (hAngle,vAngle))
-        finally:
-            if live_camera:
-                out.release()
-    
+            iterationTime = time.time()-t
+            print('Processing frame',frameNumber,'took',iterationTime,"seconds for model only\n")
+
+            # optional value for debugging/testing for video footage only
+            if not (on_next_frame is None):
+                on_next_frame(frameNumber, color_image, (boxes, confidences), (hAngle,vAngle))
+
     # 
     # option #2
     # 
@@ -187,6 +180,10 @@ def setup(
                 color_image = np.asanyarray(color_frame.get_data()) 
                 depth_frame = frame.get_depth_frame() 
                 depth_image = np.asanyarray(depth_frame.get_data()) 
+
+                if videoOutput and frameNumber % record_interval == 0:
+                    print("Saving Frame",frameNumber)
+                    videoOutput.write(color_image)
             else:
                 if frame is None:
                     break
@@ -379,21 +376,49 @@ def setup(
     # return a list of the different main options
     return simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker
     
+def beginVideoRecording():
+        c=1
+        filePath = colorVideoLocation.replace(".dont-sync",datetime.datetime.now().strftime("%Y-%m-%d")+"_"+str(c)+".dont-sync")
+        while os.path.isfile(filePath):
+            c+=1
+            filePath = colorVideoLocation.replace(".dont-sync",datetime.datetime.now().strftime("%Y-%m-%d")+"_"+str(c)+".dont-sync")
+
+        gst_out = "appsrc ! video/x-raw, format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc ! h264parse ! matroskamux ! filesink location="+filePath
+        videoOutput = cv2.VideoWriter(gst_out, cv2.CAP_GSTREAMER, 0, float(framerate), (int(streamWidth), int(streamHeight)))
+        if not videoOutput.isOpened():
+            print("Failed to open output")
+
+        return videoOutput
 
 if __name__ == '__main__':
     # setup mains with real inputs/outputs
     import source.videostream._tests.get_live_video_frame as liveVideo
     camera = liveVideo.liveFeed()
+    videoOutput = None
 
-    # Must send classes so multiprocessing is possible
-    simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(
-        get_frame = camera.get_live_video_frame, 
-        modeling = test_modeling,
-        tracker = test_tracking,
-        aiming = test_aiming,
-        live_camera = True,
-        kalman_filters = False,
-        with_gui = False,
-        filter_team_color = True
-    )
-    simple_synchronous()
+    # TODO: CHECK INFINITELY UNTIL EMBEDDED SAYS MATCH STARTED HERE
+
+    try:
+        if record_interval>0:
+            videoOutput = beginVideoRecording()
+
+        # Must send classes so multiprocessing is possible
+        simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(
+            get_frame = camera.get_live_video_frame, 
+            modeling = test_modeling,
+            tracker = test_tracking,
+            aiming = test_aiming,
+            live_camera = True,
+            kalman_filters = False,
+            with_gui = False,
+            filter_team_color = True,
+            videoOutput = videoOutput
+        )
+
+        synchronous_with_tracker() # CHANGE THIS LINE FOR DIFFERENT MAIN METHODS
+
+    finally:
+        if videoOutput:
+            print("Saving Recorded Video")
+            videoOutput.release()
+            print("Finished Saving Video")

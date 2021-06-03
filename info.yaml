@@ -8,7 +8,7 @@ paths:
     main_test_video: ./source/_test_data/test.avi
     main_test_image: ./source/_test_data/test.png
     video_output: ./result.dont-sync.mp4
-    record_video_output_color: ./recordedVideoColor.dont-sync.mp4
+    record_video_output_color: ./recordedVideos/recordedVideoColor.dont-sync.mp4
     kalman_video: ./kalmanVideo.dont-sync.mp4
     npy_frames: ./source/scripts/data1 # replace with whichever frame set you want to use in the source/scripts/data<num> directory
     # model
@@ -53,7 +53,7 @@ default_parameters:
             assumed_framerate: 30 # frames per second
             grab_frame: 0 # For video feed only: 0 means grab next frame, 1 means grab latest frame
             record_time: 10 # seconds to record for
-            record_interval: 5 # records one out of every x frames, <=0 to not record
+            record_interval: 0 # records one out of every x frames, <1 to not record
     testing:
         save_frame_to_file: true
         open_each_frame: false
