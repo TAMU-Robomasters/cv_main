@@ -31,3 +31,5 @@ class liveFeed:
         except:
             print("Unexpected error:", sys.exc_info()[0])
             return None
+    def __del__(self):
+        self.pipeline.stop()
