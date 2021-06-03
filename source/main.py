@@ -228,7 +228,7 @@ def setup(
                 if kalman_filters:
                     z0 = cameraMethods.getDistFromArray(depth_image,best_bounding_box,gridSize)
                     kalmanBox = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
-                    prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim, returns (xObjCenter, yObjCenter)
+                    prediction = kalmanFilter.predict(kalmanBox, frame) # figure out where to aim, returns (xObjCenter, yObjCenter)
                     print("Kalman Filter updated Prediction to:",prediction)
 
                 # send data to embedded
