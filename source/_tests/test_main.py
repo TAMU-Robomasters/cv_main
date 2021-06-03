@@ -83,7 +83,8 @@ simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setu
     aiming=test_aiming,
     live_camera = False,
     kalman_filters = False,
-    with_gui = PARAMETERS["testing"]["open_each_frame"]
+    with_gui = PARAMETERS["testing"]["open_each_frame"],
+    filter_team_color = PARAMETERS['testing']['filter_team_color']
     # send_output=simulated_send_output, # this should be commented in once we actually add aiming 
 )
 

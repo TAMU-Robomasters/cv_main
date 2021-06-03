@@ -5,7 +5,7 @@
 paths:
     project_root: ./
     source_dir: ./source
-    main_test_video: ./source/_test_data/recordedVideoColor2.mp4
+    main_test_video: ./source/_test_data/test.avi
     main_test_image: ./source/_test_data/test.png
     video_output: ./result.dont-sync.mp4
     record_video_output_color: ./recordedVideoColor.dont-sync.mp4
@@ -53,13 +53,17 @@ default_parameters:
             assumed_framerate: 30 # frames per second
             grab_frame: 0 # For video feed only: 0 means grab next frame, 1 means grab latest frame
             record_time: 10 # seconds to record for
+            record_interval: 5 # records one out of every x frames, <=0 to not record
     testing:
         save_frame_to_file: true
         open_each_frame: false
-        main_function: 1 # 0 is simple synchronous, 1 is synchronous with tracker, 2 is multiprocessing with tracker
+        main_function: 0 # 0 is simple synchronous, 1 is synchronous with tracker, 2 is multiprocessing with tracker
+        filter_team_color: True
     embedded_communication:
         serial_baudrate: 115200
         serial_port: null
+        # team_color: 0 # red
+        team_color: 1 # blue
 
 environment_parameters:
     laptop:
