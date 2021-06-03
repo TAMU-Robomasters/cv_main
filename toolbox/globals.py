@@ -44,7 +44,7 @@ for each_key in PATHS.keys():
 # 
 import os
 # laptop or tx2 (default laptop), and it to be overridden by the 'PROJECT_ENVIRONMENT' environment variable
-ENVIRONMENT = os.environ.get('PROJECT_ENVIRONMENT',"laptop")
+ENVIRONMENT = os.environ.get('PROJECT_ENVIRONMENT',"xavier")
 # development or production (default to development), and allow for it to be overridden as well
 MODE = os.environ.get('PROJECT_MODE',"development")
 

@@ -83,11 +83,14 @@ let
     
     majorCustomDependencies = rec {
         python = [
-            definitions.mainPackages.python37
-            definitions.mainPackages.python37Packages.setuptools
-            definitions.mainPackages.python37Packages.pip
-            definitions.mainPackages.python37Packages.virtualenv
-            definitions.mainPackages.python37Packages.wheel
+            definitions.mainPackages.python38
+            definitions.mainPackages.python38Packages.setuptools
+            definitions.mainPackages.python38Packages.pip
+            definitions.mainPackages.python38Packages.virtualenv
+            definitions.mainPackages.python38Packages.wheel
+            definitions.mainPackages.python38Packages.scipy
+            definitions.mainPackages.python38Packages.opencv4
+            # definitions.mainPackages.python38Packages.pycuda # has problems on arm
             definitions.mainPackages.python37Packages.pyrealsense2
         ];
     };
