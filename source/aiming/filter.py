@@ -4,7 +4,6 @@ from statistics import stdev
 from filterpy.kalman import KalmanFilter
 from filterpy.common import Q_discrete_white_noise
 import source.aiming.depth_camera as dc
-import pyrealsense2.pyrealsense2 as rs
 
 
 class Filter():

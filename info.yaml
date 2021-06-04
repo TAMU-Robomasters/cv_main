@@ -32,6 +32,7 @@ default_parameters:
         hardware_acceleration: "tensor_rt" # one of: [ null, "gpu", "tensor_rt" ]
     aiming:
         prediction_time: 2 # time interval in seconds to predict using kalman filters
+        shooter_velocity: 1
         # depth camera
         stream_width: 848
         stream_height: 480

@@ -12,16 +12,15 @@ from itertools import count
 from multiprocessing import Manager, Process,Value,Array
 from multiprocessing.managers import BaseManager
 import math
+import time
+import datetime
 
 # relative imports
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 from source.embedded_communication.embedded_main import embedded_communication
 import source.modeling._tests.test_modeling as test_modeling
 import source.tracking._tests.test_tracking as test_tracking
-import source.aiming.filter as test_aiming
 import source.aiming.depth_camera as cameraMethods
-import time
-import datetime
 
 # import parameters from the info.yaml file
 confidence = PARAMETERS["model"]["confidence"]
@@ -44,7 +43,7 @@ def setup(
         on_next_frame = None,
         modeling = test_modeling,
         tracker = test_tracking,
-        aiming = test_aiming,
+        aiming = None,
         embedded_communication = embedded_communication,
         live_camera = False,
         kalman_filters = False,
@@ -393,6 +392,8 @@ def beginVideoRecording():
 if __name__ == '__main__':
     # setup mains with real inputs/outputs
     import source.videostream._tests.get_live_video_frame as liveVideo
+    import source.aiming.filter as test_aiming
+
     camera = liveVideo.liveFeed()
     videoOutput = None
 
@@ -409,13 +410,13 @@ if __name__ == '__main__':
             tracker = test_tracking,
             aiming = test_aiming,
             live_camera = True,
-            kalman_filters = False,
+            kalman_filters = True,
             with_gui = False,
             filter_team_color = True,
             videoOutput = videoOutput
         )
 
-        synchronous_with_tracker() # CHANGE THIS LINE FOR DIFFERENT MAIN METHODS
+        simple_synchronous() # CHANGE THIS LINE FOR DIFFERENT MAIN METHODS
 
     finally:
         if videoOutput:
