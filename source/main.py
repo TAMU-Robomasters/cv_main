@@ -142,7 +142,7 @@ def setup(
                 cv2.waitKey(10)
 
             # cv2.imwrite("here.jpg",color_image)
-            
+
             iterationTime = time.time()-t
             print('Processing frame',frameNumber,'took',iterationTime,"seconds for model only\n")
 
@@ -172,6 +172,7 @@ def setup(
 
         while True: # counts up infinitely starting at 0
             # grabs frame and ends loop if we reach the last one
+            print()
             t = time.time()
             frame = get_frame()  
             color_image = None           
@@ -229,9 +230,9 @@ def setup(
 
                 # Comment this if branch out in case kalman filters doesn't work
                 if kalman_filters:
-                    z0 = cameraMethods.getDistFromArray(depth_image,best_bounding_box,gridSize)
-                    kalmanBox = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
-                    prediction = kalmanFilter.predict(kalmanBox, frame) # figure out where to aim, returns (xObjCenter, yObjCenter)
+                    prediction[1] += cameraMethods.getBulletDropPixels(depth_image,best_bounding_box)
+                    # kalmanBox = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
+                    # prediction = kalmanFilter.predict(kalmanBox, frame) # figure out where to aim, returns (xObjCenter, yObjCenter)
                     print("Kalman Filter updated Prediction to:",prediction)
 
                 # send data to embedded
@@ -418,8 +419,8 @@ if __name__ == '__main__':
             tracker = test_tracking,
             aiming = test_aiming,
             live_camera = True,
-            kalman_filters = False,
-            with_gui = False,
+            kalman_filters = True,
+            with_gui = True,
             filter_team_color = False,
             videoOutput = videoOutput
         )
