@@ -30,7 +30,6 @@ class EmbeddedCommunication:
         :param x: x coordinate of the target. Unit: pixel. Zero coordinate: upper left
         :param y: y coordinate of the target. Unit: pixel. Zero coordinate: upper left
         """
-        modelTime = 0
         print("Sending To Embedded")
         x = np.uint16(int(x*10000)+32768)
         y = np.uint16(int(y*10000)+32768)
@@ -47,7 +46,6 @@ class EmbeddedCommunication:
             self.port.write(y1.tobytes())
             self.port.write(y2.tobytes())
             self.port.write('e'.encode())
-            modelTime = time.time()-t1
 
     def read_input(self):
         """
