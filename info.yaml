@@ -86,5 +86,5 @@ environment_parameters:
         model:
             hardware_acceleration: "tensor_rt"
         embedded_communication:
-            serial_port: "/dev/ttyTHS1" # UART serial 0 works but try 1
+            serial_port: "/dev/ttyTHS0" # UART serial 0 works but try 1
         

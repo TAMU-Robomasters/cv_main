@@ -134,12 +134,15 @@ def setup(
                 if with_gui:
                     cv2.rectangle(color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (255,0,0), 2)
             else:
+                embedded_communication.send_output(0, 0)
                 print("No Bounding Boxes Found")
 
             if with_gui:
                 cv2.imshow("feed",color_image)
                 cv2.waitKey(10)
 
+            # cv2.imwrite("here.jpg",color_image)
+            
             iterationTime = time.time()-t
             print('Processing frame',frameNumber,'took',iterationTime,"seconds for model only\n")
 
@@ -220,7 +223,8 @@ def setup(
             vAngle = None
 
             if best_bounding_box is not None:
-                prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]+best_bounding_box[3]/2] # xObjCenter, yObjCenter
+                prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]-best_bounding_box[3]/2] # xObjCenter, yObjCenter
+                
                 print("Prediction is:",prediction)
 
                 # Comment this if branch out in case kalman filters doesn't work
@@ -233,10 +237,12 @@ def setup(
                 # send data to embedded
                 hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov) and returns angles in radians
                 print("Angles calculated are hAngle:",hAngle,"and vAngle:",vAngle)
+                embedded_communication.send_output(hAngle, vAngle)
 
                 if with_gui:
                     cv2.rectangle(color_image, (int(best_bounding_box[0]), int(best_bounding_box[1])), (int(best_bounding_box[0]) + int(best_bounding_box[2]), int(best_bounding_box[1]) + int(best_bounding_box[3])), (255,0,0), 2)
             else:
+                embedded_communication.send_output(0, 0)
                 print("No Bounding Boxes Found")
 
             # optional value for debugging/testing
@@ -246,6 +252,8 @@ def setup(
             if with_gui:
                 cv2.imshow("feed",color_image)
                 cv2.waitKey(10)
+
+            # cv2.imwrite("here.jpg",color_image)
 
             if not (on_next_frame is None):
                 on_next_frame(frameNumber, color_image, ([best_bounding_box], [1])if best_bounding_box else ([], []),(hAngle,vAngle))
@@ -416,7 +424,7 @@ if __name__ == '__main__':
             videoOutput = videoOutput
         )
 
-        simple_synchronous() # CHANGE THIS LINE FOR DIFFERENT MAIN METHODS
+        synchronous_with_tracker() # CHANGE THIS LINE FOR DIFFERENT MAIN METHODS
 
     finally:
         if videoOutput:
