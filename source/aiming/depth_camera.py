@@ -46,7 +46,7 @@ def getDistFromArray(depth_frame_array, bbox):
         
         distances = distances[distances!=0.0]   # removes all occurances of 0.0 (areas where there is not enough data return 0.0 as depth)
         median = np.median(distances)           # gets the median from the array
-        std = np.std(distances)                 # gets the standard deviation from th array
+        std = np.std(distances)                 # gets the standard deviation from the array
         modifiedDistances = []                  # initializes a new array for removing outlier numbers
         # goes through distances array and adds any values that are less than X*standard deviations and ignores the rest
         for i in range(np.size(distances)):
@@ -79,7 +79,3 @@ def getBulletDropPixels(depth_image,best_bounding_box):
     bulletDropPixels = bulletDropMeters * 3779.5275
     print("Bullet Drop Amount",bulletDropPixels)
     return bulletDropPixels
-
-# calculates the travel time of the bullet to the robot given the depth
-def travelTime(depth):
-    return depth/shooter_velocity

@@ -420,7 +420,7 @@ if __name__ == '__main__':
             aiming = test_aiming,
             live_camera = True,
             kalman_filters = True,
-            with_gui = True,
+            with_gui = False,
             filter_team_color = False,
             videoOutput = videoOutput
         )
