@@ -14,6 +14,7 @@ from multiprocessing.managers import BaseManager
 import math
 import time
 import datetime
+import collections
 
 # relative imports
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
@@ -164,9 +165,8 @@ def setup(
         counter = 1
         frameNumber = 0 # used for on_next_frame
         best_bounding_box = None
-        depthAmount = 0
-        bboxY = 0
-        pixelDiff = 0
+        xCircularBuffer = collections.deque(maxlen=10)
+        yCircularBuffer = collections.deque(maxlen=10)
         
         # initialize model and tracker classes
         track = tracker.trackingClass()
@@ -223,8 +223,7 @@ def setup(
             else:
                 best_bounding_box = track.update(color_image)
 
-            hAngle = 0
-            vAngle = 0
+            hAngle = vAngle = xstd = ystd = depthAmount = bboxY = pixelDiff = 0
 
             if best_bounding_box is not None:
                 prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]-best_bounding_box[3]/2] # xObjCenter, yObjCenter
@@ -246,6 +245,11 @@ def setup(
                 print("Bounding Box Height",bboxY)
                 pixelDiff = 0
                 prediction[1] += pixelDiff
+
+                xCircularBuffer.append(prediction[0])
+                yCircularBuffer.append(prediction[1])
+                xstd = np.std(xCircularBuffer)
+                ystd = np.std(yCircularBuffer)
 
                 # send data to embedded
                 hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov) and returns angles in radians
@@ -269,11 +273,13 @@ def setup(
                 fontColor = (255,255,255) 
                 lineType = 2
 
-                cv2.putText(color_image,"hAngle: "+str(hAngle), (30,30) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"hAngle: "+str(hAngle), (30,50) , font, fontScale,fontColor,lineType)
                 cv2.putText(color_image,"vAngle: "+str(vAngle), (30,100) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"depthAmount: "+str(depthAmount), (30,170) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"bboxY: "+str(bboxY), (30,240) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"pixelDiff: "+str(pixelDiff), (30,310) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"depthAmount: "+str(depthAmount), (30,150) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"bboxY: "+str(bboxY), (30,200) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"pixelDiff: "+str(pixelDiff), (30,250) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"xSTD: "+str(xstd), (30,300) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"ySTD: "+str(ystd), (30,350) , font, fontScale,fontColor,lineType)
 
                 cv2.imshow("feed",color_image)
                 cv2.waitKey(10)
