@@ -164,6 +164,9 @@ def setup(
         counter = 1
         frameNumber = 0 # used for on_next_frame
         best_bounding_box = None
+        depthAmount = 0
+        bboxY = 0
+        pixelDiff = 0
         
         # initialize model and tracker classes
         track = tracker.trackingClass()
@@ -220,8 +223,8 @@ def setup(
             else:
                 best_bounding_box = track.update(color_image)
 
-            hAngle = None
-            vAngle = None
+            hAngle = 0
+            vAngle = 0
 
             if best_bounding_box is not None:
                 prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]-best_bounding_box[3]/2] # xObjCenter, yObjCenter
@@ -229,11 +232,20 @@ def setup(
                 print("Prediction is:",prediction)
 
                 # Comment this if branch out in case kalman filters doesn't work
-                if kalman_filters:
-                    prediction[1] += cameraMethods.getBulletDropPixels(depth_image,best_bounding_box)
+                # if kalman_filters:
+                #     prediction[1] += cameraMethods.getBulletDropPixels(depth_image,best_bounding_box)
                     # kalmanBox = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
                     # prediction = kalmanFilter.predict(kalmanBox, frame) # figure out where to aim, returns (xObjCenter, yObjCenter)
-                    print("Kalman Filter updated Prediction to:",prediction)
+                    # print("Kalman Filter updated Prediction to:",prediction)
+
+                depthAmount = cameraMethods.getDistFromArray(depth_image,best_bounding_box)
+                bboxY = prediction[1]
+
+
+                print("DEPTH:",depthAmount)
+                print("Bounding Box Height",bboxY)
+                pixelDiff = 0
+                prediction[1] += pixelDiff
 
                 # send data to embedded
                 hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov) and returns angles in radians
@@ -251,6 +263,18 @@ def setup(
             print('Processing frame',frameNumber,'took',iterationTime,"seconds for model+tracker")
 
             if with_gui:
+                font = cv2.FONT_HERSHEY_SIMPLEX 
+                bottomLeftCornerOfText = (10,10) 
+                fontScale = .7
+                fontColor = (255,255,255) 
+                lineType = 2
+
+                cv2.putText(color_image,"hAngle: "+str(hAngle), (30,30) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"vAngle: "+str(vAngle), (30,100) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"depthAmount: "+str(depthAmount), (30,170) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"bboxY: "+str(bboxY), (30,240) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"pixelDiff: "+str(pixelDiff), (30,310) , font, fontScale,fontColor,lineType)
+
                 cv2.imshow("feed",color_image)
                 cv2.waitKey(10)
 
@@ -419,8 +443,8 @@ if __name__ == '__main__':
             tracker = test_tracking,
             aiming = test_aiming,
             live_camera = True,
-            kalman_filters = True,
-            with_gui = False,
+            kalman_filters = False,
+            with_gui = True,
             filter_team_color = False,
             videoOutput = videoOutput
         )
