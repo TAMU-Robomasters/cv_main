@@ -25,9 +25,9 @@ paths:
 # NOTE: these are overridden by environments (below)
 default_parameters:
     model:
-        confidence: 0.90
+        confidence: 0.95
         threshold: 0.3
-        frequency: 40
+        frequency: 30
         input_dimension: 416
         hardware_acceleration: "tensor_rt" # one of: [ null, "gpu", "tensor_rt" ]
     aiming:

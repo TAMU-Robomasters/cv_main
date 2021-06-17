@@ -33,13 +33,16 @@ class EmbeddedCommunication:
         print("Sending To Embedded")
         x = np.uint16(int(x*10000)+32768)
         y = np.uint16(int(y*10000)+32768)
-        xstd = np.uint8(int(xstd)) if xstd < 255 else np.uint8(255)
-        ystd = np.uint8(int(ystd)) if ystd < 255 else np.uint8(255)
 
         x1 = np.uint8(x>>8)
         x2 = np.uint8(x)
         y1 = np.uint8(y>>8)
         y2 = np.uint8(y)
+
+        xstd = int(xstd*10)
+        ystd = int(ystd*10)
+        xstd = np.uint8(xstd) if xstd < 255 else np.uint8(255)
+        ystd = np.uint8(ystd) if ystd < 255 else np.uint8(255)
 
         if self.port is not None:
             self.port.write("a".encode())
@@ -47,8 +50,10 @@ class EmbeddedCommunication:
             self.port.write(x2.tobytes())
             self.port.write(y1.tobytes())
             self.port.write(y2.tobytes())
-            # self.port.write(xstd.tobytes())
-            # self.port.write(ystd.tobytes())
+            print(xstd)
+            print(ystd)
+            self.port.write(xstd.tobytes())
+            self.port.write(ystd.tobytes())
             self.port.write('e'.encode())
 
     def read_input(self):
@@ -60,7 +65,18 @@ class EmbeddedCommunication:
             return self.port.readline()
 
     def getPhee(self):
-        return None
+        try:
+            self.port.flushInput()
+            phee = self.port.read(4)[1:3]
+            p1 = np.uint16(phee[0])
+            p2 = np.uint16(phee[1])
+            unsigned_p = ((p1 << 8) + p2)
+            signed_p = np.int16((unsigned_p - 32768))/10000
+            return np.degrees(signed_p)
+        except:
+            # TODO: Error handling
+            return 0
+            
 
 embedded_communication = EmbeddedCommunication(
     port=PARAMETERS["embedded_communication"]["serial_port"],

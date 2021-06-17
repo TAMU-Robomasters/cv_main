@@ -64,16 +64,29 @@ class modelingClass:
             - a list of class_ids
         NOTE: this code is derived from https://www.pyimagesearch.com/2018/11/12/yolo-object-detection-with-opencv/
         """
-    
+        # initialize our lists of detected bounding boxes, confidences, and class IDs, respectively
+        boxes = []
+        confidences = []
+        classIDs = []
 
         # convert image to blob before running it in the model
         if should_use_tensor_rt:
             boxes, confidences, classIDs = self.trtYolo.detect(frame, ithreshold)
             newBoxes = []
-            for box in boxes:
-                newBox = [box[0],box[1],abs(box[2]-box[0]),abs(box[3]-box[1])]
-                newBoxes.append(newBox)
+            newConfidences = []
+            newClassIDs = []
+
+            for i in range(len(boxes)):
+                if confidences[i] >= iconfidence:
+                    box = boxes[i]
+                    newBox = [box[0],box[1],abs(box[2]-box[0]),abs(box[3]-box[1])]
+                    newBoxes.append(newBox)
+                    newConfidences.append(confidences[i])
+                    newClassIDs.append(classIDs[i])
+
             boxes = newBoxes
+            confidences = newConfidences
+            classIDs = newClassIDs
         else:
             if self.W is None or self.H is None:
                 (self.H, self.W) = frame.shape[:2]
@@ -84,11 +97,6 @@ class modelingClass:
             self.net.setInput(blob)
             layerOutputs = self.net.forward(self.output_layer_names)
 
-            # initialize our lists of detected bounding boxes, confidences,
-            # and class IDs, respectively
-            boxes = []
-            confidences = []
-            classIDs = []
 
             # loop over each of the layer outputs
             for output in layerOutputs:
