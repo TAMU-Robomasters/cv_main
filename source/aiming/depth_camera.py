@@ -61,15 +61,15 @@ def getDistFromArray(depth_frame_array, bbox):
 
 
 # bbox[x coordinate of the top left of the bounding box, y coordinate of the top left of the bounding box, width of box, height of box]
-def WorldCoordinate(depth_frame, bbox):
-    depth_intrin = depth_frame.profile.as_video_stream_profile().intrinsics
-    depth_value = DistanceInBox(bbox)
-    # depth_pixel = [depth_intrin.ppx, depth_intrin.ppy]
-    depth_pixel = [bbox[0] + .5 * bbox[2], bbox[1] + .5 * bbox[3]]
-    depth_point =   rs.rs2_deproject_pixel_to_point(depth_intrin, depth_pixel, depth_value)
-    return depth_point
-    if not depth_frame:                     # if there is no aligned_depth_frame or color_frame then leave the loop
-        return None
+# def WorldCoordinate(depth_frame, bbox):
+#     depth_intrin = depth_frame.profile.as_video_stream_profile().intrinsics
+#     depth_value = DistanceInBox(bbox)
+#     # depth_pixel = [depth_intrin.ppx, depth_intrin.ppy]
+#     depth_pixel = [bbox[0] + .5 * bbox[2], bbox[1] + .5 * bbox[3]]
+#     depth_point =   rs.rs2_deproject_pixel_to_point(depth_intrin, depth_pixel, depth_value)
+#     return depth_point
+#     if not depth_frame:                     # if there is no aligned_depth_frame or color_frame then leave the loop
+#         return None
 
 # def getBulletDropPixels(depth_image,best_bounding_box):
 #     z0 = getDistFromArray(depth_image,best_bounding_box)
@@ -122,8 +122,11 @@ def bulletDropCompensation(depth_image, best_bounding_box, phee):
     rangeP = depthFromPivot/math.cos(math.radians(rho))
     # print("rangeP", rangeP)
     # # rangeP = 2
+    i = rangeP * math.cos(math.radians(phi))
     j = rangeP * math.sin(math.radians(phi))
     t = rangeP/v
     phiF = math.degrees(math.asin((j+4.9*t**2) / (v*t) ))
     # print("phiF", phiF)
-    return phiF
+    changeP = ((diffC/abs(diffC)) * 240) / math.tan(math.radians((diffC/abs(diffC)) * 27.5)) * math.tan(math.radians( (diffC/abs(diffC)) * phiF))
+    
+    return best_bounding_box[1]+0.5*best_bounding_box[3]-changeP
