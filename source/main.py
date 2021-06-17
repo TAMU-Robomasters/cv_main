@@ -516,30 +516,38 @@ def setup(
     return simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker
     
 def beginVideoRecording():
-        c=1
+    """
+    Run live video recording using nvenc.
+
+    Input: None
+    Output: Video object to add frames too.
+    """
+
+    # Setup video output path based on date and counter
+    c=1
+    filePath = colorVideoLocation.replace(".dont-sync",datetime.datetime.now().strftime("%Y-%m-%d")+"_"+str(c)+".dont-sync")
+    while os.path.isfile(filePath):
+        c+=1
         filePath = colorVideoLocation.replace(".dont-sync",datetime.datetime.now().strftime("%Y-%m-%d")+"_"+str(c)+".dont-sync")
-        while os.path.isfile(filePath):
-            c+=1
-            filePath = colorVideoLocation.replace(".dont-sync",datetime.datetime.now().strftime("%Y-%m-%d")+"_"+str(c)+".dont-sync")
 
-        gst_out = "appsrc ! video/x-raw, format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc ! h264parse ! matroskamux ! filesink location="+filePath
-        videoOutput = cv2.VideoWriter(gst_out, cv2.CAP_GSTREAMER, 0, float(framerate), (int(streamWidth), int(streamHeight)))
-        if not videoOutput.isOpened():
-            print("Failed to open output")
+    # Start up video output
+    gst_out = "appsrc ! video/x-raw, format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc ! h264parse ! matroskamux ! filesink location="+filePath
+    videoOutput = cv2.VideoWriter(gst_out, cv2.CAP_GSTREAMER, 0, float(framerate), (int(streamWidth), int(streamHeight)))
+    if not videoOutput.isOpened():
+        print("Failed to open output")
 
-        return videoOutput
+    return videoOutput
 
 if __name__ == '__main__':
-    # setup mains with real inputs/outputs
+    # Relative imports here since pyrealsense requires camera to be plugged in or code will crash
     import source.videostream._tests.get_live_video_frame as liveVideo
     import source.aiming.filter as test_aiming
 
     camera = liveVideo.liveFeed()
     videoOutput = None
 
-    # TODO: CHECK INFINITELY UNTIL EMBEDDED SAYS MATCH STARTED HERE
-
     try:
+        # Setup video recording configuration if enabled
         if record_interval>0:
             videoOutput = beginVideoRecording()
 
@@ -559,6 +567,7 @@ if __name__ == '__main__':
         synchronous_with_tracker() # CHANGE THIS LINE FOR DIFFERENT MAIN METHODS
 
     finally:
+        # Save video output
         if videoOutput:
             print("Saving Recorded Video")
             videoOutput.release()
