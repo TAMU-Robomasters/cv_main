@@ -74,14 +74,14 @@ def getDistFromArray(depth_frame_array, bbox):
 def bulletDrop(depthAmount):
     return (103.234 * depthAmount) + (-142.514) + (-17.1356 * depthAmount**2)
 
-def bulletDropCompensation(depth_image, best_bounding_box, phee):
+def bulletDropCompensation(depth_image, best_bounding_box,depth_amount, phee):
     # Calculated Variables
-    depth = getDistFromArray(depth_image, best_bounding_box) #  meters
+    depth_amount = getDistFromArray(depth_image, best_bounding_box) #  meters
     diffC = 240 - 320 # pixels
     theta = math.degrees(math.atan((diffC/((diffC/abs(diffC)) * 240)) * math.tan(math.radians( (diffC/abs(diffC)) * 27.5))))   # in degrees
     # print("theta", theta)
 
-    diffC = depth * math.tan(math.radians(theta)) # convert diffP to meters
+    diffC = depth_amount * math.tan(math.radians(theta)) # convert diffP to meters
     # print("diffC", diffC)
 
     # phee = -30
@@ -90,7 +90,7 @@ def bulletDropCompensation(depth_image, best_bounding_box, phee):
     lengthBarrel = 0.15
     cameraGap = 0.01
     v = 30
-    depthFromPivot = lengthBarrel + depth
+    depthFromPivot = lengthBarrel + depth_amount
     diffP = diffC + cameraGap
     print("diffP", diffP)
     rho = math.degrees(math.atan(diffP/depthFromPivot))
@@ -110,4 +110,4 @@ def bulletDropCompensation(depth_image, best_bounding_box, phee):
     # print("phiF", phiF)
     changeP = ((diffC/abs(diffC)) * 240) / math.tan(math.radians((diffC/abs(diffC)) * 27.5)) * math.tan(math.radians( (diffC/abs(diffC)) * phiF))
     
-    return best_bounding_box[1]+0.5*best_bounding_box[3]-changeP
+    return -(best_bounding_box[1]-best_bounding_box[3]/2-changeP)
