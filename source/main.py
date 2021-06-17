@@ -14,6 +14,7 @@ from multiprocessing.managers import BaseManager
 import math
 import time
 import datetime
+import collections
 
 # relative imports
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
@@ -164,6 +165,8 @@ def setup(
         counter = 1
         frameNumber = 0 # used for on_next_frame
         best_bounding_box = None
+        xCircularBuffer = collections.deque(maxlen=10)
+        yCircularBuffer = collections.deque(maxlen=10)
         
         # initialize model and tracker classes
         track = tracker.trackingClass()
@@ -211,6 +214,7 @@ def setup(
                     bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
                     # Finds the centermost bounding box
                     best_bounding_box = min(bboxes, key=bboxes.get)
+
                     best_bounding_box = track.init(color_image,best_bounding_box)
 
                     print("Now Tracking a New Object.")
@@ -220,20 +224,29 @@ def setup(
             else:
                 best_bounding_box = track.update(color_image)
 
-            hAngle = None
-            vAngle = None
+            hAngle = vAngle = xstd = ystd = depthAmount = bboxY = pixelDiff = bboxHeight = 0
 
             if best_bounding_box is not None:
                 prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]-best_bounding_box[3]/2] # xObjCenter, yObjCenter
-                
+                bboxHeight = best_bounding_box[3]
                 print("Prediction is:",prediction)
 
                 # Comment this if branch out in case kalman filters doesn't work
-                if kalman_filters:
-                    prediction[1] += cameraMethods.getBulletDropPixels(depth_image,best_bounding_box)
+                # if kalman_filters:
+                #     prediction[1] += cameraMethods.getBulletDropPixels(depth_image,best_bounding_box)
                     # kalmanBox = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
                     # prediction = kalmanFilter.predict(kalmanBox, frame) # figure out where to aim, returns (xObjCenter, yObjCenter)
-                    print("Kalman Filter updated Prediction to:",prediction)
+                    # print("Kalman Filter updated Prediction to:",prediction)
+
+                depthAmount = cameraMethods.getDistFromArray(depth_image,best_bounding_box)
+                bboxY = prediction[1]
+                pixelDiff = 12
+                prediction[1] += pixelDiff
+
+                xCircularBuffer.append(prediction[0])
+                yCircularBuffer.append(prediction[1])
+                xstd = np.std(xCircularBuffer)
+                ystd = np.std(yCircularBuffer)
 
                 # send data to embedded
                 hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov) and returns angles in radians
@@ -244,6 +257,10 @@ def setup(
                     cv2.rectangle(color_image, (int(best_bounding_box[0]), int(best_bounding_box[1])), (int(best_bounding_box[0]) + int(best_bounding_box[2]), int(best_bounding_box[1]) + int(best_bounding_box[3])), (255,0,0), 2)
             else:
                 embedded_communication.send_output(0, 0)
+                xCircularBuffer.append(99999)
+                yCircularBuffer.append(99999)
+                xstd = np.std(xCircularBuffer)
+                ystd = np.std(yCircularBuffer)
                 print("No Bounding Boxes Found")
 
             # optional value for debugging/testing
@@ -251,6 +268,21 @@ def setup(
             print('Processing frame',frameNumber,'took',iterationTime,"seconds for model+tracker")
 
             if with_gui:
+                font = cv2.FONT_HERSHEY_SIMPLEX 
+                bottomLeftCornerOfText = (10,10) 
+                fontScale = .7
+                fontColor = (255,255,255) 
+                lineType = 2
+
+                cv2.putText(color_image,"hAngle: "+str(np.round(hAngle,2)), (30,50) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"vAngle: "+str(np.round(vAngle,2)), (30,100) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"depthAmount: "+str(np.round(depthAmount,2)), (30,150) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"bboxY: "+str(np.round(bboxY,2)), (30,200) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"pixelDiff: "+str(np.round(pixelDiff,2)), (30,250) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"bboxHeight: "+str(np.round(bboxHeight,2)), (30,400) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"xSTD: "+str(np.round(xstd,2)), (30,300) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"ySTD: "+str(np.round(ystd,2)), (30,350) , font, fontScale,fontColor,lineType)
+
                 cv2.imshow("feed",color_image)
                 cv2.waitKey(10)
 
@@ -419,7 +451,7 @@ if __name__ == '__main__':
             tracker = test_tracking,
             aiming = test_aiming,
             live_camera = True,
-            kalman_filters = True,
+            kalman_filters = False,
             with_gui = False,
             filter_team_color = False,
             videoOutput = videoOutput

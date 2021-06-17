@@ -17,7 +17,7 @@ class trackingClass:
     # bbox is [x, y, width, height]
     def init(self,image, best_bounding_box):
         # creates the tracker and returns None if there are no bounding boxes to track
-        self.tracker = cv2.TrackerMOSSE_create()
+        self.tracker = cv2.TrackerKCF_create()
         print("Inside init for KCF Tracker.")
         
         # Attempts to start the tracker
