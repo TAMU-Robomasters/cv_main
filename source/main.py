@@ -117,11 +117,25 @@ def setup(
         Output: Best bounding box and its confidence.
         """
 
+        b2 = []
+        c2 = []
+
+        for i in range(len(boxes)):
+            if confidences[i] > confidence:
+                b2.append(boxes[i])
+                c2.append(confidences[i])
+
+        boxes = b2
+        confidences = c2
+
+
         # Set initial values
+        if len(boxes) == 0:
+            return None, 0
         best_bounding_box = boxes[0]
         best_score = 0
         cf = 0
-        normalizationConstant = distance(center[0]*2,center[1]*2,center[0],center[1]) # Find constant used to scale distance part of score to 1
+        normalizationConstant = distance((center[0]*2,center[1]*2),(center[0],center[1])) # Find constant used to scale distance part of score to 1
 
         # Sequentially iterate through all bounding boxes
         for i in range(len(boxes)):
@@ -264,7 +278,7 @@ def setup(
             print()
             t = time.time()
             frame = get_frame()  
-            color_image = None           
+            color_image = None    
             depth_image = None
 
             # Differentiate between live camera feed and recorded video data
@@ -307,13 +321,14 @@ def setup(
 
                     # Get the best bounding box and initialize the tracker
                     best_bounding_box, cf = getOptimalBoundingBox(boxes,confidences,center)
-                    best_bounding_box = track.init(color_image,tuple(best_bounding_box))
-                    print("Now Tracking a New Object.")
+                    if best_bounding_box:
+                        best_bounding_box = track.init(color_image,tuple(best_bounding_box))
+                        print("Now Tracking a New Object.")
 
-                    # Reinitialize kalman filters
-                    if kalman_filters:
-                        kalmanFilter = aiming.Filter(modelFPS)
-                        print("Reinitialized Kalman Filter.")
+                        # Reinitialize kalman filters
+                        if kalman_filters:
+                            kalmanFilter = aiming.Filter(modelFPS)
+                            print("Reinitialized Kalman Filter.")
             else:
                 best_bounding_box = track.update(color_image) # Get new position of bounding box from tracker
 
@@ -378,12 +393,10 @@ def setup(
                 cv2.putText(color_image,"hAngle: "+str(np.round(hAngle,2)), (30,50) , font, fontScale,fontColor,lineType)
                 cv2.putText(color_image,"vAngle: "+str(np.round(vAngle,2)), (30,100) , font, fontScale,fontColor,lineType)
                 cv2.putText(color_image,"depthAmount: "+str(np.round(depthAmount,2)), (30,150) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"bboxY: "+str(np.round(bboxY,2)), (30,200) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"pixelDiff: "+str(np.round(pixelDiff,2)), (30,250) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"bboxHeight: "+str(np.round(bboxHeight,2)), (30,400) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"xSTD: "+str(np.round(xstd,2)), (30,300) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"ySTD: "+str(np.round(ystd,2)), (30,350) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"confidence: "+str(np.round(cf,2)), (30,400) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"pixelDiff: "+str(np.round(pixelDiff,2)), (30,200) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"xSTD: "+str(np.round(xstd,2)), (30,250) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"ySTD: "+str(np.round(ystd,2)), (30,300) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"confidence: "+str(np.round(cf,2)), (30,350) , font, fontScale,fontColor,lineType)
 
                 cv2.imshow("feed",color_image)
                 cv2.waitKey(10)
@@ -562,7 +575,7 @@ if __name__ == '__main__':
             live_camera = True,
             kalman_filters = False,
             with_gui = True,
-            filter_team_color = True,
+            filter_team_color = False,
             videoOutput = videoOutput
         )
 
