@@ -264,10 +264,11 @@ def setup(
         frameNumber = 0
         cf = 0
         best_bounding_box = None
+        buffersize = 10
 
         # Create two circular buffers to store predicted shooting locations (used to ensure we are locked on a target)
-        xCircularBuffer = collections.deque(maxlen=10)
-        yCircularBuffer = collections.deque(maxlen=10)
+        xCircularBuffer = collections.deque(maxlen=buffersize)
+        yCircularBuffer = collections.deque(maxlen=buffersize)
         
         # initialize model and tracker classes
         track = tracker.trackingClass()
@@ -360,10 +361,10 @@ def setup(
                 print("Angles calculated are hAngle:",hAngle,"and vAngle:",vAngle)
 
                 # Send embedded the angles to turn to and the accuracy, make accuracy terrible if we dont have enough data in buffer                
-                if len(xCircularBuffer) == 10:
+                if len(xCircularBuffer) == buffersize:
                     embedded_communication.send_output(hAngle, vAngle,xstd,ystd)
                 else:
-                    embedded_communication.send_output(hAngle, vAngle,255,255)
+                    embedded_communication.send_output(0, 0,255,255)
 
                 # If gui is enabled then draw bounding boxes around the selected robot
                 if with_gui:
