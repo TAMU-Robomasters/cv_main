@@ -204,6 +204,7 @@ def setup(
                 hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1]) # Determine angles to turn by in both x,y components
                 print("Angles calculated are hAngle:",hAngle,"and vAngle:",vAngle)
 
+                # Send embedded the angles to turn to and the accuracy, make accuracy terrible if we dont have enough data in buffer                
                 if len(xCircularBuffer) == 10:
                     embedded_communication.send_output(hAngle, vAngle,xstd,ystd)
                 else:
@@ -297,6 +298,7 @@ def setup(
                 best_bounding_box = None
                 boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold, filter_team_color) # Call model
 
+                # Continue control logic if we detected atleast a single bounding box
                 if len(boxes) != 0:
                     # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
                     # bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
@@ -330,7 +332,7 @@ def setup(
                     # prediction = kalmanFilter.predict(kalmanBox, frame) # figure out where to aim, returns (xObjCenter, yObjCenter)
                     # print("Kalman Filter updated Prediction to:",prediction)
 
-                depthAmount = cameraMethods.getDistFromArray(depth_image,best_bounding_box)
+                depthAmount = cameraMethods.getDistFromArray(depth_image,best_bounding_box) # Find depth from camera to robot
                 bboxY = prediction[1]
                 phee = embedded_communication.getPhee()
                 pixelDiff = 0
@@ -392,7 +394,7 @@ def setup(
                 
     
     def modelMulti(color_image,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames,center):
-        #run the model and update best bounding box to the new bounding box if it exists, otherwise keep tracking the old bounding box
+        # Run the model and update best bounding box to the new bounding box if it exists, otherwise keep tracking the old bounding box
         boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
         bbox = None
 
