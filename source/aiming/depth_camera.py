@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import math
 from toolbox.globals import PARAMETERS,print
 
 
@@ -65,17 +66,64 @@ def WorldCoordinate(depth_frame, bbox):
     depth_value = DistanceInBox(bbox)
     # depth_pixel = [depth_intrin.ppx, depth_intrin.ppy]
     depth_pixel = [bbox[0] + .5 * bbox[2], bbox[1] + .5 * bbox[3]]
-    depth_point = rs.rs2_deproject_pixel_to_point(depth_intrin, depth_pixel, depth_value)
+    depth_point =   rs.rs2_deproject_pixel_to_point(depth_intrin, depth_pixel, depth_value)
     return depth_point
     if not depth_frame:                     # if there is no aligned_depth_frame or color_frame then leave the loop
         return None
 
-def getBulletDropPixels(depth_image,best_bounding_box):
-    z0 = getDistFromArray(depth_image,best_bounding_box)
-    print("Target Distance from Robot:",z0)
-    bulletHorizontalVelocity = PARAMETERS['aiming']['bullet_horizontal_velocity']
-    predictedTimeTaken = z0/bulletHorizontalVelocity
-    bulletDropMeters = .5 * 9.8 * (predictedTimeTaken**2)
-    bulletDropPixels = bulletDropMeters * 3779.5275
-    print("Bullet Drop Amount",bulletDropPixels)
-    return bulletDropPixels
+# def getBulletDropPixels(depth_image,best_bounding_box):
+#     z0 = getDistFromArray(depth_image,best_bounding_box)
+#     print("Target Distance from Robot:",z0)
+#     bulletHorizontalVelocity = PARAMETERS['aiming']['bullet_horizontal_velocity']
+#     predictedTimeTaken = z0/bulletHorizontalVelocity
+#     bulletDropMeters = .5 * 9.8 * (predictedTimeTaken**2)
+#     bulletDropPixels = bulletDropMeters * 3779.5275
+#     print("Bullet Drop Amount",bulletDropPixels)
+#     return bulletDropPixels
+
+# not that cool bullet drop
+# def getBulletDropPixels(depth_image, best_bounding_box):
+#     d = getDistFromArray(depth_image, best_bounding_box) #distance to bbox
+#     t = d/30 # replace withe shooter velocity constant
+#     worldCoords = WorldCoordinate(depth_image, best_bounding_box) # bbox coords in meters
+#     worldCoords[1] -= (0.5)(9.8)(t)**2 # adjust the y coord by subtracting the dist in y that the bullet drops in the given depth
+#     depth_intrin = depth_image.profile.as_video_stream_profile().intrinsics
+#     pixelCoordsWithAdj = rs.rs2_project_point_to_pixel(depth_intrin, worldCoords) # y convert adjusted world coordinates to pixels
+
+#     y = best_bounding_box[1] - pixelCoordsWithAdj[1] # get the difference of the original bbox y coord and the adjusted bbox y coord
+#     return y # return the offset of the y coord in pixels
+
+def bulletDropCompensation(depth_image, best_bounding_box, phee):
+    # Calculated Variables
+    depth = getDistFromArray(depth_image, best_bounding_box) #  meters
+    diffC = 240 - 320 # pixels
+    theta = math.degrees(math.atan((diffC/((diffC/abs(diffC)) * 240)) * math.tan(math.radians( (diffC/abs(diffC)) * 27.5))))   # in degrees
+    # print("theta", theta)
+
+    diffC = depth * math.tan(math.radians(theta)) # convert diffP to meters
+    # print("diffC", diffC)
+
+    # phee = -30
+
+    # Constants
+    lengthBarrel = 0.15
+    cameraGap = 0.01
+    v = 30
+    depthFromPivot = lengthBarrel + depth
+    diffP = diffC + cameraGap
+    print("diffP", diffP)
+    rho = math.degrees(math.atan(diffP/depthFromPivot))
+    print("rho", rho) 
+    phi = phee + rho
+
+    # phi = -30
+    # print("phi", phi)
+
+    rangeP = depthFromPivot/math.cos(math.radians(rho))
+    # print("rangeP", rangeP)
+    # # rangeP = 2
+    j = rangeP * math.sin(math.radians(phi))
+    t = rangeP/v
+    phiF = math.degrees(math.asin((j+4.9*t**2) / (v*t) ))
+    # print("phiF", phiF)
+    return phiF
