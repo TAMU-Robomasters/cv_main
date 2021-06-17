@@ -74,7 +74,8 @@ def getDistFromArray(depth_frame_array, bbox):
 def bulletDrop(depthAmount):
     return (103.234 * depthAmount) + (-142.514) + (-17.1356 * depthAmount**2)
 
-def bulletDropCompensation(depth_image, best_bounding_box,depth_amount, phee):
+def bulletDropCompensation(depth_image, best_bounding_box,depth_amount,center, phee):
+    best_bounding_box = [0,center[1]*2-best_bounding_box[1]-best_bounding_box[3],0,best_bounding_box[3]]
     # Calculated Variables
     depth_amount = getDistFromArray(depth_image, best_bounding_box) #  meters
     diffC = 240 - 320 # pixels
@@ -110,4 +111,4 @@ def bulletDropCompensation(depth_image, best_bounding_box,depth_amount, phee):
     # print("phiF", phiF)
     changeP = ((diffC/abs(diffC)) * 240) / math.tan(math.radians((diffC/abs(diffC)) * 27.5)) * math.tan(math.radians( (diffC/abs(diffC)) * phiF))
     
-    return -(best_bounding_box[1]-best_bounding_box[3]/2-changeP)
+    return -(best_bounding_box[1]+best_bounding_box[3]/2-changeP)

@@ -252,7 +252,7 @@ def setup(
 
                 depthAmount = cameraMethods.getDistFromArray(depth_image,best_bounding_box)
                 bboxY = prediction[1]
-                pixelDiff = cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depthAmount)
+                pixelDiff = cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depthAmount,center)
                 prediction[1] += pixelDiff
 
                 xCircularBuffer.append(prediction[0])
