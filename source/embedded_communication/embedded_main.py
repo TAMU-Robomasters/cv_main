@@ -59,6 +59,9 @@ class EmbeddedCommunication:
         if self.port is not None:
             return self.port.readline()
 
+    def getPhee(self):
+        return None
+
 embedded_communication = EmbeddedCommunication(
     port=PARAMETERS["embedded_communication"]["serial_port"],
     baudrate=PARAMETERS["embedded_communication"]["serial_baudrate"],

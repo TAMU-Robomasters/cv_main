@@ -75,6 +75,8 @@ def bulletDrop(depthAmount):
     return (103.234 * depthAmount) + (-142.514) + (-17.1356 * depthAmount**2)
 
 def bulletDropCompensation(depth_image, best_bounding_box,depth_amount,center, phee):
+    if phee is None:
+        return 0
     best_bounding_box = [0,center[1]*2-best_bounding_box[1]-best_bounding_box[3],0,best_bounding_box[3]]
     # Calculated Variables
     depth_amount = getDistFromArray(depth_image, best_bounding_box) #  meters
