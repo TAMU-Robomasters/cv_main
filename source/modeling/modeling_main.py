@@ -36,17 +36,18 @@ class modelingClass:
             self.output_layer_names = [self.layer_names[index[0] - 1] for index in self.net.getUnconnectedOutLayers()]
             self.W, self.H = None, None
 
-    def filter_team(self,boxes,confidences,classIDs):
-        index = 0
-        while index < len(boxes):
-            if classIDs[index] == team_color:
-                boxes.pop(index)
-                confidences.pop(index)
-                classIDs.pop(index) 
-            else:
-                index+=1
+    def filter_team(self,boxes,confidences,class_ids):
+        newboxes = []
+        newcf = []
+        newcid = []
 
-        return boxes,confidences,classIDs
+        for index in range(len(boxes)):
+            if class_ids[index] != team_color:
+                newboxes.append(boxes[index])
+                newcf.append(confidences[index])
+                newcid.append(class_ids[index])
+        print(newboxes)
+        return newboxes,newcf,newcid
 
     def original_get_bounding_boxes(self,frame, iconfidence, ithreshold):
         """

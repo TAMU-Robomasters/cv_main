@@ -71,6 +71,8 @@ def getDistFromArray(depth_frame_array, bbox):
 #     if not depth_frame:                     # if there is no aligned_depth_frame or color_frame then leave the loop
 #         return None
 
+def bulletDrop(depthAmount):
+    return (103.234 * depthAmount) + (-142.514) + (-17.1356 * depthAmount**2)
 # def getBulletDropPixels(depth_image,best_bounding_box):
 #     z0 = getDistFromArray(depth_image,best_bounding_box)
 #     print("Target Distance from Robot:",z0)

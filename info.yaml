@@ -25,9 +25,9 @@ paths:
 # NOTE: these are overridden by environments (below)
 default_parameters:
     model:
-        confidence: 0.75
+        confidence: 0.9
         threshold: 0.3
-        frequency: 40
+        frequency: 20
         input_dimension: 416
         hardware_acceleration: "tensor_rt" # one of: [ null, "gpu", "tensor_rt" ]
     aiming:
@@ -63,8 +63,8 @@ default_parameters:
     embedded_communication:
         serial_baudrate: 115200
         serial_port: null
-        # team_color: 0 # red
-        team_color: 1 # blue
+        team_color: 0 # red
+        # team_color: 1 # blue
 
 environment_parameters:
     laptop:

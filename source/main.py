@@ -167,6 +167,7 @@ def setup(
         best_bounding_box = None
         xCircularBuffer = collections.deque(maxlen=10)
         yCircularBuffer = collections.deque(maxlen=10)
+        cf = 0
         
         # initialize model and tracker classes
         track = tracker.trackingClass()
@@ -211,11 +212,22 @@ def setup(
                 boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold,filter_team_color)
                 if len(boxes) != 0:
                     # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
-                    bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
+                    # bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
                     # Finds the centermost bounding box
-                    best_bounding_box = min(bboxes, key=bboxes.get)
+                    # best_bounding_box = min(bboxes, key=bboxes.get)
 
-                    best_bounding_box = track.init(color_image,best_bounding_box)
+                    best_bounding_box = boxes[0]
+                    best_score = 0
+                    for i in range(len(boxes)):
+                        bbox = boxes[i]
+                        score = (1 - distance(center,(bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2))/ 487) + confidences[i]
+                        cf = confidences[i]
+                        if score > best_score:
+                            best_bounding_box = boxes[i]
+                            best_score = score
+
+
+                    best_bounding_box = track.init(color_image,tuple(best_bounding_box))
 
                     print("Now Tracking a New Object.")
                     if kalman_filters:
@@ -240,7 +252,7 @@ def setup(
 
                 depthAmount = cameraMethods.getDistFromArray(depth_image,best_bounding_box)
                 bboxY = prediction[1]
-                pixelDiff = 12
+                pixelDiff = cameraMethods.bulletDrop(depthAmount)
                 prediction[1] += pixelDiff
 
                 xCircularBuffer.append(prediction[0])
@@ -251,16 +263,17 @@ def setup(
                 # send data to embedded
                 hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov) and returns angles in radians
                 print("Angles calculated are hAngle:",hAngle,"and vAngle:",vAngle)
-                embedded_communication.send_output(hAngle, vAngle)
+                embedded_communication.send_output(hAngle, vAngle,xstd,ystd)
 
                 if with_gui:
                     cv2.rectangle(color_image, (int(best_bounding_box[0]), int(best_bounding_box[1])), (int(best_bounding_box[0]) + int(best_bounding_box[2]), int(best_bounding_box[1]) + int(best_bounding_box[3])), (255,0,0), 2)
             else:
-                embedded_communication.send_output(0, 0)
-                xCircularBuffer.append(99999)
-                yCircularBuffer.append(99999)
+                xCircularBuffer.append(255)
+                yCircularBuffer.append(255)
                 xstd = np.std(xCircularBuffer)
                 ystd = np.std(yCircularBuffer)
+                embedded_communication.send_output(0, 0,255,255)
+
                 print("No Bounding Boxes Found")
 
             # optional value for debugging/testing
@@ -282,6 +295,8 @@ def setup(
                 cv2.putText(color_image,"bboxHeight: "+str(np.round(bboxHeight,2)), (30,400) , font, fontScale,fontColor,lineType)
                 cv2.putText(color_image,"xSTD: "+str(np.round(xstd,2)), (30,300) , font, fontScale,fontColor,lineType)
                 cv2.putText(color_image,"ySTD: "+str(np.round(ystd,2)), (30,350) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"confidence: "+str(np.round(cf,2)), (30,400) , font, fontScale,fontColor,lineType)
+
 
                 cv2.imshow("feed",color_image)
                 cv2.waitKey(10)
@@ -452,8 +467,8 @@ if __name__ == '__main__':
             aiming = test_aiming,
             live_camera = True,
             kalman_filters = False,
-            with_gui = False,
-            filter_team_color = False,
+            with_gui = True,
+            filter_team_color = True,
             videoOutput = videoOutput
         )
 
