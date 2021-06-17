@@ -73,27 +73,6 @@ def getDistFromArray(depth_frame_array, bbox):
 
 def bulletDrop(depthAmount):
     return (103.234 * depthAmount) + (-142.514) + (-17.1356 * depthAmount**2)
-# def getBulletDropPixels(depth_image,best_bounding_box):
-#     z0 = getDistFromArray(depth_image,best_bounding_box)
-#     print("Target Distance from Robot:",z0)
-#     bulletHorizontalVelocity = PARAMETERS['aiming']['bullet_horizontal_velocity']
-#     predictedTimeTaken = z0/bulletHorizontalVelocity
-#     bulletDropMeters = .5 * 9.8 * (predictedTimeTaken**2)
-#     bulletDropPixels = bulletDropMeters * 3779.5275
-#     print("Bullet Drop Amount",bulletDropPixels)
-#     return bulletDropPixels
-
-# not that cool bullet drop
-# def getBulletDropPixels(depth_image, best_bounding_box):
-#     d = getDistFromArray(depth_image, best_bounding_box) #distance to bbox
-#     t = d/30 # replace withe shooter velocity constant
-#     worldCoords = WorldCoordinate(depth_image, best_bounding_box) # bbox coords in meters
-#     worldCoords[1] -= (0.5)(9.8)(t)**2 # adjust the y coord by subtracting the dist in y that the bullet drops in the given depth
-#     depth_intrin = depth_image.profile.as_video_stream_profile().intrinsics
-#     pixelCoordsWithAdj = rs.rs2_project_point_to_pixel(depth_intrin, worldCoords) # y convert adjusted world coordinates to pixels
-
-#     y = best_bounding_box[1] - pixelCoordsWithAdj[1] # get the difference of the original bbox y coord and the adjusted bbox y coord
-#     return y # return the offset of the y coord in pixels
 
 def bulletDropCompensation(depth_image, best_bounding_box, phee):
     # Calculated Variables
