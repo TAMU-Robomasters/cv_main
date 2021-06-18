@@ -337,7 +337,8 @@ def setup(
                 bboxY = prediction[1]
                 phee = embedded_communication.getPhee()
                 pixelDiff = 0
-                # pixelDiff = cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depthAmount,center,phee)
+                if phee:
+                    # pixelDiff = cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depthAmount,center,phee)
                 prediction[1] += pixelDiff
 
                 xstd, ystd = updateCircularBuffers(xCircularBuffer,yCircularBuffer,prediction) # Update buffers and measures of accuracy
