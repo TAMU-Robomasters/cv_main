@@ -201,15 +201,24 @@ def setup(
 
                 depthAmount = cameraMethods.getDistFromArray(depth_image,best_bounding_box) # Find depth from camera to robot
                 bboxY = prediction[1]
-                phi = embedded_communication.getPhi()
-                if phi:
-                    # pixelDiff = 0 # just here in case we comment out the next line
-                    # pixelDiff = -(cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depthAmount,center,phi))
-                    pixelDiff = cameraMethods.bulletOffsetCompensation(depthAmount)
+                # phi = embedded_communication.getPhi()
+                # if phi:
+                pixelDiff = 0 # just here in case we comment out the next line
+                # pixelDiff = -(cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depthAmount,center,phi))
+                pixelDiff = cameraMethods.bulletOffsetCompensation(depthAmount)
+                if pixelDiff is None:
+                    xCircularBuffer.clear()
+                    yCircularBuffer.clear()
+                    pixelDiff = 0
+                    
+                
                 prediction[1] += pixelDiff
 
                 xstd, ystd = updateCircularBuffers(xCircularBuffer,yCircularBuffer,prediction) # Update buffers and measures of accuracy
                 hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1]) # Determine angles to turn by in both x,y components
+                # if phi:
+                #     next_phi = cameraMethods.bulletDropCompensationCarson(depthAmount,phi,vAngle)
+                #     vAngle = next_phi - phi
                 print("Angles calculated are hAngle:",hAngle,"and vAngle:",vAngle)
 
                 # Send embedded the angles to turn to and the accuracy, make accuracy terrible if we dont have enough data in buffer                
@@ -371,7 +380,6 @@ def setup(
                 prediction[1] += pixelDiff
 
                 xstd, ystd = updateCircularBuffers(xCircularBuffer,yCircularBuffer,prediction) # Update buffers and measures of accuracy
-
                 hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1]) # Determine angles to turn by in both x,y components
                 print("Angles calculated are hAngle:",hAngle,"and vAngle:",vAngle)
 

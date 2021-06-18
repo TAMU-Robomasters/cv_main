@@ -8,6 +8,7 @@ length_barrel = PARAMETERS['aiming']['length_barrel']
 camera_gap = PARAMETERS['aiming']['camera_gap']
 vertical_fov = PARAMETERS['aiming']['vertical_fov']
 stream_height = PARAMETERS['aiming']['stream_height']
+barrel_camera_gap = PARAMETERS['aiming']['barrel_camera_gap']
 
 def visualizeDepthFrame(depth_frame_array):
     depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_frame_array, alpha = 0.04), cv2.COLORMAP_JET)# this puts a color efffect on the depth frame
@@ -76,8 +77,14 @@ def getDistFromArray(depth_frame_array, bbox):
 #     if not depth_frame:                     # if there is no aligned_depth_frame or color_frame then leave the loop
 #         return None
 
-def bulletDrop(depthAmount):
-    return (103.234 * depthAmount) + (-142.514) + (-17.1356 * depthAmount**2)
+# def bulletDrop(depthAmount):
+#     return (103.234 * depthAmount) + (-142.514) + (-17.1356 * depthAmount**2)
+
+def bulletDrop(radius, total_angle, proj_velocity, gimbal_pitch, time_interval):    
+    geometric_height = radius * math.sin(total_angle)
+    physical_height = proj_velocity * math.sin(gimbal_pitch) * time_interval + 0.5 * -9.8 * time_interval**2
+    drop = geometric_height - physical_height   # drop is a POSITIVE VALUE
+    return drop
 
 def bulletDropCompensation(depth_image, best_bounding_box, depth_amount, center, phi):
 
@@ -96,7 +103,7 @@ def bulletDropCompensation(depth_image, best_bounding_box, depth_amount, center,
     rangeP = depthFromPivot/math.cos(rho)
     i = rangeP * math.cos(psi)
     j = rangeP * math.sin(psi)
-    t = rangeP/bullet_velocity
+    t = 1.05*rangeP/bullet_velocity
 
     psiF = math.asin((j+4.9*t**2) / (bullet_velocity*t) )
     changePsi = psiF - psi
@@ -105,4 +112,47 @@ def bulletDropCompensation(depth_image, best_bounding_box, depth_amount, center,
     return changeP
 
 def bulletOffsetCompensation(depthAmount):
-    return (.0364 * 480 * np.cot(27.5*math.pi/180))/(2*depthAmount)
+    # return (barrel_camera_gap * stream_height +10 )/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount)  # BACK OVER A CERTAIN RANGE
+    #return (barrel_camera_gap * stream_height +5 )/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount) - 7
+
+
+    if (depthAmount > 1 and depthAmount < 1.5):
+        return (barrel_camera_gap * stream_height)/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount) -24 + (5*depthAmount) 
+    if depthAmount > 1.5 and depthAmount < 2.5:
+        return (barrel_camera_gap * stream_height)/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount) -25 + (6.3*depthAmount)
+    if depthAmount > 2.5 and depthAmount < 3.5:
+        return (barrel_camera_gap * stream_height)/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount) -26 + (9*depthAmount) 
+    
+    return None
+    # -24 + 5x FOR FRONT
+    # -25 + 6.3x FOR MIDDLE 
+    # -26 + 9x FOR LONG
+    # return (barrel_camera_gap * stream_height)/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount) -26 + (5*depthAmount) + 0.2*(depthAmount)**2
+    # return (barrel_camera_gap * stream_height)/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -(depthAmount-0.175)) +0.2
+
+
+
+def bulletDropCompensationCarson(depth_amount, gimbal_pitch, v_angle, proj_velocity = bullet_velocity):
+    barrel_camera_gap = PARAMETERS["aiming"]["barrel_camera_gap"]
+    radius = math.sqrt(depth_amount ** 2 + (depth_amount * math.tan(v_angle) + barrel_camera_gap) ** 2)
+    total_angle = gimbal_pitch + math.atan2(depth_amount * math.tan(v_angle) + barrel_camera_gap, depth_amount)
+    time_interval = (radius * math.cos(total_angle)) / (proj_velocity * math.cos(gimbal_pitch))
+    geometric_height = radius * math.sin(total_angle)
+
+    current_drop = bulletDrop(radius, total_angle, proj_velocity, gimbal_pitch, time_interval)
+
+    new_height = geometric_height + current_drop
+    horizontal_dist = radius * math.cos(total_angle)
+    new_gimbal_pitch = math.atan2(new_height, horizontal_dist)
+
+    new_radius = math.sqrt(new_height ** 2 + horizontal_dist ** 2)
+    new_total_angle = math.atan2(horizontal_dist * math.tan(total_angle) + new_height, horizontal_dist)
+    new_time_interval = (new_radius * math.cos(new_total_angle)) / (proj_velocity * math.cos(new_gimbal_pitch))
+
+    future_drop = bulletDrop(new_radius, new_total_angle, proj_velocity, new_gimbal_pitch, new_time_interval)
+
+    error = geometric_height - (new_height - future_drop)   # future drop is + and new_height is -
+    final_height = new_height - error
+
+    final_gimbal_pitch = math.atan2(final_height, horizontal_dist)
+    return final_gimbal_pitch

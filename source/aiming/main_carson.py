@@ -79,7 +79,7 @@ def bulletDrop(radius, total_angle, proj_velocity, gimbal_pitch, time_interval):
     return drop
 
 # def bulletDropCompensation(depth_amount, gimbal_pitch, v_angle, proj_velocity):
-def bulletDropCompensation(depth_image, best_bounding_box, depth_amount, center, gimbal_pitch, v_angle, proj_velocity):
+def bulletDropCompensation(depth_amount, gimbal_pitch, v_angle, proj_velocity):
     barrel_camera_gap = PARAMETERS["aiming"]["barrel_camera_gap"]
     radius = math.sqrt(depth_amount ** 2 + (depth_amount * math.tan(v_angle) + barrel_camera_gap) ** 2)
     total_angle = gimbal_pitch + math.atan2(depth_amount * math.tan(v_angle) + barrel_camera_gap, depth_amount)
