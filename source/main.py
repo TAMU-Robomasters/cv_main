@@ -336,9 +336,9 @@ def setup(
                 depthAmount = cameraMethods.getDistFromArray(depth_image,best_bounding_box) # Find depth from camera to robot
                 bboxY = prediction[1]
                 phee = embedded_communication.getPhee()
-                pixelDiff = 0
                 if phee:
-                    # pixelDiff = cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depthAmount,center,phee)
+                    pixelDiff = 0 # just here in case we comment out the next line
+                    pixelDiff = cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depthAmount,center,phee)
                 prediction[1] += pixelDiff
 
                 xstd, ystd = updateCircularBuffers(xCircularBuffer,yCircularBuffer,prediction) # Update buffers and measures of accuracy
