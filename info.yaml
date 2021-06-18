@@ -32,6 +32,7 @@ default_parameters:
         hardware_acceleration: "tensor_rt" # one of: [ null, "gpu", "tensor_rt" ]
     aiming:
         prediction_time: 2 # time interval in seconds to predict using kalman filters
+        
         # depth camera
         stream_width: 848
         stream_height: 480
@@ -40,7 +41,9 @@ default_parameters:
         horizontal_fov: 86
         vertical_fov: 57
         model_fps: 30
-        bullet_horizontal_velocity: 17.4
+        bullet_velocity: 26
+        length_barrel: .21
+        camera_gap: .039
 
         #power rune
         blue_light: [50,40,230]

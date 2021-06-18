@@ -3,6 +3,11 @@ import cv2
 import math
 from toolbox.globals import PARAMETERS,print
 
+bullet_velocity = PARAMETERS['aiming']['bullet_velocity']
+length_barrel = PARAMETERS['aiming']['length_barrel']
+camera_gap = PARAMETERS['aiming']['camera_gap']
+vertical_fov = PARAMETERS['aiming']['vertical_fov']
+stream_height = PARAMETERS['aiming']['stream_height']
 
 def visualizeDepthFrame(depth_frame_array):
     depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_frame_array, alpha = 0.04), cv2.COLORMAP_JET)# this puts a color efffect on the depth frame
@@ -79,25 +84,21 @@ def bulletDropCompensation(depth_image, best_bounding_box, depth_amount, center,
     if phi is None:
         return 0
 
-    diffC = (best_bounding_box[1] + 0.5* best_bounding_box[3])  - 240 # pixels
-    theta = math.atan((diffC/240) * math.tan(27.5 * math.pi/180)) # theta in 
+    diffC = (best_bounding_box[1] + 0.5* best_bounding_box[3])  - stream_height/2 # pixels
+    theta = math.atan((diffC/stream_height/2) * math.tan(vertical_fov/2 * math.pi/180)) # theta in 
     diffC = depth_amount * math.tan(theta) # convert diffC to meters
 
-    lengthBarrel = 0.15
-    cameraGap = 0.01
-    v = 30
-
-    depthFromPivot = lengthBarrel + depth_amount
-    diffP = diffC + cameraGap
+    depthFromPivot = length_barrel + depth_amount
+    diffP = diffC + camera_gap
     rho = math.atan(diffP/depthFromPivot)
     psi = phi + rho
     rangeP = depthFromPivot/math.cos(rho)
     i = rangeP * math.cos(psi)
     j = rangeP * math.sin(psi)
-    t = rangeP/v
+    t = rangeP/bullet_velocity
 
-    psiF = math.asin((j+4.9*t**2) / (v*t) )
+    psiF = math.asin((j+4.9*t**2) / (bullet_velocity*t) )
     changePsi = psiF - psi
-    changeP = 240/math.tan(27.5*math.pi/180)*math.tan(changePsi)
+    changeP = stream_height/2/math.tan(vertical_fov/2*math.pi/180)*math.tan(changePsi)
     
     return changeP
