@@ -44,7 +44,7 @@ class EmbeddedCommunication:
         # xstd = np.uint8(xstd) if xstd < 255 else np.uint8(255)
         # ystd = np.uint8(ystd) if ystd < 255 else np.uint8(255)
 
-        shoot = no.uint8(1 if (xstd < 5 and ystd < 5) else 0)
+        shoot = np.uint8(1 if (xstd < 5 and ystd < 5) else 0)
         print("Shoot Value:",shoot)
 
         if self.port is not None:
@@ -73,7 +73,7 @@ class EmbeddedCommunication:
             p2 = np.uint16(phi[1])
             unsigned_p = ((p1 << 8) + p2)
             signed_p = np.int16((unsigned_p - 32768))/10000
-            return np.degrees(signed_p)
+            return signed_p
         except:
             # TODO: Error handling
             return None
