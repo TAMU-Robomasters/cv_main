@@ -90,7 +90,7 @@ def setup(
         Output: Horizontal and vertical angle in radians.
         """
         hAngle = ((xBboxCenter-xCamCenter)/xCamCenter)*(horizontal_fov/2)
-        vAngle = ((yBboxCenter-yCamCenter)/yCamCenter)*(horizontal_fov/2)
+        vAngle = ((yBboxCenter-yCamCenter)/yCamCenter)*(vertical_fov/2)
 
         return math.radians(hAngle),math.radians(vAngle)
 
@@ -148,6 +148,8 @@ def setup(
         frameNumber = 0 # Used for on_next_frame
         model = modeling.modelingClass() # Create instance of modeling
         xstd = ystd = 0 # Used to determine accuracy of tracking
+        pixelDiff = hAngle = vAngle0 =  0
+        hAngle = vAngle = xstd = ystd = depthAmount = pixelDiff = phi = cf = 0 # Initialize constants as "globals"
 
         # Create two circular buffers to store predicted shooting locations (used to ensure we are locked on a target)
         xCircularBuffer = collections.deque(maxlen=10)
@@ -185,8 +187,6 @@ def setup(
 
             # Finds the coordinate for the center of the screen
             center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
-            hAngle = None
-            vAngle = None
 
             # Continue control logic if we detected atleast a single bounding box
             if len(boxes)!=0:
@@ -198,6 +198,14 @@ def setup(
 
                 prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]-best_bounding_box[3]/2] # Location to shoot [xObjCenter, yObjCenter]
                 print("Prediction is:",prediction)
+
+                depthAmount = cameraMethods.getDistFromArray(depth_image,best_bounding_box) # Find depth from camera to robot
+                bboxY = prediction[1]
+                phi = embedded_communication.getPhi()
+                if phi:
+                    pixelDiff = 0 # just here in case we comment out the next line
+                    # pixelDiff = -(cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depthAmount,center,phi))
+                prediction[1] += pixelDiff
 
                 xstd, ystd = updateCircularBuffers(xCircularBuffer,yCircularBuffer,prediction) # Update buffers and measures of accuracy
                 hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1]) # Determine angles to turn by in both x,y components
@@ -220,14 +228,33 @@ def setup(
                 embedded_communication.send_output(0, 0, 255, 255) # Tell embedded to stay still 
                 print("No Bounding Boxes Found")
 
-            # Show live feed is gui is enabled
-            if with_gui:
-                cv2.imshow("feed",color_image)
-                cv2.waitKey(10)
-
             # Display time taken for single iteration of loop
             iterationTime = time.time()-t
             print('Processing frame',frameNumber,'took',iterationTime,"seconds for model only\n")
+
+            # Show live feed is gui is enabled
+            if with_gui:
+                # Set cv2 text writing constants
+                font = cv2.FONT_HERSHEY_SIMPLEX 
+                bottomLeftCornerOfText = (10,10) 
+                fontScale = .7
+                fontColor = (255,255,255) 
+                lineType = 2
+
+                cv2.putText(color_image,"hAngle: "+str(np.round(hAngle,2)), (30,50) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"vAngle: "+str(np.round(vAngle,2)), (30,100) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"depthAmount: "+str(np.round(depthAmount,2)), (30,150) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"pixelDiff: "+str(np.round(pixelDiff,2)), (30,200) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"xSTD: "+str(np.round(xstd,2)), (30,250) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"ySTD: "+str(np.round(ystd,2)), (30,300) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"confidence: "+str(np.round(cf,2)), (30,350) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"FPS: "+str(np.round(1/iterationTime,2)), (30,400) , font, fontScale,fontColor,lineType)
+
+                if phi:
+                    cv2.putText(color_image,"Phi: "+str(np.round(phi,2)), (30,450) , font, fontScale,fontColor,lineType)
+
+                cv2.imshow("feed",color_image)
+                cv2.waitKey(10)
 
             # Optional value for debugging/testing for video footage only
             if not (on_next_frame is None):
@@ -571,7 +598,7 @@ if __name__ == '__main__':
             videoOutput = videoOutput
         )
 
-        synchronous_with_tracker() # CHANGE THIS LINE FOR DIFFERENT MAIN METHODS
+        simple_synchronous() # CHANGE THIS LINE FOR DIFFERENT MAIN METHODS
 
     finally:
         # Save video output

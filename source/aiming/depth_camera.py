@@ -89,7 +89,8 @@ def bulletDropCompensation(depth_image, best_bounding_box, depth_amount, center,
     diffC = depth_amount * math.tan(theta) # convert diffC to meters
 
     depthFromPivot = length_barrel + depth_amount
-    diffP = diffC + camera_gap
+
+    diffP = float(diffC) + float(camera_gap)
     rho = math.atan(diffP/depthFromPivot)
     psi = phi + rho
     rangeP = depthFromPivot/math.cos(rho)
