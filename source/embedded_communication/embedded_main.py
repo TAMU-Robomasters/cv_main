@@ -65,12 +65,12 @@ class EmbeddedCommunication:
         if self.port is not None:
             return self.port.readline()
 
-    def getPhee(self):
+    def getPhi(self):
         try:
             self.port.flushInput()
-            phee = self.port.read(4)[1:3]
-            p1 = np.uint16(phee[0])
-            p2 = np.uint16(phee[1])
+            phi = self.port.read(4)[1:3]
+            p1 = np.uint16(phi[0])
+            p2 = np.uint16(phi[1])
             unsigned_p = ((p1 << 8) + p2)
             signed_p = np.int16((unsigned_p - 32768))/10000
             return np.degrees(signed_p)

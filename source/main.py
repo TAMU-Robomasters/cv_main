@@ -318,7 +318,7 @@ def setup(
             else:
                 best_bounding_box = track.update(color_image) # Get new position of bounding box from tracker
 
-            hAngle = vAngle = xstd = ystd = depthAmount = bboxY = pixelDiff = bboxHeight = phee = 0 # Initialize constants as "globals"
+            hAngle = vAngle = xstd = ystd = depthAmount = bboxY = pixelDiff = bboxHeight = phi = 0 # Initialize constants as "globals"
 
             # Continue control logic if we detected atleast a single bounding box
             if best_bounding_box is not None:
@@ -335,10 +335,10 @@ def setup(
 
                 depthAmount = cameraMethods.getDistFromArray(depth_image,best_bounding_box) # Find depth from camera to robot
                 bboxY = prediction[1]
-                phee = embedded_communication.getPhee()
-                if phee:
+                phi = embedded_communication.getPhee()
+                if phi:
                     pixelDiff = 0 # just here in case we comment out the next line
-                    pixelDiff = cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depthAmount,center,phee)
+                    pixelDiff = cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depthAmount,center,phi)
                 prediction[1] += pixelDiff
 
                 xstd, ystd = updateCircularBuffers(xCircularBuffer,yCircularBuffer,prediction) # Update buffers and measures of accuracy
@@ -384,7 +384,7 @@ def setup(
                 cv2.putText(color_image,"xSTD: "+str(np.round(xstd,2)), (30,250) , font, fontScale,fontColor,lineType)
                 cv2.putText(color_image,"ySTD: "+str(np.round(ystd,2)), (30,300) , font, fontScale,fontColor,lineType)
                 cv2.putText(color_image,"confidence: "+str(np.round(cf,2)), (30,350) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"phee: "+str(np.round(phee,2)), (30,400) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"phi: "+str(np.round(phi,2)), (30,400) , font, fontScale,fontColor,lineType)
 
                 cv2.imshow("feed",color_image)
                 cv2.waitKey(10)
