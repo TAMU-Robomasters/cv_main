@@ -117,21 +117,6 @@ def setup(
         Output: Best bounding box and its confidence.
         """
 
-        b2 = []
-        c2 = []
-
-        for i in range(len(boxes)):
-            if confidences[i] > confidence:
-                b2.append(boxes[i])
-                c2.append(confidences[i])
-
-        boxes = b2
-        confidences = c2
-
-
-        # Set initial values
-        if len(boxes) == 0:
-            return None, 0
         best_bounding_box = boxes[0]
         best_score = 0
         cf = 0
@@ -264,10 +249,11 @@ def setup(
         frameNumber = 0
         cf = 0
         best_bounding_box = None
+        buffersize = 10
 
         # Create two circular buffers to store predicted shooting locations (used to ensure we are locked on a target)
-        xCircularBuffer = collections.deque(maxlen=10)
-        yCircularBuffer = collections.deque(maxlen=10)
+        xCircularBuffer = collections.deque(maxlen=buffersize)
+        yCircularBuffer = collections.deque(maxlen=buffersize)
         
         # initialize model and tracker classes
         track = tracker.trackingClass()
@@ -332,7 +318,7 @@ def setup(
             else:
                 best_bounding_box = track.update(color_image) # Get new position of bounding box from tracker
 
-            hAngle = vAngle = xstd = ystd = depthAmount = bboxY = pixelDiff = bboxHeight = 0 # Initialize constants as "globals"
+            hAngle = vAngle = xstd = ystd = depthAmount = bboxY = pixelDiff = bboxHeight = phee = 0 # Initialize constants as "globals"
 
             # Continue control logic if we detected atleast a single bounding box
             if best_bounding_box is not None:
@@ -350,8 +336,9 @@ def setup(
                 depthAmount = cameraMethods.getDistFromArray(depth_image,best_bounding_box) # Find depth from camera to robot
                 bboxY = prediction[1]
                 phee = embedded_communication.getPhee()
-                pixelDiff = 0
-                # pixelDiff = cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depthAmount,center,phee)
+                if phee:
+                    pixelDiff = 0 # just here in case we comment out the next line
+                    pixelDiff = cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depthAmount,center,phee)
                 prediction[1] += pixelDiff
 
                 xstd, ystd = updateCircularBuffers(xCircularBuffer,yCircularBuffer,prediction) # Update buffers and measures of accuracy
@@ -360,10 +347,10 @@ def setup(
                 print("Angles calculated are hAngle:",hAngle,"and vAngle:",vAngle)
 
                 # Send embedded the angles to turn to and the accuracy, make accuracy terrible if we dont have enough data in buffer                
-                if len(xCircularBuffer) == 10:
-                    embedded_communication.send_output(hAngle, vAngle,xstd,ystd)
+                if len(xCircularBuffer) == buffersize:
+                    embedded_communication.send_output(hAngle, vAngle, xstd, ystd)
                 else:
-                    embedded_communication.send_output(hAngle, vAngle,255,255)
+                    embedded_communication.send_output(hAngle, vAngle, 255, 255) # Tell embedded to stay still and not shoot
 
                 # If gui is enabled then draw bounding boxes around the selected robot
                 if with_gui:
@@ -373,7 +360,7 @@ def setup(
                 xCircularBuffer.clear()
                 yCircularBuffer.clear()
 
-                embedded_communication.send_output(0, 0, 255, 255) # Tell embedded to stay still 
+                embedded_communication.send_output(0, 0, 255, 255) # Tell embedded to stay still and not shoot
                 print("No Bounding Boxes Found")
 
             # Display time taken for single iteration of loop
@@ -397,6 +384,7 @@ def setup(
                 cv2.putText(color_image,"xSTD: "+str(np.round(xstd,2)), (30,250) , font, fontScale,fontColor,lineType)
                 cv2.putText(color_image,"ySTD: "+str(np.round(ystd,2)), (30,300) , font, fontScale,fontColor,lineType)
                 cv2.putText(color_image,"confidence: "+str(np.round(cf,2)), (30,350) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"phee: "+str(np.round(phee,2)), (30,400) , font, fontScale,fontColor,lineType)
 
                 cv2.imshow("feed",color_image)
                 cv2.waitKey(10)

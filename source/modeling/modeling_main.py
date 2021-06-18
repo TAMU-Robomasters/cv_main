@@ -1,3 +1,4 @@
+# library imports
 import numpy as np
 import cv2
 import os
@@ -7,12 +8,13 @@ import argparse
 # relative imports
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, MODE, MODEL_COLORS, MODEL_LABELS, print
 
+# import parameters from the info.yaml file
 hardware_acceleration = PARAMETERS['model']['hardware_acceleration']
 should_use_tensor_rt = hardware_acceleration == 'tensor_rt'
 should_use_gpu       = hardware_acceleration == 'gpu'
 team_color = PARAMETERS['embedded_communication']['team_color']
 
-
+# enable certain imports if tensorRT is enabled to prevent crashes in case it is not enabled
 if should_use_tensor_rt:
     import pycuda.autoinit  # This is needed for initializing CUDA driver
     from source.modeling.yolo_with_plugins import TrtYOLO
@@ -21,6 +23,8 @@ class modelingClass:
     def __init__(self):
         self.input_dimension = PARAMETERS['model']['input_dimension']
         print("[INFO] loading YOLO from disk...")
+
+        # Setup modeling system based on forms of gpu acceleration
         if should_use_tensor_rt: # tensorRT enabled
             print("RUNNING WITH TENSORRT")
             self.trtYolo = TrtYOLO((self.input_dimension, self.input_dimension), 3, False)
@@ -36,18 +40,25 @@ class modelingClass:
             self.output_layer_names = [self.layer_names[index[0] - 1] for index in self.net.getUnconnectedOutLayers()]
             self.W, self.H = None, None
 
-    def filter_team(self,boxes,confidences,class_ids):
-        newboxes = []
-        newcf = []
-        newcid = []
+    def filter_team(self,boxes,confidences,classIDs):
+        """
+        Filter bounding boxes based on team color.
+
+        Input: All boxes, confidences, classIDs
+        Output: Enemy boxes, confidences, and classIDs
+        """
+        enemyBoxes = []
+        enemyConfidences = []
+        enemyClassIDs = []
 
         for index in range(len(boxes)):
-            if class_ids[index] != team_color:
-                newboxes.append(boxes[index])
-                newcf.append(confidences[index])
-                newcid.append(class_ids[index])
-        print(newboxes)
-        return newboxes,newcf,newcid
+            if classIDs[index] != team_color:
+                enemyBoxes.append(boxes[index])
+                enemyConfidences.append(confidences[index])
+                enemyClassIDs.append(classIDs[index])
+
+        print(enemyBoxes)
+        return enemyBoxes,enemyConfidences,enemyClassIDs
 
     def original_get_bounding_boxes(self,frame, iconfidence, ithreshold):
         """
@@ -59,36 +70,44 @@ class modelingClass:
         -
         @@returns:
         - a tuple containing
-            - a list of bounding boxes, each formatted as (x, y, width, height)
+            - a list of bounding boxes, each formatted as (x, y, width, height) with (0,0) as bottom right of image
             - a list of confidences
             - a list of class_ids
         NOTE: this code is derived from https://www.pyimagesearch.com/2018/11/12/yolo-object-detection-with-opencv/
         """
-    
+        # initialize our lists of detected bounding boxes, confidences, and class IDs, respectively
+        boxes = []
+        confidences = []
+        classIDs = []
 
-        # convert image to blob before running it in the model
         if should_use_tensor_rt:
             boxes, confidences, classIDs = self.trtYolo.detect(frame, ithreshold)
             newBoxes = []
-            for box in boxes:
-                newBox = [box[0],box[1],abs(box[2]-box[0]),abs(box[3]-box[1])]
-                newBoxes.append(newBox)
+            newConfidences = []
+            newClassIDs = []
+
+            # Filter bounding boxes based on confidence
+            for i in range(len(boxes)):
+                if confidences[i] >= iconfidence:
+                    box = boxes[i]
+                    newBox = [box[0],box[1],abs(box[2]-box[0]),abs(box[3]-box[1])]
+                    newBoxes.append(newBox)
+                    newConfidences.append(confidences[i])
+                    newClassIDs.append(classIDs[i])
+
             boxes = newBoxes
+            confidences = newConfidences
+            classIDs = newClassIDs
         else:
             if self.W is None or self.H is None:
                 (self.H, self.W) = frame.shape[:2]
 
             # convert image to blob before running it in the model
             blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (self.input_dimension, self.input_dimension), swapRB=True, crop=False)
+            
             # provide input and retrive output
             self.net.setInput(blob)
             layerOutputs = self.net.forward(self.output_layer_names)
-
-            # initialize our lists of detected bounding boxes, confidences,
-            # and class IDs, respectively
-            boxes = []
-            confidences = []
-            classIDs = []
 
             # loop over each of the layer outputs
             for output in layerOutputs:
