@@ -1,6 +1,7 @@
 import pyrealsense2.pyrealsense2 as rs
 import numpy as np
 import cv2
+import time
 
 # relative imports
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
@@ -8,6 +9,7 @@ from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 streamWidth = PARAMETERS['aiming']['stream_width']
 streamHeight = PARAMETERS['aiming']['stream_height']
 framerate = PARAMETERS['aiming']['stream_framerate']
+timeRecord = PARAMETERS['videostream']['testing']['record_time']
 colorVideoLocation = PATHS['record_video_output_color']
 
 pipeline = rs.pipeline()                                            
@@ -15,6 +17,8 @@ config = rs.config()
 config.enable_stream(rs.stream.depth, streamWidth, streamHeight, rs.format.z16, framerate)  
 config.enable_stream(rs.stream.color, streamWidth, streamHeight, rs.format.bgr8, framerate) 
 pipeline.start(config)
+
+t0 = 0
 
 try:
     # Setup video output path based on date and counter
@@ -30,7 +34,7 @@ try:
     if not videoOutput.isOpened():
         print("Failed to open output")
 
-        while True:
+        while (time.time()-t0)<timeRecord:
             frames = pipeline.wait_for_frames()
             color_frame = frames.get_color_frame()
 
