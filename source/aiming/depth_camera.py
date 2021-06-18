@@ -103,3 +103,6 @@ def bulletDropCompensation(depth_image, best_bounding_box, depth_amount, center,
     changeP = stream_height/2/math.tan(vertical_fov/2*math.pi/180)*math.tan(changePsi)
     
     return changeP
+
+def bulletOffsetCompensation(depthAmount):
+    return (.0364 * 480 * np.cot(27.5*math.pi/180))/(2*depthAmount)
