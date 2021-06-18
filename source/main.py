@@ -54,7 +54,7 @@ def setup(
         kalman_filters = False,
         with_gui = False,
         filter_team_color = False,
-        videoOutput = None
+        video_output = None
     ):
     """
     This function is used to connect main with other modules.
@@ -89,12 +89,12 @@ def setup(
         Input: Bounding box and camera center components.
         Output: Horizontal and vertical angle in radians.
         """
-        hAngle = ((xBboxCenter-xCamCenter)/xCamCenter)*(horizontal_fov/2)
-        vAngle = ((yBboxCenter-yCamCenter)/yCamCenter)*(vertical_fov/2)
+        horizontal_angle = ((xBboxCenter-xCamCenter)/xCamCenter)*(horizontal_fov/2)
+        vertical_angle = ((yBboxCenter-yCamCenter)/yCamCenter)*(vertical_fov/2)
 
-        return math.radians(hAngle),math.radians(vAngle)
+        return math.radians(horizontal_angle),math.radians(vertical_angle)
 
-    def updateCircularBuffers(xCircularBuffer,yCircularBuffer,prediction):
+    def updateCircularBuffers(x_circular_buffer,y_circular_buffer,prediction):
         """
         Update circular buffers with latest prediction and recalculate accuracy through standard deviation.
 
@@ -102,12 +102,12 @@ def setup(
         Output: Standard deviations in both components.
         """
 
-        xCircularBuffer.append(prediction[0])
-        yCircularBuffer.append(prediction[1])
-        xstd = np.std(xCircularBuffer)
-        ystd = np.std(yCircularBuffer)
+        x_circular_buffer.append(prediction[0])
+        y_circular_buffer.append(prediction[1])
+        x_std = np.std(x_circular_buffer)
+        y_std = np.std(y_circular_buffer)
 
-        return xstd, ystd
+        return x_std, y_std
     
     def getOptimalBoundingBox(boxes,confidences,center):
         """
@@ -145,15 +145,14 @@ def setup(
         - no kalman filters since we need to track for that to be possible
         """
 
-        frameNumber = 0 # Used for on_next_frame
+        frame_number = 0 # Used for on_next_frame
         model = modeling.modelingClass() # Create instance of modeling
-        xstd = ystd = 0 # Used to determine accuracy of tracking
-        pixelDiff = hAngle = vAngle0 =  0
-        hAngle = vAngle = xstd = ystd = depthAmount = pixelDiff = phi = cf = 0 # Initialize constants as "globals"
+        horizontal_angle = vertical_angle = x_std = y_std = depth_amount = pixel_diff = phi = cf = 0 # Initialize constants as "globals"
+        buffer_size = 10
 
         # Create two circular buffers to store predicted shooting locations (used to ensure we are locked on a target)
-        xCircularBuffer = collections.deque(maxlen=10)
-        yCircularBuffer = collections.deque(maxlen=10)
+        x_circular_buffer = collections.deque(maxlen=buffer_size)
+        y_circular_buffer = collections.deque(maxlen=buffer_size)
 
         while True:
             t = time.time()
@@ -170,9 +169,9 @@ def setup(
                 depth_image = np.asanyarray(depth_frame.get_data()) 
 
                 # Add frame to video recording based on recording frequency
-                if videoOutput and frameNumber % record_interval == 0:
-                    print("Saving Frame",frameNumber)
-                    videoOutput.write(color_image)
+                if video_output and frame_number % record_interval == 0:
+                    print("Saving Frame",frame_number)
+                    video_output.write(color_image)
             else:
                 if frame is None: # If there is no more frames then end method
                     break
@@ -180,10 +179,10 @@ def setup(
                     continue
                 color_image = frame
 
-            frameNumber+=1
+            frame_number+=1
 
             # run the model
-            boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold, filter_team_color)
+            boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, confidence, threshold, filter_team_color)
 
             # Finds the coordinate for the center of the screen
             center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
@@ -196,51 +195,52 @@ def setup(
 
                 best_bounding_box, cf = getOptimalBoundingBox(boxes,confidences,center)
 
-                prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]-best_bounding_box[3]/2] # Location to shoot [xObjCenter, yObjCenter]
+                prediction = [best_bounding_box[0]+best_bounding_box[2]/2,best_bounding_box[1]+best_bounding_box[3]/2] # Location to shoot [xObjCenter, yObjCenter]
+                print("Best Bounding Box",best_bounding_box)
                 print("Prediction is:",prediction)
 
-                depthAmount = cameraMethods.getDistFromArray(depth_image,best_bounding_box) # Find depth from camera to robot
+                depth_amount = cameraMethods.getDistFromArray(depth_image,best_bounding_box) # Find depth from camera to robot
                 bboxY = prediction[1]
                 # phi = embedded_communication.getPhi()
                 # if phi:
-                pixelDiff = 0 # just here in case we comment out the next line
-                # pixelDiff = -(cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depthAmount,center,phi))
-                pixelDiff = cameraMethods.bulletOffsetCompensation(depthAmount)
-                if pixelDiff is None:
-                    xCircularBuffer.clear()
-                    yCircularBuffer.clear()
-                    pixelDiff = 0
+                pixel_diff = 0 # just here in case we comment out the next line
+                # pixel_diff = -(cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depth_amount,center,phi))
+                pixel_diff = cameraMethods.bulletOffsetCompensation(depth_amount)
+                if pixel_diff is None:
+                    x_circular_buffer.clear()
+                    y_circular_buffer.clear()
+                    pixel_diff = 0
                     
                 
-                prediction[1] += pixelDiff
+                prediction[1] -= pixel_diff
 
-                xstd, ystd = updateCircularBuffers(xCircularBuffer,yCircularBuffer,prediction) # Update buffers and measures of accuracy
-                hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1]) # Determine angles to turn by in both x,y components
-                # if phi:
-                #     next_phi = cameraMethods.bulletDropCompensationCarson(depthAmount,phi,vAngle)
-                #     vAngle = next_phi - phi
-                print("Angles calculated are hAngle:",hAngle,"and vAngle:",vAngle)
+                x_std, y_std = updateCircularBuffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
+                horizontal_angle, vertical_angle = angleFromCenter(prediction[0],center[1]*2-prediction[1],center[0],center[1]) # Determine angles to turn by in both x,y components
+                print("Angles calculated are horizontal_angle:",horizontal_angle,"and vertical_angle:",vertical_angle)
 
-                # Send embedded the angles to turn to and the accuracy, make accuracy terrible if we dont have enough data in buffer                
-                if len(xCircularBuffer) == 10:
-                    embedded_communication.send_output(hAngle, vAngle,xstd,ystd)
+                # Send embedded the angles to turn to and the accuracy, make accuracy terrible if we dont have enough data in buffer 
+                if depth_amount < 1 or depth_amount > 3.5:
+                    x_circular_buffer.clear()
+                    y_circular_buffer.clear()
+                    embedded_communication.send_output(0, 0, 255, 255) # Tell embedded to stay still 
+                elif len(x_circular_buffer) == buffer_size:
+                    embedded_communication.send_output(horizontal_angle, vertical_angle,x_std,y_std)
                 else:
-                    embedded_communication.send_output(hAngle, vAngle,255,255)
+                    embedded_communication.send_output(horizontal_angle, vertical_angle,255,255)
 
                 # If gui is enabled then draw bounding boxes around the selected robot
                 if with_gui:
                     cv2.rectangle(color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (255,0,0), 2)
             else:
                 # Clears buffers since no robots detected
-                xCircularBuffer.clear()
-                yCircularBuffer.clear()
-
+                x_circular_buffer.clear()
+                y_circular_buffer.clear()
                 embedded_communication.send_output(0, 0, 255, 255) # Tell embedded to stay still 
                 print("No Bounding Boxes Found")
 
             # Display time taken for single iteration of loop
-            iterationTime = time.time()-t
-            print('Processing frame',frameNumber,'took',iterationTime,"seconds for model only\n")
+            iteration_time = time.time()-t
+            print('Processing frame',frame_number,'took',iteration_time,"seconds for model only\n")
 
             # Show live feed is gui is enabled
             if with_gui:
@@ -251,14 +251,14 @@ def setup(
                 fontColor = (255,255,255) 
                 lineType = 2
 
-                cv2.putText(color_image,"hAngle: "+str(np.round(hAngle,2)), (30,50) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"vAngle: "+str(np.round(vAngle,2)), (30,100) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"depthAmount: "+str(np.round(depthAmount,2)), (30,150) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"pixelDiff: "+str(np.round(pixelDiff,2)), (30,200) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"xSTD: "+str(np.round(xstd,2)), (30,250) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"ySTD: "+str(np.round(ystd,2)), (30,300) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"horizontal_angle: "+str(np.round(horizontal_angle,2)), (30,50) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"vertical_angle: "+str(np.round(vertical_angle,2)), (30,100) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"depth_amount: "+str(np.round(depth_amount,2)), (30,150) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"pixel_diff: "+str(np.round(pixel_diff,2)), (30,200) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"xSTD: "+str(np.round(x_std,2)), (30,250) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"ySTD: "+str(np.round(y_std,2)), (30,300) , font, fontScale,fontColor,lineType)
                 cv2.putText(color_image,"confidence: "+str(np.round(cf,2)), (30,350) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"FPS: "+str(np.round(1/iterationTime,2)), (30,400) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"FPS: "+str(np.round(1/iteration_time,2)), (30,400) , font, fontScale,fontColor,lineType)
 
                 if phi:
                     cv2.putText(color_image,"Phi: "+str(np.round(phi,2)), (30,450) , font, fontScale,fontColor,lineType)
@@ -268,7 +268,7 @@ def setup(
 
             # Optional value for debugging/testing for video footage only
             if not (on_next_frame is None):
-                on_next_frame(frameNumber, color_image, (boxes, confidences), (hAngle,vAngle))
+                on_next_frame(frame_number, color_image, (boxes, confidences), (horizontal_angle,vertical_angle))
 
     # 
     # option #2
@@ -286,11 +286,11 @@ def setup(
         frameNumber = 0
         cf = 0
         best_bounding_box = None
-        buffersize = 10
+        buffer_size = 10
 
         # Create two circular buffers to store predicted shooting locations (used to ensure we are locked on a target)
-        xCircularBuffer = collections.deque(maxlen=buffersize)
-        yCircularBuffer = collections.deque(maxlen=buffersize)
+        x_circular_buffer = collections.deque(maxlen=buffer_size)
+        y_circular_buffer = collections.deque(maxlen=buffer_size)
         
         # initialize model and tracker classes
         track = tracker.trackingClass()
@@ -313,9 +313,9 @@ def setup(
                 depth_image = np.asanyarray(depth_frame.get_data()) 
 
                 # Add frame to video recording based on recording frequency
-                if videoOutput and frameNumber % record_interval == 0:
+                if video_output and frameNumber % record_interval == 0:
                     print("Saving Frame",frameNumber)
-                    videoOutput.write(color_image)
+                    video_output.write(color_image)
             else:
                 if frame is None: # If there is no more frames then end method
                     break
@@ -333,7 +333,7 @@ def setup(
             if counter % model_frequency == 0 or (best_bounding_box is None):
                 counter=1
                 best_bounding_box = None
-                boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold, filter_team_color) # Call model
+                boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, confidence, threshold, filter_team_color) # Call model
 
                 # Continue control logic if we detected atleast a single bounding box
                 if len(boxes) != 0:
@@ -355,7 +355,7 @@ def setup(
             else:
                 best_bounding_box = track.update(color_image) # Get new position of bounding box from tracker
 
-            hAngle = vAngle = xstd = ystd = depthAmount = bboxY = pixelDiff = bboxHeight = phi = 0 # Initialize constants as "globals"
+            horizontal_angle = vertical_angle = x_std = y_std = depth_amount = bboxY = pixel_diff = bboxHeight = phi = 0 # Initialize constants as "globals"
 
             # Continue control logic if we detected atleast a single bounding box
             if best_bounding_box is not None:
@@ -370,39 +370,39 @@ def setup(
                     # prediction = kalmanFilter.predict(kalmanBox, frame) # figure out where to aim, returns (xObjCenter, yObjCenter)
                     # print("Kalman Filter updated Prediction to:",prediction)
 
-                depthAmount = cameraMethods.getDistFromArray(depth_image,best_bounding_box) # Find depth from camera to robot
+                depth_amount = cameraMethods.getDistFromArray(depth_image,best_bounding_box) # Find depth from camera to robot
                 bboxY = prediction[1]
                 phi = embedded_communication.getPhi()
                 print("Phi:",phi)
                 if phi:
-                    pixelDiff = 0 # just here in case we comment out the next line
-                    # pixelDiff = cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depthAmount,center,phi)
-                prediction[1] += pixelDiff
+                    pixel_diff = 0 # just here in case we comment out the next line
+                    # pixel_diff = cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depth_amount,center,phi)
+                prediction[1] += pixel_diff
 
-                xstd, ystd = updateCircularBuffers(xCircularBuffer,yCircularBuffer,prediction) # Update buffers and measures of accuracy
-                hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1]) # Determine angles to turn by in both x,y components
-                print("Angles calculated are hAngle:",hAngle,"and vAngle:",vAngle)
+                x_std, y_std = updateCircularBuffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
+                horizontal_angle, vertical_angle = angleFromCenter(prediction[0],prediction[1],center[0],center[1]) # Determine angles to turn by in both x,y components
+                print("Angles calculated are horizontal_angle:",horizontal_angle,"and vertical_angle:",vertical_angle)
 
                 # Send embedded the angles to turn to and the accuracy, make accuracy terrible if we dont have enough data in buffer                
-                if len(xCircularBuffer) == buffersize:
-                    embedded_communication.send_output(hAngle, vAngle, xstd, ystd)
+                if len(x_circular_buffer) == buffer_size:
+                    embedded_communication.send_output(horizontal_angle, vertical_angle, x_std, y_std)
                 else:
-                    embedded_communication.send_output(hAngle, vAngle, 255, 255) # Tell embedded to stay still and not shoot
+                    embedded_communication.send_output(horizontal_angle, vertical_angle, 255, 255) # Tell embedded to stay still and not shoot
 
                 # If gui is enabled then draw bounding boxes around the selected robot
                 if with_gui:
                     cv2.rectangle(color_image, (int(best_bounding_box[0]), int(best_bounding_box[1])), (int(best_bounding_box[0]) + int(best_bounding_box[2]), int(best_bounding_box[1]) + int(best_bounding_box[3])), (255,0,0), 2)
             else:
                 # Clears buffers since no robots detected
-                xCircularBuffer.clear()
-                yCircularBuffer.clear()
+                x_circular_buffer.clear()
+                y_circular_buffer.clear()
 
                 embedded_communication.send_output(0, 0, 255, 255) # Tell embedded to stay still and not shoot
                 print("No Bounding Boxes Found")
 
             # Display time taken for single iteration of loop
-            iterationTime = time.time() - t
-            print('Processing frame',frameNumber,'took',iterationTime,"seconds for model+tracker")
+            iteration_time = time.time() - t
+            print('Processing frame',frameNumber,'took',iteration_time,"seconds for model+tracker")
 
             # Show live feed is gui is enabled
             if with_gui:
@@ -414,14 +414,14 @@ def setup(
                 lineType = 2
 
                 # Draw text on image
-                cv2.putText(color_image,"hAngle: "+str(np.round(hAngle,2)), (30,50) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"vAngle: "+str(np.round(vAngle,2)), (30,100) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"depthAmount: "+str(np.round(depthAmount,2)), (30,150) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"pixelDiff: "+str(np.round(pixelDiff,2)), (30,200) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"xSTD: "+str(np.round(xstd,2)), (30,250) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"ySTD: "+str(np.round(ystd,2)), (30,300) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"horizontal_angle: "+str(np.round(horizontal_angle,2)), (30,50) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"vertical_angle: "+str(np.round(vertical_angle,2)), (30,100) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"depth_amount: "+str(np.round(depth_amount,2)), (30,150) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"pixel_diff: "+str(np.round(pixel_diff,2)), (30,200) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"xSTD: "+str(np.round(x_std,2)), (30,250) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"ySTD: "+str(np.round(y_std,2)), (30,300) , font, fontScale,fontColor,lineType)
                 cv2.putText(color_image,"confidence: "+str(np.round(cf,2)), (30,350) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"FPS: "+str(np.round(1/iterationTime,2)), (30,400) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"FPS: "+str(np.round(1/iteration_time,2)), (30,400) , font, fontScale,fontColor,lineType)
 
                 if phi:
                     cv2.putText(color_image,"phi: "+str(np.round(phi,2)), (30,450) , font, fontScale,fontColor,lineType)
@@ -431,12 +431,12 @@ def setup(
 
             # Optional value for debugging/testing for video footage only
             if not (on_next_frame is None):
-                on_next_frame(frameNumber, color_image, ([best_bounding_box], [1])if best_bounding_box else ([], []),(hAngle,vAngle))
+                on_next_frame(frameNumber, color_image, ([best_bounding_box], [1])if best_bounding_box else ([], []),(horizontal_angle,vertical_angle))
                 
     
     def modelMulti(color_image,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames,center):
         # Run the model and update best bounding box to the new bounding box if it exists, otherwise keep tracking the old bounding box
-        boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
+        boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
         bbox = None
 
         if len(boxes) != 0:
@@ -546,8 +546,8 @@ def setup(
                 prediction = kalmanFilter.predict(kalmanBox) # figure out where to aim
             
                 # send data to embedded
-                hAngle, vAngle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov)
-                embedded_communication.send_output(hAngle, vAngle)
+                horizontal_angle, vertical_angle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov)
+                embedded_communication.send_output(horizontal_angle, vertical_angle)
 
             # optional value for debugging/testing
             if not (on_next_frame is None) :
@@ -575,11 +575,11 @@ def beginVideoRecording():
 
     # Start up video output
     gst_out = "appsrc ! video/x-raw, format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc ! h264parse ! matroskamux ! filesink location="+filePath
-    videoOutput = cv2.VideoWriter(gst_out, cv2.CAP_GSTREAMER, 0, float(framerate), (int(streamWidth), int(streamHeight)))
-    if not videoOutput.isOpened():
+    video_output = cv2.VideoWriter(gst_out, cv2.CAP_GSTREAMER, 0, float(framerate), (int(streamWidth), int(streamHeight)))
+    if not video_output.isOpened():
         print("Failed to open output")
 
-    return videoOutput
+    return video_output
 
 if __name__ == '__main__':
     # Relative imports here since pyrealsense requires camera to be plugged in or code will crash
@@ -587,12 +587,12 @@ if __name__ == '__main__':
     import source.aiming.filter as test_aiming
 
     camera = liveVideo.liveFeed()
-    videoOutput = None
+    video_output = None
 
     try:
         # Setup video recording configuration if enabled
         if record_interval>0:
-            videoOutput = beginVideoRecording()
+            video_output = beginVideoRecording()
 
         # Must send classes so multiprocessing is possible
         simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(
@@ -604,14 +604,14 @@ if __name__ == '__main__':
             kalman_filters = False,
             with_gui = True,
             filter_team_color = False,
-            videoOutput = videoOutput
+            video_output = video_output
         )
 
         simple_synchronous() # CHANGE THIS LINE FOR DIFFERENT MAIN METHODS
 
     finally:
         # Save video output
-        if videoOutput:
+        if video_output:
             print("Saving Recorded Video")
-            videoOutput.release()
+            video_output.release()
             print("Finished Saving Video")
