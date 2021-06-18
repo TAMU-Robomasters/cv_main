@@ -43,7 +43,7 @@ default_parameters:
         model_fps: 30
         bullet_velocity: 26
         length_barrel: .21
-        camera_gap: .039
+        camera_gap: -.039
 
         #power rune
         blue_light: [50,40,230]
