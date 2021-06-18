@@ -52,6 +52,9 @@ default_parameters:
         center_image_offset: 20
         min_area: 400
         r_timer: 10
+
+        #bullet drop
+        barrel_camera_gap: 0.0364   # in meters
     videostream:
         testing:
             assumed_framerate: 30 # frames per second
