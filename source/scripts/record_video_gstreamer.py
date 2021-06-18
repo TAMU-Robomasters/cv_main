@@ -1,6 +1,8 @@
 import pyrealsense2.pyrealsense2 as rs
 import numpy as np
 import cv2
+import datetime
+import os
 
 # relative imports
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
@@ -15,6 +17,7 @@ config = rs.config()
 config.enable_stream(rs.stream.depth, streamWidth, streamHeight, rs.format.z16, framerate)  
 config.enable_stream(rs.stream.color, streamWidth, streamHeight, rs.format.bgr8, framerate) 
 pipeline.start(config)
+videoOutput = None
 
 try:
     # Setup video output path based on date and counter
@@ -29,7 +32,7 @@ try:
     videoOutput = cv2.VideoWriter(gst_out, cv2.CAP_GSTREAMER, 0, float(framerate), (int(streamWidth), int(streamHeight)))
     if not videoOutput.isOpened():
         print("Failed to open output")
-
+    else:
         while True:
             frames = pipeline.wait_for_frames()
             color_frame = frames.get_color_frame()
@@ -39,6 +42,8 @@ try:
 
             color_image = np.asanyarray(color_frame.get_data())
             videoOutput.write(color_image)
+            print("Writing")
 finally:
+    print("Finished")
     videoOutput.release()
     pipeline.stop()
