@@ -74,43 +74,30 @@ def getDistFromArray(depth_frame_array, bbox):
 def bulletDrop(depthAmount):
     return (103.234 * depthAmount) + (-142.514) + (-17.1356 * depthAmount**2)
 
-def bulletDropCompensation(depth_image, best_bounding_box,depth_amount,center, phee):
-    if phee is None:
+def bulletDropCompensation(depth_image, best_bounding_box, depth_amount, center, phi):
+
+    if phi is None:
         return 0
-    best_bounding_box = [0,center[1]*2-best_bounding_box[1]-best_bounding_box[3],0,best_bounding_box[3]]
-    # Calculated Variables
-    depth_amount = getDistFromArray(depth_image, best_bounding_box) #  meters
-    diffC = 240 - 320 # pixels
-    theta = math.degrees(math.atan((diffC/((diffC/abs(diffC)) * 240)) * math.tan(math.radians( (diffC/abs(diffC)) * 27.5))))   # in degrees
-    # print("theta", theta)
 
-    diffC = depth_amount * math.tan(math.radians(theta)) # convert diffP to meters
-    # print("diffC", diffC)
+    diffC = (best_bounding_box[1] + 0.5* best_bounding_box[3])  - 240 # pixels
+    theta = math.atan((diffC/240) * math.tan(27.5 * math.pi/180)) # theta in 
+    diffC = depth_amount * math.tan(theta) # convert diffC to meters
 
-    # phee = -30
-
-    # Constants
     lengthBarrel = 0.15
     cameraGap = 0.01
     v = 30
+
     depthFromPivot = lengthBarrel + depth_amount
     diffP = diffC + cameraGap
-    print("diffP", diffP)
-    rho = math.degrees(math.atan(diffP/depthFromPivot))
-    print("rho", rho) 
-    phi = phee + rho
-
-    # phi = -30
-    # print("phi", phi)
-
-    rangeP = depthFromPivot/math.cos(math.radians(rho))
-    # print("rangeP", rangeP)
-    # # rangeP = 2
-    i = rangeP * math.cos(math.radians(phi))
-    j = rangeP * math.sin(math.radians(phi))
+    rho = math.atan(diffP/depthFromPivot)
+    psi = phi + rho
+    rangeP = depthFromPivot/math.cos(rho)
+    i = rangeP * math.cos(psi)
+    j = rangeP * math.sin(psi)
     t = rangeP/v
-    phiF = math.degrees(math.asin((j+4.9*t**2) / (v*t) ))
-    # print("phiF", phiF)
-    changeP = ((diffC/abs(diffC)) * 240) / math.tan(math.radians((diffC/abs(diffC)) * 27.5)) * math.tan(math.radians( (diffC/abs(diffC)) * phiF))
+
+    psiF = math.asin((j+4.9*t**2) / (v*t) )
+    changePsi = psiF - psi
+    changeP = 240/math.tan(27.5*math.pi/180)*math.tan(changePsi)
     
-    return -(best_bounding_box[1]+best_bounding_box[3]/2-changeP)
+    return changeP
