@@ -17,7 +17,7 @@ class EmbeddedCommunication:
             self.port=serial.Serial(
                 port,
                 baudrate=baudrate,
-                timeout=3.0,
+                timeout=.05,
                 bytesize=serial.EIGHTBITS,
                 parity=serial.PARITY_NONE,
                 stopbits=serial.STOPBITS_ONE
@@ -53,8 +53,8 @@ class EmbeddedCommunication:
             self.port.write(x2.tobytes())
             self.port.write(y1.tobytes())
             self.port.write(y2.tobytes())
-            # self.port.write(shoot.tobytes())
-            # self.port.write(shoot.tobytes())
+            self.port.write(shoot.tobytes())
+            self.port.write(shoot.tobytes())
             self.port.write('e'.encode())
 
     def read_input(self):
