@@ -50,8 +50,8 @@ class Filter():
 
         self.f.predict()
 
-    def timePredict(self, time):
-        return X
+    def timePredict(self, depth):
+        return depth/26
 
     def processIMU(self, data, frame):
 
@@ -136,10 +136,10 @@ class Filter():
 
 
     def predict(self, data, frame):
-        # center of bounding box given by (x, y, z)
+        # center of bounding box given by (x, y, z) (x,y) in pixels z in meters
         pos_x = int(data[0])
         pos_y = int(data[1])
-        pos_z = int(data[2])
+        pos_z = data[2]
         
         vel_data = self.processIMU(data, frame)
         if vel_data is None:
@@ -154,10 +154,13 @@ class Filter():
         X = self.f.x
         U = self.f.u
     
-        time = 1
+        time = self.timePredict(pos_z)
+        depth_frame = frame.getDepthFrame()
+        x_in_meters = dc.WorldCoordinate(depth_frame,[X[0], X[2]])
 
-        X = [X[0] + time * (X[1] + vel_data[0] + vel_data[3]), X[2] + time * (X[3] + vel_data[1] + vel_data[4]), X[4] + time * (X[5] + vel_data[2] + vel_data[5])]
+        X = [x_in_meters[0] + time * (x_in_meters[1] + vel_data[0] + vel_data[3]), x_in_meters[2] + time * (x_in_meters[3] + vel_data[1] + vel_data[4]), x_in_meters[4] + time * (x_in_meters[5] + vel_data[2] + vel_data[5])]
         # X = [X[0] + time * X[1] + 0.5 * U[0] * time**2, X[2] + time * X[3] + 0.5 * U[1] * time**2, X[4] + time * X[5] + 0.5 * U[2] * time**2]
+        X = dc.PixelCoordinate(X)
         location = [X[0], X[1]]
         return location
 
