@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import math
+import pyrealsense as rs
 from toolbox.globals import PARAMETERS,print
 
 bullet_velocity = PARAMETERS['aiming']['bullet_velocity']
@@ -66,15 +67,21 @@ def getDistFromArray(depth_frame_array, bbox):
 
 
 # bbox[x coordinate of the top left of the bounding box, y coordinate of the top left of the bounding box, width of box, height of box]
-# def WorldCoordinate(depth_frame, bbox):
-#     depth_intrin = depth_frame.profile.as_video_stream_profile().intrinsics
-#     depth_value = DistanceInBox(bbox)
-#     # depth_pixel = [depth_intrin.ppx, depth_intrin.ppy]
-#     depth_pixel = [bbox[0] + .5 * bbox[2], bbox[1] + .5 * bbox[3]]
-#     depth_point =   rs.rs2_deproject_pixel_to_point(depth_intrin, depth_pixel, depth_value)
-#     return depth_point
-#     if not depth_frame:                     # if there is no aligned_depth_frame or color_frame then leave the loop
-#         return None
+def WorldCoordinate(depth_frame, bbox):
+    if not depth_frame:                     # if there is no aligned_depth_frame or color_frame then leave the loop
+        return None
+    # depth_intrin = depth_frame.profile.as_video_stream_profile().intrinsics
+    depth_value = getDistFromArray(depth_frame)
+    # depth_pixel = [depth_intrin.ppx, depth_intrin.ppy]
+    # depth_pixel = [bbox[0] + .5 * bbox[2], bbox[1] + .5 * bbox[3]]
+    depth_point =   rs.deproject_pixel_to_point(bbox, depth_value)
+    return depth_point
+
+def PixelCoordinate(point):
+    return rs.project_point_to_pixel(point)
+
+
+
 
 def bulletDrop(depthAmount):
     return (103.234 * depthAmount) + (-142.514) + (-17.1356 * depthAmount**2)
