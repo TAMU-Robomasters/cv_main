@@ -47,15 +47,15 @@ class EmbeddedCommunication:
         shoot = np.uint8(1 if ((xstd+ystd)/2 < 10) else 0)
         print("Shoot Value:",shoot)
 
-        if self.port is not None:
-            self.port.write("a".encode())
-            self.port.write(x1.tobytes())
-            self.port.write(x2.tobytes())
-            self.port.write(y1.tobytes())
-            self.port.write(y2.tobytes())
-            self.port.write(shoot.tobytes())
-            self.port.write(shoot.tobytes())
-            self.port.write('e'.encode())
+        # if self.port is not None:
+        #     self.port.write("a".encode())
+        #     self.port.write(x1.tobytes())
+        #     self.port.write(x2.tobytes())
+        #     self.port.write(y1.tobytes())
+        #     self.port.write(y2.tobytes())
+        #     self.port.write(shoot.tobytes())
+        #     self.port.write(shoot.tobytes())
+        #     self.port.write('e'.encode())
 
     def read_input(self):
         """

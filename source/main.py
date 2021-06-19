@@ -607,12 +607,12 @@ if __name__ == '__main__':
             aiming = test_aiming,
             live_camera = True,
             kalman_filters = False,
-            with_gui = True,
+            with_gui = False,
             filter_team_color = False,
             video_output = video_output
         )
 
-        synchronous_with_tracker() # CHANGE THIS LINE FOR DIFFERENT MAIN METHODS
+        simple_synchronous() # CHANGE THIS LINE FOR DIFFERENT MAIN METHODS
 
     finally:
         # Save video output

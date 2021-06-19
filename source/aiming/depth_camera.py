@@ -1,7 +1,6 @@
 import numpy as np
 import cv2
 import math
-import pyrealsense as rs
 from toolbox.globals import PARAMETERS,print
 
 bullet_velocity = PARAMETERS['aiming']['bullet_velocity']
