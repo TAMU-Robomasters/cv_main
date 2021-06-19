@@ -235,7 +235,7 @@ def setup(
                 # Clears buffers since no robots detected
                 x_circular_buffer.clear()
                 y_circular_buffer.clear()
-                embedded_communication.send_output(0, 0, 255, 255) # Tell embedded to stay still 
+                # embedded_communication.send_output(0, 0, 255, 255) # Tell embedded to stay still 
                 print("No Bounding Boxes Found")
 
             # Display time taken for single iteration of loop
