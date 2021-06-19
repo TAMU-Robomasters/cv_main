@@ -16,6 +16,7 @@ import math
 import time
 import datetime
 import collections
+import RPi.GPIO as GPIO
 
 # relative imports
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
@@ -44,6 +45,7 @@ vertical_fov = PARAMETERS['aiming']['vertical_fov']
 
 
 def setup(
+        team_color,
         get_frame = None,
         on_next_frame = None,
         modeling = test_modeling,
@@ -146,7 +148,7 @@ def setup(
         """
 
         frame_number = 0 # Used for on_next_frame
-        model = modeling.modelingClass() # Create instance of modeling
+        model = modeling.modelingClass(team_color) # Create instance of modeling
         horizontal_angle = vertical_angle = x_std = y_std = depth_amount = pixel_diff = phi = cf = shoot = 0 # Initialize constants as "globals"
         buffer_size = 10
 
@@ -296,7 +298,7 @@ def setup(
         
         # initialize model and tracker classes
         track = tracker.trackingClass()
-        model = modeling.modelingClass()
+        model = modeling.modelingClass(team_color)
         kalmanFilter = None
 
         while True: # Counts up infinitely starting at 0
@@ -601,15 +603,29 @@ if __name__ == '__main__':
         if record_interval>0:
             video_output = beginVideoRecording()
 
+        
+        led_pin = 12
+        but_pin = 18
+        GPIO.setmode(GPIO.BOARD)  # BOARD pin-numbering scheme
+        GPIO.setup(led_pin, GPIO.OUT)  # LED pin set as output
+        GPIO.setup(but_pin, GPIO.IN)  # Button pin set as input
+
+        # Initial state for LEDs:
+        GPIO.output(led_pin, GPIO.LOW)
+        team_color = GPIO.input(but_pin)
+        print("GPIO:",team_color)
+        team_color = 1 if team_color == 0 else 0
+
         # Must send classes so multiprocessing is possible
         simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(
+            team_color,
             get_frame = camera.get_live_video_frame, 
             modeling = test_modeling,
             tracker = test_tracking,
             aiming = test_aiming,
             live_camera = True,
             kalman_filters = False,
-            with_gui = False,
+            with_gui = True,
             filter_team_color = True,
             video_output = video_output
         )
@@ -622,3 +638,4 @@ if __name__ == '__main__':
             print("Saving Recorded Video")
             video_output.release()
             print("Finished Saving Video")
+        GPIO.cleanup()

@@ -12,7 +12,6 @@ from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, MODE, MODEL_COLORS, 
 hardware_acceleration = PARAMETERS['model']['hardware_acceleration']
 should_use_tensor_rt = hardware_acceleration == 'tensor_rt'
 should_use_gpu       = hardware_acceleration == 'gpu'
-team_color = PARAMETERS['embedded_communication']['team_color']
 
 # enable certain imports if tensorRT is enabled to prevent crashes in case it is not enabled
 if should_use_tensor_rt:
@@ -20,10 +19,10 @@ if should_use_tensor_rt:
     from source.modeling.yolo_with_plugins import TrtYOLO
 
 class modelingClass:
-    def __init__(self):
+    def __init__(self,team_color):
         self.input_dimension = PARAMETERS['model']['input_dimension']
         print("[INFO] loading YOLO from disk...")
-
+        self.team_color = team_color
         # Setup modeling system based on forms of gpu acceleration
         if should_use_tensor_rt: # tensorRT enabled
             print("RUNNING WITH TENSORRT")
@@ -52,7 +51,7 @@ class modelingClass:
         enemyClassIDs = []
 
         for index in range(len(boxes)):
-            if classIDs[index] != team_color:
+            if classIDs[index] != self.team_color:
                 enemyBoxes.append(boxes[index])
                 enemyConfidences.append(confidences[index])
                 enemyClassIDs.append(classIDs[index])
