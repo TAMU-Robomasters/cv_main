@@ -1,7 +1,6 @@
 import numpy as np
 import cv2
 import math
-import pyrealsense as rs
 from toolbox.globals import PARAMETERS,print
 
 bullet_velocity = PARAMETERS['aiming']['bullet_velocity']
@@ -118,18 +117,23 @@ def bulletDropCompensation(depth_image, best_bounding_box, depth_amount, center,
     
     return changeP
 
-def bulletOffsetCompensation(depthAmount):
+def bulletOffsetCompensation(depth_amount):
     # return (barrel_camera_gap * stream_height +10 )/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount)  # BACK OVER A CERTAIN RANGE
     #return (barrel_camera_gap * stream_height +5 )/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount) - 7
 
 
-    if (depthAmount > 1 and depthAmount < 1.5):
-        return (barrel_camera_gap * stream_height)/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount) -24 + (5*depthAmount) 
-    if depthAmount > 1.5 and depthAmount < 2.5:
-        return (barrel_camera_gap * stream_height)/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount) -25 + (6.3*depthAmount)
-    if depthAmount > 2.5 and depthAmount < 3.5:
-        return (barrel_camera_gap * stream_height)/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount) -26 + (9*depthAmount) 
+    # if (depthAmount > 1 and depthAmount < 1.5):
+    #     return (barrel_camera_gap * stream_height)/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount) -24 + (5*depthAmount) 
+    # if depthAmount > 1.5 and depthAmount < 2.5:
+    #     return (barrel_camera_gap * stream_height)/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount) -25 + (6.3*depthAmount)
+    # if depthAmount > 2.5 and depthAmount < 3.5:
+    #     return (barrel_camera_gap * stream_height)/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount) -26 + (9*depthAmount) 
     
+    if depth_amount > 1 and depth_amount < 3.5:
+        return -22/depth_amount + (-16.1) + (5.8 * depth_amount)
+        # times part is far range and increase if shooting too low
+        # constant is close range and increase if shooting too low
+        # dont adjust front constant
     return None
     # -24 + 5x FOR FRONT
     # -25 + 6.3x FOR MIDDLE 

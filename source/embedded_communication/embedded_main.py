@@ -44,7 +44,7 @@ class EmbeddedCommunication:
         # xstd = np.uint8(xstd) if xstd < 255 else np.uint8(255)
         # ystd = np.uint8(ystd) if ystd < 255 else np.uint8(255)
 
-        shoot = np.uint8(1 if ((xstd+ystd)/2 < 10) else 0)
+        shoot = np.uint8(1 if ((xstd+ystd)/2 < 15) else 0)
         print("Shoot Value:",shoot)
 
         if self.port is not None:
@@ -56,6 +56,8 @@ class EmbeddedCommunication:
             self.port.write(shoot.tobytes())
             self.port.write(shoot.tobytes())
             self.port.write('e'.encode())
+
+        return shoot
 
     def read_input(self):
         """

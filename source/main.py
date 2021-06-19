@@ -16,6 +16,7 @@ import math
 import time
 import datetime
 import collections
+import RPi.GPIO as GPIO
 
 # relative imports
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
@@ -44,6 +45,7 @@ vertical_fov = PARAMETERS['aiming']['vertical_fov']
 
 
 def setup(
+        team_color,
         get_frame = None,
         on_next_frame = None,
         modeling = test_modeling,
@@ -147,8 +149,8 @@ def setup(
         """
 
         frame_number = 0 # Used for on_next_frame
-        model = modeling.modelingClass() # Create instance of modeling
-        horizontal_angle = vertical_angle = x_std = y_std = depth_amount = pixel_diff = phi = cf = 0 # Initialize constants as "globals"
+        model = modeling.modelingClass(team_color) # Create instance of modeling
+        horizontal_angle = vertical_angle = x_std = y_std = depth_amount = pixel_diff = phi = cf = shoot = 0 # Initialize constants as "globals"
         buffer_size = 10
 
         # Create two circular buffers to store predicted shooting locations (used to ensure we are locked on a target)
@@ -225,11 +227,11 @@ def setup(
                 if depth_amount < 1 or depth_amount > 3.5:
                     x_circular_buffer.clear()
                     y_circular_buffer.clear()
-                    embedded_communication.send_output(0, 0, 255, 255) # Tell embedded to stay still 
+                    shoot = embedded_communication.send_output(horizontal_angle, vertical_angle, 255, 255)
                 elif len(x_circular_buffer) == buffer_size:
-                    embedded_communication.send_output(horizontal_angle, vertical_angle,x_std,y_std)
+                    shoot = embedded_communication.send_output(horizontal_angle, vertical_angle,x_std,y_std)
                 else:
-                    embedded_communication.send_output(horizontal_angle, vertical_angle,255,255)
+                    shoot = embedded_communication.send_output(horizontal_angle, vertical_angle,255,255)
 
                 # If gui is enabled then draw bounding boxes around the selected robot
                 if with_gui:
@@ -238,7 +240,7 @@ def setup(
                 # Clears buffers since no robots detected
                 x_circular_buffer.clear()
                 y_circular_buffer.clear()
-                embedded_communication.send_output(0, 0, 255, 255) # Tell embedded to stay still 
+                # embedded_communication.send_output(0, 0, 255, 255) # Tell embedded to stay still 
                 print("No Bounding Boxes Found")
 
             # Display time taken for single iteration of loop
@@ -262,6 +264,8 @@ def setup(
                 cv2.putText(color_image,"ySTD: "+str(np.round(y_std,2)), (30,300) , font, fontScale,fontColor,lineType)
                 cv2.putText(color_image,"confidence: "+str(np.round(cf,2)), (30,350) , font, fontScale,fontColor,lineType)
                 cv2.putText(color_image,"FPS: "+str(np.round(1/iteration_time,2)), (30,400) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"Shoot: "+str(shoot), (30,450) , font, fontScale,fontColor,lineType)
+
 
                 if phi:
                     cv2.putText(color_image,"Phi: "+str(np.round(phi,2)), (30,450) , font, fontScale,fontColor,lineType)
@@ -297,7 +301,7 @@ def setup(
         
         # initialize model and tracker classes
         track = tracker.trackingClass()
-        model = modeling.modelingClass()
+        model = modeling.modelingClass(team_color)
         kalmanFilter = None
 
         while True: # Counts up infinitely starting at 0
@@ -362,7 +366,7 @@ def setup(
 
             # Continue control logic if we detected atleast a single bounding box
             if best_bounding_box is not None:
-                prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]-best_bounding_box[3]/2] # Location to shoot [xObjCenter, yObjCenter]
+                prediction = [best_bounding_box[0]+best_bounding_box[2]/2,best_bounding_box[1]+best_bounding_box[3]/2] # Location to shoot [xObjCenter, yObjCenter]
                 bboxHeight = best_bounding_box[3]
                 print("Prediction is:",prediction)
 
@@ -375,23 +379,28 @@ def setup(
 
                 depth_amount = cameraMethods.getDistFromArray(depth_image,best_bounding_box) # Find depth from camera to robot
                 bboxY = prediction[1]
-                phi = embedded_communication.getPhi()
-                print("Phi:",phi)
-                if phi:
-                    pixel_diff = 0 # just here in case we comment out the next line
-                    # pixel_diff = cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depth_amount,center,phi)
-                prediction[1] += pixel_diff
+
+                pixel_diff = cameraMethods.bulletOffsetCompensation(depth_amount)
+                if pixel_diff is None:
+                    x_circular_buffer.clear()
+                    y_circular_buffer.clear()
+                    pixel_diff = 0
+
+                prediction[1] -= pixel_diff
 
                 x_std, y_std = updateCircularBuffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
                 horizontal_angle, vertical_angle = angleFromCenter(prediction[0],prediction[1],center[0],center[1]) # Determine angles to turn by in both x,y components
                 print("Angles calculated are horizontal_angle:",horizontal_angle,"and vertical_angle:",vertical_angle)
 
                 # Send embedded the angles to turn to and the accuracy, make accuracy terrible if we dont have enough data in buffer                
-                if len(x_circular_buffer) == buffer_size:
-                    embedded_communication.send_output(horizontal_angle, vertical_angle, x_std, y_std)
+                if depth_amount < 1 or depth_amount > 3.5:
+                    x_circular_buffer.clear()
+                    y_circular_buffer.clear()
+                    embedded_communication.send_output(horizontal_angle, vertical_angle, 255, 255) # Tell embedded to stay still 
+                elif len(x_circular_buffer) == buffer_size:
+                    embedded_communication.send_output(horizontal_angle, vertical_angle,x_std,y_std)
                 else:
-                    embedded_communication.send_output(horizontal_angle, vertical_angle, 255, 255) # Tell embedded to stay still and not shoot
-
+                    embedded_communication.send_output(horizontal_angle, vertical_angle,255,255)
                 # If gui is enabled then draw bounding boxes around the selected robot
                 if with_gui:
                     cv2.rectangle(color_image, (int(best_bounding_box[0]), int(best_bounding_box[1])), (int(best_bounding_box[0]) + int(best_bounding_box[2]), int(best_bounding_box[1]) + int(best_bounding_box[3])), (255,0,0), 2)
@@ -400,7 +409,7 @@ def setup(
                 x_circular_buffer.clear()
                 y_circular_buffer.clear()
 
-                embedded_communication.send_output(0, 0, 255, 255) # Tell embedded to stay still and not shoot
+                # embedded_communication.send_output(0, 0, 255, 255) # Tell embedded to stay still and not shoot
                 print("No Bounding Boxes Found")
 
             # Display time taken for single iteration of loop
@@ -597,8 +606,22 @@ if __name__ == '__main__':
         if record_interval>0:
             video_output = beginVideoRecording()
 
+        
+        led_pin = 12
+        but_pin = 18
+        GPIO.setmode(GPIO.BOARD)  # BOARD pin-numbering scheme
+        GPIO.setup(led_pin, GPIO.OUT)  # LED pin set as output
+        GPIO.setup(but_pin, GPIO.IN)  # Button pin set as input
+
+        # Initial state for LEDs:
+        GPIO.output(led_pin, GPIO.LOW)
+        team_color = GPIO.input(but_pin)
+        print("GPIO:",team_color)
+        team_color = 1 if team_color == 0 else 0
+
         # Must send classes so multiprocessing is possible
         simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(
+            team_color,
             get_frame = camera.get_live_video_frame, 
             modeling = test_modeling,
             tracker = test_tracking,
@@ -606,7 +629,7 @@ if __name__ == '__main__':
             live_camera = True,
             kalman_filters = False,
             with_gui = True,
-            filter_team_color = False,
+            filter_team_color = True,
             video_output = video_output
         )
 
@@ -618,3 +641,4 @@ if __name__ == '__main__':
             print("Saving Recorded Video")
             video_output.release()
             print("Finished Saving Video")
+        GPIO.cleanup()
