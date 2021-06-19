@@ -359,7 +359,7 @@ def setup(
 
             # Continue control logic if we detected atleast a single bounding box
             if best_bounding_box is not None:
-                prediction = [best_bounding_box[0]+best_bounding_box[2]/2,center[1]*2-best_bounding_box[1]-best_bounding_box[3]/2] # Location to shoot [xObjCenter, yObjCenter]
+                prediction = [best_bounding_box[0]+best_bounding_box[2]/2,best_bounding_box[1]+best_bounding_box[3]/2] # Location to shoot [xObjCenter, yObjCenter]
                 bboxHeight = best_bounding_box[3]
                 print("Prediction is:",prediction)
 
@@ -372,23 +372,28 @@ def setup(
 
                 depth_amount = cameraMethods.getDistFromArray(depth_image,best_bounding_box) # Find depth from camera to robot
                 bboxY = prediction[1]
-                phi = embedded_communication.getPhi()
-                print("Phi:",phi)
-                if phi:
-                    pixel_diff = 0 # just here in case we comment out the next line
-                    # pixel_diff = cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depth_amount,center,phi)
-                prediction[1] += pixel_diff
+
+                pixel_diff = cameraMethods.bulletOffsetCompensation(depth_amount)
+                if pixel_diff is None:
+                    x_circular_buffer.clear()
+                    y_circular_buffer.clear()
+                    pixel_diff = 0
+
+                prediction[1] -= pixel_diff
 
                 x_std, y_std = updateCircularBuffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
                 horizontal_angle, vertical_angle = angleFromCenter(prediction[0],prediction[1],center[0],center[1]) # Determine angles to turn by in both x,y components
                 print("Angles calculated are horizontal_angle:",horizontal_angle,"and vertical_angle:",vertical_angle)
 
                 # Send embedded the angles to turn to and the accuracy, make accuracy terrible if we dont have enough data in buffer                
-                if len(x_circular_buffer) == buffer_size:
-                    embedded_communication.send_output(horizontal_angle, vertical_angle, x_std, y_std)
+                if depth_amount < 1 or depth_amount > 3.5:
+                    x_circular_buffer.clear()
+                    y_circular_buffer.clear()
+                    embedded_communication.send_output(0, 0, 255, 255) # Tell embedded to stay still 
+                elif len(x_circular_buffer) == buffer_size:
+                    embedded_communication.send_output(horizontal_angle, vertical_angle,x_std,y_std)
                 else:
-                    embedded_communication.send_output(horizontal_angle, vertical_angle, 255, 255) # Tell embedded to stay still and not shoot
-
+                    embedded_communication.send_output(horizontal_angle, vertical_angle,255,255)
                 # If gui is enabled then draw bounding boxes around the selected robot
                 if with_gui:
                     cv2.rectangle(color_image, (int(best_bounding_box[0]), int(best_bounding_box[1])), (int(best_bounding_box[0]) + int(best_bounding_box[2]), int(best_bounding_box[1]) + int(best_bounding_box[3])), (255,0,0), 2)
@@ -607,7 +612,7 @@ if __name__ == '__main__':
             video_output = video_output
         )
 
-        simple_synchronous() # CHANGE THIS LINE FOR DIFFERENT MAIN METHODS
+        synchronous_with_tracker() # CHANGE THIS LINE FOR DIFFERENT MAIN METHODS
 
     finally:
         # Save video output
