@@ -25,7 +25,7 @@ paths:
 # NOTE: these are overridden by environments (below)
 default_parameters:
     model:
-        confidence: 0.95
+        confidence: 0.9
         threshold: 0.3
         frequency: 30
         input_dimension: 416
