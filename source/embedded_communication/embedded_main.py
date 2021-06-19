@@ -56,6 +56,8 @@ class EmbeddedCommunication:
             self.port.write(shoot.tobytes())
             self.port.write(shoot.tobytes())
             self.port.write('e'.encode())
+            
+        return shoot
 
     def read_input(self):
         """

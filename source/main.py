@@ -147,7 +147,7 @@ def setup(
 
         frame_number = 0 # Used for on_next_frame
         model = modeling.modelingClass() # Create instance of modeling
-        horizontal_angle = vertical_angle = x_std = y_std = depth_amount = pixel_diff = phi = cf = 0 # Initialize constants as "globals"
+        horizontal_angle = vertical_angle = x_std = y_std = depth_amount = pixel_diff = phi = cf = shoot = 0 # Initialize constants as "globals"
         buffer_size = 10
 
         # Create two circular buffers to store predicted shooting locations (used to ensure we are locked on a target)
@@ -222,11 +222,11 @@ def setup(
                 if depth_amount < 1 or depth_amount > 3.5:
                     x_circular_buffer.clear()
                     y_circular_buffer.clear()
-                    embedded_communication.send_output(0, 0, 255, 255) # Tell embedded to stay still 
+                    shoot = embedded_communication.send_output(horizontal_angle, vertical_angle, 255, 255)
                 elif len(x_circular_buffer) == buffer_size:
-                    embedded_communication.send_output(horizontal_angle, vertical_angle,x_std,y_std)
+                    shoot = embedded_communication.send_output(horizontal_angle, vertical_angle,x_std,y_std)
                 else:
-                    embedded_communication.send_output(horizontal_angle, vertical_angle,255,255)
+                    shoot = embedded_communication.send_output(horizontal_angle, vertical_angle,255,255)
 
                 # If gui is enabled then draw bounding boxes around the selected robot
                 if with_gui:
@@ -259,6 +259,8 @@ def setup(
                 cv2.putText(color_image,"ySTD: "+str(np.round(y_std,2)), (30,300) , font, fontScale,fontColor,lineType)
                 cv2.putText(color_image,"confidence: "+str(np.round(cf,2)), (30,350) , font, fontScale,fontColor,lineType)
                 cv2.putText(color_image,"FPS: "+str(np.round(1/iteration_time,2)), (30,400) , font, fontScale,fontColor,lineType)
+                cv2.putText(color_image,"Shoot: "+str(shoot), (30,450) , font, fontScale,fontColor,lineType)
+
 
                 if phi:
                     cv2.putText(color_image,"Phi: "+str(np.round(phi,2)), (30,450) , font, fontScale,fontColor,lineType)
@@ -389,7 +391,7 @@ def setup(
                 if depth_amount < 1 or depth_amount > 3.5:
                     x_circular_buffer.clear()
                     y_circular_buffer.clear()
-                    embedded_communication.send_output(0, 0, 255, 255) # Tell embedded to stay still 
+                    embedded_communication.send_output(horizontal_angle, vertical_angle, 255, 255) # Tell embedded to stay still 
                 elif len(x_circular_buffer) == buffer_size:
                     embedded_communication.send_output(horizontal_angle, vertical_angle,x_std,y_std)
                 else:
@@ -402,7 +404,7 @@ def setup(
                 x_circular_buffer.clear()
                 y_circular_buffer.clear()
 
-                embedded_communication.send_output(0, 0, 255, 255) # Tell embedded to stay still and not shoot
+                # embedded_communication.send_output(0, 0, 255, 255) # Tell embedded to stay still and not shoot
                 print("No Bounding Boxes Found")
 
             # Display time taken for single iteration of loop
@@ -607,7 +609,7 @@ if __name__ == '__main__':
             aiming = test_aiming,
             live_camera = True,
             kalman_filters = False,
-            with_gui = False,
+            with_gui = True,
             filter_team_color = False,
             video_output = video_output
         )
