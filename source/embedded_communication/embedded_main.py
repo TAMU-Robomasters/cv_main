@@ -17,7 +17,7 @@ class EmbeddedCommunication:
             self.port=serial.Serial(
                 port,
                 baudrate=baudrate,
-                timeout=3.0,
+                timeout=.05,
                 bytesize=serial.EIGHTBITS,
                 parity=serial.PARITY_NONE,
                 stopbits=serial.STOPBITS_ONE
@@ -44,7 +44,7 @@ class EmbeddedCommunication:
         # xstd = np.uint8(xstd) if xstd < 255 else np.uint8(255)
         # ystd = np.uint8(ystd) if ystd < 255 else np.uint8(255)
 
-        shoot = np.uint8(1 if (xstd < 5 and ystd < 5) else 0)
+        shoot = np.uint8(1 if ((xstd+ystd)/2 < 10) else 0)
         print("Shoot Value:",shoot)
 
         if self.port is not None:
@@ -53,8 +53,8 @@ class EmbeddedCommunication:
             self.port.write(x2.tobytes())
             self.port.write(y1.tobytes())
             self.port.write(y2.tobytes())
-            # self.port.write(shoot.tobytes())
-            # self.port.write(shoot.tobytes())
+            self.port.write(shoot.tobytes())
+            self.port.write(shoot.tobytes())
             self.port.write('e'.encode())
 
     def read_input(self):
