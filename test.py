@@ -10,3 +10,4 @@ GPIO.setup(but_pin, GPIO.IN)  # Button pin set as input
 GPIO.output(led_pin, GPIO.LOW)
 team_color = GPIO.input(but_pin)
 print("GPIO:",team_color)
+GPIO.cleanup()

@@ -151,6 +151,7 @@ def setup(
         model = modeling.modelingClass(team_color) # Create instance of modeling
         horizontal_angle = vertical_angle = x_std = y_std = depth_amount = pixel_diff = phi = cf = shoot = 0 # Initialize constants as "globals"
         buffer_size = 10
+        ccc = 0
 
         # Create two circular buffers to store predicted shooting locations (used to ensure we are locked on a target)
         x_circular_buffer = collections.deque(maxlen=buffer_size)
@@ -189,8 +190,10 @@ def setup(
             # Finds the coordinate for the center of the screen
             center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
 
+
             # Continue control logic if we detected atleast a single bounding box
             if len(boxes)!=0:
+                ccc = 0
                 # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
                 # bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
                 # best_bounding_box = min(bboxes, key=bboxes.get) # Finds the centermost bounding box
@@ -237,7 +240,8 @@ def setup(
                 # Clears buffers since no robots detected
                 x_circular_buffer.clear()
                 y_circular_buffer.clear()
-                # embedded_communication.send_output(0, 0, 255, 255) # Tell embedded to stay still 
+                ccc+=1
+                embedded_communication.send_output(0, 0, 255, 255,extra=(1 if ccc>=60 else 0)) # Tell embedded to stay still 
                 print("No Bounding Boxes Found")
 
             # Display time taken for single iteration of loop
@@ -604,17 +608,20 @@ if __name__ == '__main__':
             video_output = beginVideoRecording()
 
         
-        led_pin = 12
-        but_pin = 18
-        GPIO.setmode(GPIO.BOARD)  # BOARD pin-numbering scheme
-        GPIO.setup(led_pin, GPIO.OUT)  # LED pin set as output
-        GPIO.setup(but_pin, GPIO.IN)  # Button pin set as input
+        # led_pin = 12
+        # but_pin = 18
+        # GPIO.setmode(GPIO.BOARD)  # BOARD pin-numbering scheme
+        # GPIO.setup(led_pin, GPIO.OUT)  # LED pin set as output
+        # GPIO.setup(but_pin, GPIO.IN)  # Button pin set as input
 
-        # Initial state for LEDs:
-        GPIO.output(led_pin, GPIO.LOW)
-        team_color = GPIO.input(but_pin)
-        print("GPIO:",team_color)
-        team_color = 1 if team_color == 0 else 0
+        # # Initial state for LEDs:
+        # GPIO.output(led_pin, GPIO.LOW)
+        # team_color = GPIO.input(but_pin)
+        # print("GPIO:",team_color)
+        # team_color = 1 if team_color == 0 else 0
+
+        team_color = PARAMETERS['embedded_communication']['team_color']
+
 
         # Must send classes so multiprocessing is possible
         simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(
