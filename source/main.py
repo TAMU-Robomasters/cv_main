@@ -93,6 +93,7 @@ def setup(
         """
         horizontal_angle = ((xBboxCenter-xCamCenter)/xCamCenter)*(horizontal_fov/2)
         vertical_angle = ((yBboxCenter-yCamCenter)/yCamCenter)*(vertical_fov/2)
+        # vertical_angle = ((yCamCenter - yBboxCenter)/yCamCenter)*(vertical_fov/2)
 
         return math.radians(horizontal_angle),math.radians(vertical_angle)
 
@@ -221,6 +222,8 @@ def setup(
 
                 x_std, y_std = updateCircularBuffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
                 horizontal_angle, vertical_angle = angleFromCenter(prediction[0],center[1]*2-prediction[1],center[0],center[1]) # Determine angles to turn by in both x,y components
+                # horizontal_angle, vertical_angle = angleFromCenter(prediction[0],prediction[1],center[0],center[1]) # Determine angles to turn by in both x,y components
+
                 print("Angles calculated are horizontal_angle:",horizontal_angle,"and vertical_angle:",vertical_angle)
 
                 # Send embedded the angles to turn to and the accuracy, make accuracy terrible if we dont have enough data in buffer 
