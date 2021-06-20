@@ -151,7 +151,7 @@ def setup(
         frame_number = 0 # Used for on_next_frame
         model = modeling.modelingClass(team_color) # Create instance of modeling
         horizontal_angle = vertical_angle = x_std = y_std = depth_amount = pixel_diff = phi = cf = shoot = 0 # Initialize constants as "globals"
-        buffer_size = 10
+        buffer_size = 5
         ccc = 0
 
         # Create two circular buffers to store predicted shooting locations (used to ensure we are locked on a target)
@@ -227,7 +227,7 @@ def setup(
                 print("Angles calculated are horizontal_angle:",horizontal_angle,"and vertical_angle:",vertical_angle)
 
                 # Send embedded the angles to turn to and the accuracy, make accuracy terrible if we dont have enough data in buffer 
-                if depth_amount < 1 or depth_amount > 3.5:
+                if depth_amount < 1 or depth_amount > 5:
                     x_circular_buffer.clear()
                     y_circular_buffer.clear()
                     shoot = embedded_communication.send_output(horizontal_angle, vertical_angle, 255, 255)
@@ -635,7 +635,7 @@ if __name__ == '__main__':
             aiming = test_aiming,
             live_camera = True,
             kalman_filters = False,
-            with_gui = True,
+            with_gui = False,
             filter_team_color = True,
             video_output = video_output
         )

@@ -129,8 +129,12 @@ def bulletOffsetCompensation(depth_amount):
     # if depthAmount > 2.5 and depthAmount < 3.5:
     #     return (barrel_camera_gap * stream_height)/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount) -26 + (9*depthAmount) 
     
-    if depth_amount > 1 and depth_amount < 3.5:
+    if depth_amount > 1 and depth_amount < 2.5:
         return -22/depth_amount + (-16.1) + (5.8 * depth_amount)
+    elif depth_amount >= 2.5 and depth_amount < 5:
+        c = 5
+        return (-22/2.5 + (-16.1) + (5.8 * 2.5)+ (depth_amount*c))
+
         # times part is far range and increase if shooting too low
         # constant is close range and increase if shooting too low
         # dont adjust front constant
