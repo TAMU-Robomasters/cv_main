@@ -109,9 +109,15 @@ def bulletDropCompensation(depth_image, best_bounding_box, depth_amount, center,
     rangeP = depthFromPivot/math.cos(rho)
     i = rangeP * math.cos(psi)
     j = rangeP * math.sin(psi)
-    t = 1.05*rangeP/bullet_velocity
+    c = length_barrel * math.sin(psi)
+    e = length_barrel * math.cos(psi)
+    # t = 1.05*rangeP/bullet_velocity
+    t = (i - e)/(bullet_velocity * math.cos(psi))
 
-    psiF = math.asin((j+4.9*t**2) / (bullet_velocity*t) )
+
+    psiF = math.asin((j-c-4.9*t**2) / (bullet_velocity*t) )
+    jCheck = (length_barrel * math.sin(psiF)) + ((i - (length_barrel * math.cos(psiF)))/(math.cos(psiF))) * math.sin(psiF) + 4.9 * ((i - (length_barrel * math.cos(psiF)))/(bullet_velocity * math.cos(psiF)))**2
+    print("j: ", j, " jCheck: ", jCheck)
     changePsi = psiF - psi
     changeP = stream_height/2/math.tan(vertical_fov/2*math.pi/180)*math.tan(changePsi)
     

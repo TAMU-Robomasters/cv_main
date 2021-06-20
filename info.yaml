@@ -42,8 +42,8 @@ default_parameters:
         vertical_fov: 57
         model_fps: 30
         bullet_velocity: 26
-        length_barrel: .21
-        camera_gap: -.039
+        length_barrel: .22
+        camera_gap: -.034
 
         #power rune
         blue_light: [50,40,230]
