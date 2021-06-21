@@ -97,7 +97,7 @@ def bulletDropCompensation(depth_image, best_bounding_box, depth_amount, center,
     if phi is None:
         return 0
 
-    diffC = (best_bounding_box[1] + 0.5* best_bounding_box[3])  - stream_height/2 # pixels
+    diffC =   stream_height/2  - (best_bounding_box[1] + 0.5* best_bounding_box[3])# pixels
     theta = math.atan((diffC/stream_height/2) * math.tan(vertical_fov/2 * math.pi/180)) # theta in 
     diffC = depth_amount * math.tan(theta) # convert diffC to meters
 
@@ -116,6 +116,11 @@ def bulletDropCompensation(depth_image, best_bounding_box, depth_amount, center,
 
 
     psiF = math.asin((j-c-4.9*t**2) / (bullet_velocity*t) )
+    # c = length_barrel * math.sin(psiF)
+    # e = length_barrel * math.cos(psiF)
+    # tF = (i - e)/(bullet_velocity * math.cos(psiF))
+    # psiF = math.asin((j-c-4.9*tF**2) / (bullet_velocity*tF) )
+
     jCheck = (length_barrel * math.sin(psiF)) + ((i - (length_barrel * math.cos(psiF)))/(math.cos(psiF))) * math.sin(psiF) + 4.9 * ((i - (length_barrel * math.cos(psiF)))/(bullet_velocity * math.cos(psiF)))**2
     print("j: ", j, " jCheck: ", jCheck)
     changePsi = psiF - psi
@@ -135,11 +140,8 @@ def bulletOffsetCompensation(depth_amount):
     # if depthAmount > 2.5 and depthAmount < 3.5:
     #     return (barrel_camera_gap * stream_height)/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount) -26 + (9*depthAmount) 
     
-    if depth_amount > 1 and depth_amount < 2.5:
-        return -22/depth_amount + (-16.1) + (5.8 * depth_amount)
-    elif depth_amount >= 2.5 and depth_amount < 5:
-        c = 5
-        return (-22/2.5 + (-16.1) + (5.8 * 2.5)+ (depth_amount*c))
+    if depth_amount > 1 and depth_amount < 5:
+        return max((1.8467 * depth_amount ** 2) + (-4.3605 * depth_amount) + (2.60761),0)
 
         # times part is far range and increase if shooting too low
         # constant is close range and increase if shooting too low

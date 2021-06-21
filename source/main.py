@@ -137,6 +137,10 @@ def setup(
                 cf = confidences[i]
         
         return best_bounding_box, cf
+
+    def sendShoot(xstd,ystd):
+        return np.uint8(1 if ((xstd+ystd)/2 < 15) else 0)
+
     # 
     # option #1
     #
@@ -151,14 +155,21 @@ def setup(
         frame_number = 0 # Used for on_next_frame
         model = modeling.modelingClass(team_color) # Create instance of modeling
         horizontal_angle = vertical_angle = x_std = y_std = depth_amount = pixel_diff = phi = cf = shoot = 0 # Initialize constants as "globals"
-        buffer_size = 5
+        buffer_size = 1
         ccc = 0
 
         # Create two circular buffers to store predicted shooting locations (used to ensure we are locked on a target)
         x_circular_buffer = collections.deque(maxlen=buffer_size)
         y_circular_buffer = collections.deque(maxlen=buffer_size)
 
+        heat_size = 200
+        ft_circular_buffer = collections.deque(maxlen=heat_size)
+        shoot_circular_buffer = collections.deque(maxlen=heat_size)
+
         while True:
+            rof = 8
+            heat_estimate = max(10*(rof/(1/np.mean(ft_circular_buffer)))* (np.sum(shoot_circular_buffer)-50*np.sum(ft_circular_buffer)),0)
+            print("Heat Estimate:",heat_estimate)
             t = time.time()
             frame = get_frame()  
             color_image = None           
@@ -201,23 +212,29 @@ def setup(
 
                 best_bounding_box, cf = getOptimalBoundingBox(boxes,confidences,center)
 
-                prediction = [best_bounding_box[0]+best_bounding_box[2]/2,best_bounding_box[1]+best_bounding_box[3]/2] # Location to shoot [xObjCenter, yObjCenter]
+                prediction = [
+                    best_bounding_box[0]+best_bounding_box[2]/2,
+                    best_bounding_box[1]+best_bounding_box[3]/2
+                    ] # Location to shoot [xObjCenter, yObjCenter]
                 print("Best Bounding Box",best_bounding_box)
                 print("Prediction is:",prediction)
 
                 depth_amount = cameraMethods.getDistFromArray(depth_image,best_bounding_box) # Find depth from camera to robot
+                print("DEPTH:",depth_amount)
                 bboxY = prediction[1]
                 # phi = embedded_communication.getPhi()
+                # print("PHI:",phi)
+                # pixel_diff = 0
                 # if phi:
-                pixel_diff = 0 # just here in case we comment out the next line
-                # pixel_diff = -(cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depth_amount,center,phi))
+                #     pixel_diff = 0 # just here in case we comment out the next line
+                #     pixel_diff = cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depth_amount,center,phi)
                 pixel_diff = cameraMethods.bulletOffsetCompensation(depth_amount)
                 if pixel_diff is None:
                     x_circular_buffer.clear()
                     y_circular_buffer.clear()
                     pixel_diff = 0
                     
-                
+                # pixel_diff = 23
                 prediction[1] -= pixel_diff
 
                 x_std, y_std = updateCircularBuffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
@@ -227,14 +244,21 @@ def setup(
                 print("Angles calculated are horizontal_angle:",horizontal_angle,"and vertical_angle:",vertical_angle)
 
                 # Send embedded the angles to turn to and the accuracy, make accuracy terrible if we dont have enough data in buffer 
+                send_shoot_val = sendShoot(x_std,y_std)
+
+                print()
                 if depth_amount < 1 or depth_amount > 5:
                     x_circular_buffer.clear()
                     y_circular_buffer.clear()
-                    shoot = embedded_communication.send_output(horizontal_angle, vertical_angle, 255, 255)
+                    shoot = embedded_communication.send_output(horizontal_angle, vertical_angle, 255, 255,np.uint8(0))
+                    shoot_circular_buffer.append(0)
                 elif len(x_circular_buffer) == buffer_size:
-                    shoot = embedded_communication.send_output(horizontal_angle, vertical_angle,x_std,y_std)
+                    shoot = embedded_communication.send_output(horizontal_angle, vertical_angle,x_std,y_std,send_shoot_val)
+                    shoot_circular_buffer.append(send_shoot_val)
                 else:
-                    shoot = embedded_communication.send_output(horizontal_angle, vertical_angle,255,255)
+                    shoot = embedded_communication.send_output(horizontal_angle, vertical_angle,255,255,np.uint8(0))
+                    shoot_circular_buffer.append(0)
+                
 
                 # If gui is enabled then draw bounding boxes around the selected robot
                 if with_gui:
@@ -243,12 +267,14 @@ def setup(
                 # Clears buffers since no robots detected
                 x_circular_buffer.clear()
                 y_circular_buffer.clear()
+                shoot_circular_buffer.append(0)
                 ccc+=1
-                embedded_communication.send_output(0, 0, 255, 255,extra=(1 if ccc>=60 else 0)) # Tell embedded to stay still 
+                embedded_communication.send_output(0, 0, 255, 255,np.uint8(0),extra=(1 if ccc>=60 else 0)) # Tell embedded to stay still 
                 print("No Bounding Boxes Found")
 
             # Display time taken for single iteration of loop
             iteration_time = time.time()-t
+            ft_circular_buffer.append(iteration_time)
             print('Processing frame',frame_number,'took',iteration_time,"seconds for model only\n")
 
             # Show live feed is gui is enabled

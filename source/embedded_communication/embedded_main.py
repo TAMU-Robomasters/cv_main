@@ -23,7 +23,7 @@ class EmbeddedCommunication:
                 stopbits=serial.STOPBITS_ONE
             )
 
-    def send_output(self,x,y,xstd,ystd,padding_per_value=5,extra=0):
+    def send_output(self,x,y,xstd,ystd,shoot,extra=0):
         """
         Send data to DJI board via serial communication as a padded string
         e.g. given x=1080, y=500, and padding_per_value=5, it will send 0108000500 to DJI board.
@@ -44,7 +44,6 @@ class EmbeddedCommunication:
         # xstd = np.uint8(xstd) if xstd < 255 else np.uint8(255)
         # ystd = np.uint8(ystd) if ystd < 255 else np.uint8(255)
 
-        shoot = np.uint8(1 if ((xstd+ystd)/2 < 15) else 0)
         extra = np.uint8(extra)
         print("extra:",extra)
         print("Shoot Value:",shoot)
