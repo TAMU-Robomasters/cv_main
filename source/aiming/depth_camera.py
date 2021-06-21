@@ -141,7 +141,7 @@ def bulletOffsetCompensation(depth_amount):
     #     return (barrel_camera_gap * stream_height)/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount) -26 + (9*depthAmount) 
     
     if depth_amount > 1 and depth_amount < 5:
-        return max((1.8467 * depth_amount ** 2) + (-4.3605 * depth_amount) + (2.60761),0)
+        return (1.11208 * depth_amount ** 2) + (.1152 * depth_amount) + (-17.7672)
 
         # times part is far range and increase if shooting too low
         # constant is close range and increase if shooting too low

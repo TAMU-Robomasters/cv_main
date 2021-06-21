@@ -228,13 +228,13 @@ def setup(
                 # if phi:
                 #     pixel_diff = 0 # just here in case we comment out the next line
                 #     pixel_diff = cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depth_amount,center,phi)
-                pixel_diff = cameraMethods.bulletOffsetCompensation(depth_amount)
-                if pixel_diff is None:
-                    x_circular_buffer.clear()
-                    y_circular_buffer.clear()
-                    pixel_diff = 0
+                # pixel_diff = cameraMethods.bulletOffsetCompensation(depth_amount)
+                # if pixel_diff is None:
+                #     x_circular_buffer.clear()
+                #     y_circular_buffer.clear()
+                #     pixel_diff = 0
                     
-                # pixel_diff = 23
+                pixel_diff = 4
                 prediction[1] -= pixel_diff
 
                 x_std, y_std = updateCircularBuffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
