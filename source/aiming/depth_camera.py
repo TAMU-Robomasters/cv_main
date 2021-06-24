@@ -80,12 +80,6 @@ def WorldCoordinate(depth_frame, bbox):
 def PixelCoordinate(point):
     return rs.project_point_to_pixel(point)
 
-
-
-
-# def bulletDrop(depthAmount):
-#     return (103.234 * depthAmount) + (-142.514) + (-17.1356 * depthAmount**2)
-
 def bulletDrop(radius, total_angle, proj_velocity, gimbal_pitch, time_interval):    
     geometric_height = radius * math.sin(total_angle)
     physical_height = proj_velocity * math.sin(gimbal_pitch) * time_interval + 0.5 * -9.8 * time_interval**2
@@ -128,34 +122,7 @@ def bulletDropCompensation(depth_image, best_bounding_box, depth_amount, center,
     
     return changeP
 
-def bulletOffsetCompensation(depth_amount):
-    # return (barrel_camera_gap * stream_height +10 )/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount)  # BACK OVER A CERTAIN RANGE
-    #return (barrel_camera_gap * stream_height +5 )/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount) - 7
-
-
-    # if (depthAmount > 1 and depthAmount < 1.5):
-    #     return (barrel_camera_gap * stream_height)/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount) -24 + (5*depthAmount) 
-    # if depthAmount > 1.5 and depthAmount < 2.5:
-    #     return (barrel_camera_gap * stream_height)/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount) -25 + (6.3*depthAmount)
-    # if depthAmount > 2.5 and depthAmount < 3.5:
-    #     return (barrel_camera_gap * stream_height)/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount) -26 + (9*depthAmount) 
-    
-    if depth_amount > 1 and depth_amount < 5:
-        return (1.11208 * depth_amount ** 2) + (.1152 * depth_amount) + (-17.7672)
-
-        # times part is far range and increase if shooting too low
-        # constant is close range and increase if shooting too low
-        # dont adjust front constant
-    return None
-    # -24 + 5x FOR FRONT
-    # -25 + 6.3x FOR MIDDLE 
-    # -26 + 9x FOR LONG
-    # return (barrel_camera_gap * stream_height)/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -depthAmount) -26 + (5*depthAmount) + 0.2*(depthAmount)**2
-    # return (barrel_camera_gap * stream_height)/ (np.tan(vertical_fov/2*math.pi/180) * 2 * -(depthAmount-0.175)) +0.2
-
-
-
-def bulletDropCompensationCarson(depth_amount, gimbal_pitch, v_angle, proj_velocity = bullet_velocity):
+def bulletDropCompensation2(depth_amount, gimbal_pitch, v_angle, proj_velocity = bullet_velocity):
     barrel_camera_gap = PARAMETERS["aiming"]["barrel_camera_gap"]
     radius = math.sqrt(depth_amount ** 2 + (depth_amount * math.tan(v_angle) + barrel_camera_gap) ** 2)
     total_angle = gimbal_pitch + math.atan2(depth_amount * math.tan(v_angle) + barrel_camera_gap, depth_amount)
@@ -179,3 +146,10 @@ def bulletDropCompensationCarson(depth_amount, gimbal_pitch, v_angle, proj_veloc
 
     final_gimbal_pitch = math.atan2(final_height, horizontal_dist)
     return final_gimbal_pitch
+
+def bulletOffsetCompensation(depth_amount):
+    
+    if depth_amount > 1 and depth_amount < 5:
+        return (1.11208 * depth_amount ** 2) + (.1152 * depth_amount) + (-17.7672)
+    else:
+        return None

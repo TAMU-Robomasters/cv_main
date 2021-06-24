@@ -23,14 +23,16 @@ class EmbeddedCommunication:
                 stopbits=serial.STOPBITS_ONE
             )
 
-    def send_output(self,x,y,xstd,ystd,shoot,extra=0):
+    def send_output(self,x,y,shoot,reset_default_position=0):
         """
-        Send data to DJI board via serial communication as a padded string
-        e.g. given x=1080, y=500, and padding_per_value=5, it will send 0108000500 to DJI board.
-        :param x: x coordinate of the target. Unit: pixel. Zero coordinate: upper left
-        :param y: y coordinate of the target. Unit: pixel. Zero coordinate: upper left
+        Send data to DJI board via serial communication as raw bytes.
+
+        Input: Data to send which can be written as bytes.
+        Output: None.
         """
         print("Sending To Embedded")
+
+        # Convert all data to constrained bytes.
         x = np.uint16(int(x*10000)+32768)
         y = np.uint16(int(y*10000)+32768)
 
@@ -39,13 +41,9 @@ class EmbeddedCommunication:
         y1 = np.uint8(y>>8)
         y2 = np.uint8(y)
 
-        # xstd = int(xstd*10)
-        # ystd = int(ystd*10)
-        # xstd = np.uint8(xstd) if xstd < 255 else np.uint8(255)
-        # ystd = np.uint8(ystd) if ystd < 255 else np.uint8(255)
-
-        extra = np.uint8(extra)
-        print("extra:",extra)
+        reset_default_position = np.uint8(reset_default_position)
+        shoot = np.uint8(shoot)
+        print("Reset default position:",reset_default_position)
         print("Shoot Value:",shoot)
 
         if self.port is not None:
@@ -55,7 +53,7 @@ class EmbeddedCommunication:
             self.port.write(y1.tobytes())
             self.port.write(y2.tobytes())
             self.port.write(shoot.tobytes())
-            self.port.write(extra.tobytes())
+            self.port.write(reset_default_position.tobytes())
             self.port.write('e'.encode())
 
         return shoot
@@ -69,16 +67,24 @@ class EmbeddedCommunication:
             return self.port.readline()
 
     def getPhi(self):
+        """
+        Read phi value sent from dev board.
+
+        Input: None.
+        Output: Value read from serial.
+        """
         try:
-            self.port.flushInput()
-            phi = self.port.read(4)[1:3]
+            self.port.flushInput() # Get rid of data stored in buffer since UART is FIFO.
+            phi = self.port.read(4)[1:3] # Read the first 4 bytes but only grab the middle two bytes which represent the value.
+
+            # Combine bytes to make the full phi value
             p1 = np.uint16(phi[0])
             p2 = np.uint16(phi[1])
             unsigned_p = ((p1 << 8) + p2)
             signed_p = np.int16((unsigned_p - 32768))/10000
+
             return signed_p
         except:
-            # TODO: Error handling
             return None
             
 

@@ -11,50 +11,35 @@ connection=serial.Serial(port_param,baudrate=baudrate_param,bytesize=serial.EIGH
 print("Opened:",connection.name)
 
 while True:
-    # x = np.uint16(int(1.23*10000)+32768)
-    # y = np.uint16(int(2.34*10000)+32768)
+    x = np.uint16(int(1.23*10000)+32768)
+    y = np.uint16(int(2.34*10000)+32768)
 
-    # x1 = np.uint8(x>>8)
-    # x2 = np.uint8(x)
-    # y1 = np.uint8(y>>8)
-    # y2 = np.uint8(y)
+    x1 = np.uint8(x>>8)
+    x2 = np.uint8(x)
+    y1 = np.uint8(y>>8)
+    y2 = np.uint8(y)
+    shoot = np.uint8(0)
+    reset_default_position = np.uint8(0)
 
-    # connection.write("a".encode())
-    # connection.write(x1.tobytes())
-    # connection.write(x2.tobytes())
-    # connection.write(y1.tobytes())
-    # connection.write(y2.tobytes())
-    # connection.write('e'.encode())
-    # print("WROTE")
+    connection.write("a".encode())
+    connection.write(x1.tobytes())
+    connection.write(x2.tobytes())
+    connection.write(y1.tobytes())
+    connection.write(y2.tobytes())
+    connection.write(shoot.tobytes())
+    connection.write(reset_default_position.tobytes())
+    connection.write('e'.encode())
+
+    print("WROTE")
     time.sleep(.01)
 
-    connection.flushInput()
-    phee = connection.read(4)[1:3]
-    p1 = np.uint16(phee[0])
-    p2 = np.uint16(phee[1])
-    up = ((p1 << 8) + p2)
-    sp = np.int16((up - 32768))/10000
-
-    # phee = phee
-    print("Phee:",np.degrees(sp))
-# def convert(x,amp= 30,off = 115, b=90):
-#     x = math.radians(x)
-#     amp = math.radians(amp)
-#     off = math.radians(off)
-#     b = math.radians(b)
-
-#     return math.sin(x*math.pi/b)*amp+off
-
-# timerange = 5
-# interval = .01
-# rangeamtx = np.linspace(0,359,num=timerange/interval)
-
 # while True:
-#     for i in range(len(rangeamtx)):
-#         xrad = int(math.radians(rangeamtx[i]) * 1000)
-#         yrad = int(convert(rangeamtx[i]) * 1000)
-#         connection.write(("s "+str(xrad).zfill(5)+" "+str(yrad).zfill(5)+" e ").encode(encoding="ascii"))
-#         print(("s "+str(xrad).zfill(5)+" "+str(yrad).zfill(5)+" e "))
-#         time.sleep(interval)
+#     connection.flushInput()
+#     phi = connection.read(4)[1:3]
+#     p1 = np.uint16(phi[0])
+#     p2 = np.uint16(phi[1])
+#     up = ((p1 << 8) + p2)
+#     sp = np.int16((up - 32768))/10000
 
-# print("done")
+#     print("Phi:",np.degrees(sp))
+#     time.sleep(.01 )

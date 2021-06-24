@@ -39,25 +39,25 @@ class modelingClass:
             self.output_layer_names = [self.layer_names[index[0] - 1] for index in self.net.getUnconnectedOutLayers()]
             self.W, self.H = None, None
 
-    def filter_team(self,boxes,confidences,classIDs):
+    def filter_team(self,boxes,confidences,class_ids):
         """
         Filter bounding boxes based on team color.
 
-        Input: All boxes, confidences, classIDs
-        Output: Enemy boxes, confidences, and classIDs
+        Input: All boxes, confidences, class_ids
+        Output: Enemy boxes, confidences, and class_ids
         """
-        enemyBoxes = []
-        enemyConfidences = []
-        enemyClassIDs = []
+        enemy_boxes = []
+        enemy_confidences = []
+        enemy_class_ids = []
 
         for index in range(len(boxes)):
-            if classIDs[index] != self.team_color:
-                enemyBoxes.append(boxes[index])
-                enemyConfidences.append(confidences[index])
-                enemyClassIDs.append(classIDs[index])
+            if class_ids[index] != self.team_color:
+                enemy_boxes.append(boxes[index])
+                enemy_confidences.append(confidences[index])
+                enemy_class_ids.append(class_ids[index])
 
-        print(enemyBoxes)
-        return enemyBoxes,enemyConfidences,enemyClassIDs
+        print(enemy_boxes)
+        return enemy_boxes,enemy_confidences,enemy_class_ids
 
     def original_get_bounding_boxes(self,frame, iconfidence, ithreshold):
         """
@@ -77,26 +77,26 @@ class modelingClass:
         # initialize our lists of detected bounding boxes, confidences, and class IDs, respectively
         boxes = []
         confidences = []
-        classIDs = []
+        class_ids = []
 
         if should_use_tensor_rt:
-            boxes, confidences, classIDs = self.trtYolo.detect(frame, ithreshold)
-            newBoxes = []
-            newConfidences = []
-            newClassIDs = []
+            boxes, confidences, class_ids = self.trtYolo.detect(frame, ithreshold)
+            new_boxes = []
+            new_confidences = []
+            new_class_ids = []
 
             # Filter bounding boxes based on confidence
             for i in range(len(boxes)):
                 if confidences[i] >= iconfidence:
                     box = boxes[i]
                     newBox = [box[0],box[1],abs(box[2]-box[0]),abs(box[3]-box[1])]
-                    newBoxes.append(newBox)
-                    newConfidences.append(confidences[i])
-                    newClassIDs.append(classIDs[i])
+                    new_boxes.append(newBox)
+                    new_confidences.append(confidences[i])
+                    new_class_ids.append(class_ids[i])
 
-            boxes = newBoxes
-            confidences = newConfidences
-            classIDs = newClassIDs
+            boxes = new_boxes
+            confidences = new_confidences
+            class_ids = new_class_ids
         else:
             if self.W is None or self.H is None:
                 (self.H, self.W) = frame.shape[:2]
@@ -139,9 +139,9 @@ class modelingClass:
                         boxes.append([x, y, int(width), int(height)])
 
                         confidences.append(float(confidence))
-                        classIDs.append(classID)
+                        class_ids.append(classID)
 
-        return boxes, confidences, classIDs
+        return boxes, confidences, class_ids
         
     def get_bounding_boxes(self,frame, iconfidence, ithreshold, filter_team_color):
         """	
@@ -169,23 +169,23 @@ class modelingClass:
         # if MODE == "production":
         return boxes, confidences, class_ids, frame
         
-        # if not hardware_acceleration:
-        #     # apply non-maxima suppression to suppress weak, overlapping
-        #     # bounding boxes
-        #     idxs = cv2.dnn.NMSBoxes(boxes, confidences, iconfidence, ithreshold)
-            
-        #     # ensure at least one detection exists
-        #     if len(idxs) > 0:
-        #         # loop over the indexes we are keeping
-        #         for i in idxs.flatten():
-        #             # extract the bounding box coordinates
+        # Uncomment to draw bounding boxes around all robots
+        # # apply non-maxima suppression to suppress weak, overlapping
+        # # bounding boxes
+        # idxs = cv2.dnn.NMSBoxes(boxes, confidences, iconfidence, ithreshold)
+        
+        # # ensure at least one detection exists
+        # if len(idxs) > 0:
+        #     # loop over the indexes we are keeping
+        #     for i in idxs.flatten():
+        #         # extract the bounding box coordinates
 
-        #             (x, y) = (boxes[i][0], boxes[i][1])
-        #             (w, h) = (boxes[i][2], boxes[i][3])
-        #             # draw a bounding box rectangle and label on the frame
-        #             color = [int(c) for c in MODEL_COLORS[class_ids[i]]]
-        #             cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
-        #             text = "{}: {:.4f}".format(MODEL_LABELS[class_ids[i]],confidences[i])
-        #             cv2.putText(frame, text, (x, y - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+        #         (x, y) = (boxes[i][0], boxes[i][1])
+        #         (w, h) = (boxes[i][2], boxes[i][3])
+        #         # draw a bounding box rectangle and label on the frame
+        #         color = [int(c) for c in MODEL_COLORS[class_ids[i]]]
+        #         cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
+        #         text = "{}: {:.4f}".format(MODEL_LABELS[class_ids[i]],confidences[i])
+        #         cv2.putText(frame, text, (x, y - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
         
         # return boxes, confidences, class_ids, frame

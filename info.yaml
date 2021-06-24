@@ -45,6 +45,15 @@ default_parameters:
         length_barrel: .22
         camera_gap: -.034
 
+        # Shooting Logic
+        std_buffer_size: 1
+        heat_buffer_size: 200
+        rate_of_fire: 8
+        idle_counter: 60
+        std_error_bound: 60
+        min_range: 1
+        max_range: 5
+
         #power rune
         blue_light: [50,40,230]
         blue_dark: [130,255,255]
