@@ -15,7 +15,7 @@ Pillow==6.2.0
 pyparsing==2.4.7
 pyserial==3.4
 python-dateutil==2.8.1
-PyYAML==5.1.2
+PyYAML==5.4
 regex==2020.7.14
 scikit-build==0.11.1
 scipy==1.5.2
