@@ -1,26 +1,62 @@
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
-from serial import Serial
+import serial
+import time
+import numpy as np
+import time
 
 class EmbeddedCommunication:
     """
     Jetson <-> DJI board communication
     """
     def __init__(self, port, baudrate):
-        if port is None or port==0:
-            self.port=None  # disable port
+        if not port:
+            self.port = None # disable port
             print('Embedded Communication: Port is set to None. No communication will be established.')
         else:
-            self.port=Serial(port,baudrate=baudrate,timeout=3.0)
+            print("Embedded Communication: Port is set to", port)
+            self.port=serial.Serial(
+                port,
+                baudrate=baudrate,
+                timeout=.05,
+                bytesize=serial.EIGHTBITS,
+                parity=serial.PARITY_NONE,
+                stopbits=serial.STOPBITS_ONE
+            )
 
-    def send_output(self,x:int,y:int,padding_per_value=5):
+    def send_output(self,x,y,shoot,reset_default_position=0):
         """
-        Send data to DJI board via serial communication as a padded string
-        e.g. given x=1080, y=500, and padding_per_value=5, it will send 0108000500 to DJI board.
-        :param x: x coordinate of the target. Unit: pixel. Zero coordinate: upper left
-        :param y: y coordinate of the target. Unit: pixel. Zero coordinate: upper left
+        Send data to DJI board via serial communication as raw bytes.
+
+        Input: Data to send which can be written as bytes.
+        Output: None.
         """
+        print("Sending To Embedded")
+
+        # Convert all data to constrained bytes.
+        x = np.uint16(int(x*10000)+32768)
+        y = np.uint16(int(y*10000)+32768)
+
+        x1 = np.uint8(x>>8)
+        x2 = np.uint8(x)
+        y1 = np.uint8(y>>8)
+        y2 = np.uint8(y)
+
+        reset_default_position = np.uint8(reset_default_position)
+        shoot = np.uint8(shoot)
+        print("Reset default position:",reset_default_position)
+        print("Shoot Value:",shoot)
+
         if self.port is not None:
-            self.port.write((str(x).zfill(padding_per_value)+str(y).zfill(padding_per_value)).encode())
+            self.port.write("a".encode())
+            self.port.write(x1.tobytes())
+            self.port.write(x2.tobytes())
+            self.port.write(y1.tobytes())
+            self.port.write(y2.tobytes())
+            self.port.write(shoot.tobytes())
+            self.port.write(reset_default_position.tobytes())
+            self.port.write('e'.encode())
+
+        return shoot
 
     def read_input(self):
         """
@@ -29,6 +65,28 @@ class EmbeddedCommunication:
         """
         if self.port is not None:
             return self.port.readline()
+
+    def getPhi(self):
+        """
+        Read phi value sent from dev board.
+
+        Input: None.
+        Output: Value read from serial.
+        """
+        try:
+            self.port.flushInput() # Get rid of data stored in buffer since UART is FIFO.
+            phi = self.port.read(4)[1:3] # Read the first 4 bytes but only grab the middle two bytes which represent the value.
+
+            # Combine bytes to make the full phi value
+            p1 = np.uint16(phi[0])
+            p2 = np.uint16(phi[1])
+            unsigned_p = ((p1 << 8) + p2)
+            signed_p = np.int16((unsigned_p - 32768))/10000
+
+            return signed_p
+        except:
+            return None
+            
 
 embedded_communication = EmbeddedCommunication(
     port=PARAMETERS["embedded_communication"]["serial_port"],

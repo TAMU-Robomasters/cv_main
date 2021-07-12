@@ -15,35 +15,24 @@ class trackingClass:
         return distance
     # Starts tracking the object surrounded by the bounding box in the image
     # bbox is [x, y, width, height]
-    def init(self,image, bboxes):
+    def init(self,image, best_bounding_box):
         # creates the tracker and returns None if there are no bounding boxes to track
         self.tracker = cv2.TrackerKCF_create()
-        print("inside init for KCF")
-        print(bboxes)
-        if len(bboxes) == 0:
-            return None
-        # Finds the coordinate for the center of the screen
-        center = (image.shape[1] / 2, image.shape[0] / 2)
-
-        # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
-        bboxes = {tuple(bbox): self.distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in bboxes}
-
-        # Finds the centermost bounding box
-        bbox = min(bboxes, key=bboxes.get)
-
+        print("Inside init for KCF Tracker.")
+        
         # Attempts to start the tracker
-        self.tracker.init(image, bbox)
+        self.tracker.init(image, best_bounding_box)
         self.exists = True
-        print("TRACKER INIT")
+        print("Tracker initialization successful.")
         
         # returns the tracked bounding box if tracker was successful, otherwise None
-        return bbox
+        return best_bounding_box
 
     # Updates the location of the object
     def update(self,image):
         # Attempts to update the object's location
         ok, location = self.tracker.update(image)
-        print("TRACKER CONTINUE",ok)
+        print("Tracker is good?",ok)
         if ok == False:
             self.exists = False
         # Returns the location if the location was updated, otherwise None

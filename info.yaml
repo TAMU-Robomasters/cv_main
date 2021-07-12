@@ -2,19 +2,58 @@
     name: CV Main
     description: The Master Control repo of the TAMU RoboMaster 2020 team
 
-parameters:
+paths:
+    project_root: ./
+    source_dir: ./source
+    main_test_video: ./source/_test_data/test.avi
+    main_test_image: ./source/_test_data/test.png
+    video_output: ./result.dont-sync.mp4
+    record_video_output_color: ./recordedVideos/recordedVideoColor.dont-sync.mp4
+    kalman_video: ./kalmanVideo.dont-sync.mp4
+    npy_frames: ./source/scripts/data1 # replace with whichever frame set you want to use in the source/scripts/data<num> directory
+    # model
+    model_weights: ./source/modeling/model/yolov4-tiny-416.weights
+    model_config: ./source/modeling/model/yolov4-tiny-416.cfg
+    model_labels: ./source/modeling/model/yolov4-tiny-416.names
+    model_trt: ./source/modeling/model/yolov4-tiny-416.dont-sync.trt
+    frame_save_location: ./source/modeling/_tests/test.dont-sync.png
+    #aiming
+    R_test_image: ./source/_test_data/mask_R_blur.png
+    rune_test_video: ./source/_test_data/rune3.mp4
+    color_depth_bbox: ./output.dont_sync.txt
+
+# NOTE: these are overridden by environments (below)
+default_parameters:
     model:
-        confidence: 0.5
+        confidence: 0.8
         threshold: 0.3
-        frequency: 40
-        gpu_acceleration: 0 # 0 for none, 1 for gpu only, 2 for tensorRT
+        frequency: 30
         input_dimension: 416
+        hardware_acceleration: "tensor_rt" # one of: [ null, "gpu", "tensor_rt" ]
     aiming:
+        prediction_time: 2 # time interval in seconds to predict using kalman filters
+        
         # depth camera
         stream_width: 848
         stream_height: 480
-        stream_framerate: 60
-        grid_size: 10
+        stream_framerate: 30
+        grid_size: 4
+        horizontal_fov: 86
+        vertical_fov: 57
+        model_fps: 30
+        bullet_velocity: 26
+        length_barrel: .22
+        camera_gap: -.034
+
+        # Shooting Logic
+        std_buffer_size: 1
+        heat_buffer_size: 200
+        rate_of_fire: 8
+        idle_counter: 60
+        std_error_bound: 60
+        min_range: 1
+        max_range: 5
+
         #power rune
         blue_light: [50,40,230]
         blue_dark: [130,255,255]
@@ -22,31 +61,45 @@ parameters:
         center_image_offset: 20
         min_area: 400
         r_timer: 10
+
+        #bullet drop
+        barrel_camera_gap: 0.0364   # in meters
     videostream:
         testing:
             assumed_framerate: 30 # frames per second
-            grab_frame: 0 # 0 means grab next frame, 1 means grab latest frame
+            grab_frame: 0 # For video feed only: 0 means grab next frame, 1 means grab latest frame
+            record_time: 10 # seconds to record for
+            record_interval: 0 # records one out of every x frames, <1 to not record
     testing:
         save_frame_to_file: true
         open_each_frame: false
         main_function: 0 # 0 is simple synchronous, 1 is synchronous with tracker, 2 is multiprocessing with tracker
+        filter_team_color: False
     embedded_communication:
-        serial_port: 0 #replace 0 to "/dev/ttyACM0" to enable port on TX2
         serial_baudrate: 115200
+        serial_port: null
+        team_color: 0 # red
+        # team_color: 1 # blue
 
-paths:
-    project_root: ./
-    source_dir: ./source
-    main_test_video: ./source/_test_data/test.avi
-    main_test_image: ./source/_test_data/test.png
-    video_output: ./result.nosync.mp4
-    time_output: ./time.txt
-    # model
-    model_weights: ./source/modeling/model/yolov4-tiny-416.weights
-    model_config: ./source/modeling/model/yolov4-tiny-416.cfg
-    model_labels: ./source/modeling/model/yolov4-tiny-416.names
-    model_trt: ./source/modeling/model/yolov4-tiny-416.dont-sync.trt
-    frame_save_location: ./source/modeling/_tests/test.nosync.png
-    #aiming
-    R_test_image: ./source/_test_data/mask_R_blur.png
-    rune_test_video: ./source/_test_data/rune3.mp4
+environment_parameters:
+    laptop:
+        model:
+            hardware_acceleration: null
+    
+    gpu_laptop:
+        model:
+            hardware_acceleration: "gpu"
+    
+    tx2:
+        model:
+            hardware_acceleration: "tensor_rt"
+        embedded_communication:
+            # serial_port: "/dev/ttyACM0" # USB serial
+            serial_port: "/dev/ttyTHS2" # UART serial
+    
+    xavier:
+        model:
+            hardware_acceleration: "tensor_rt"
+        embedded_communication:
+            serial_port: "/dev/ttyTHS0" # UART serial 0 works but try 1
+        
