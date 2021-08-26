@@ -1,6 +1,7 @@
 import cv2
 import time
 from filter import Filter
+
 tracker = cv2.TrackerMedianFlow_create()
 video = cv2.VideoCapture("test.mp4")
 ok, frame = video.read()
@@ -10,6 +11,7 @@ ok = tracker.init(frame, bbox)
 last_predicted_pt=None
 t = 0.1
 filter = Filter(t)
+
 while True:
     # Read a new frame
     ok, frame = video.read()

@@ -6,23 +6,23 @@ import numpy as np
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 from toolbox.image_tools import Image
 from toolbox.video_tools import Video
-from source.main import setup
+from main import setup
 
 # 
 # import simulated inputs/outputs
 # 
 
 # simulated video
-import source.videostream._tests.get_next_video_frame as nextVideoFrame
-import source.videostream._tests.get_latest_video_frame as latestVideoFrame
+import subsystems.videostream._tests.get_next_video_frame as next_video_frame
+import subsystems.videostream._tests.get_latest_video_frame as latest_video_frame
 # simulated embedded output
-from source.embedded_communication._tests.simulated_output import send_output as simulated_send_output
+from subsystems.embedded_communication._tests.simulated_output import send_output as simulated_send_output
 # simulated modeling
-import source.modeling._tests.test_modeling as test_modeling
+import subsystems.modeling._tests.test_modeling as test_modeling
 # simulated tracking
-import source.tracking._tests.test_tracking as test_tracking
+import subsystems.tracking._tests.test_tracking as test_tracking
 # simulated aiming 
-import source.aiming.filter as test_aiming
+import subsystems.aiming.filter as test_aiming
 
 #
 # debugger option #1
@@ -36,17 +36,12 @@ def debug_each_frame(frame_index, frame, model_ouput, aiming_output):
         
     # extract the output
     boxes, confidences = model_ouput
-    hAngle, vAngle = aiming_output
+    h_angle, v_angle = aiming_output
     
     # Display angle between center and bounding box in radians
-    # if hAngle is not None and vAngle is not None:
-    #     text                   = "ANGLE: "+str(np.round(hAngle,2))+" "+str(np.round(vAngle,2))
-    #     font                   = cv2.FONT_HERSHEY_SIMPLEX
-    #     bottomLeftCornerOfText = (10,500)
-    #     fontScale              = 1
-    #     fontColor              = (255,255,255)
-    #     lineType               = 2
-    #     cv2.putText(frame,text,bottomLeftCornerOfText,font,fontScale,fontColor,lineType)
+    # if h_angle is not None and v_angle is not None:
+    #     from toolbox.image_tools import add_text
+    #     add_text(text="ANGLE: "+str(np.round(h_angle,2))+" "+str(np.round(v_angle,2)), location=(10,500), image=frame)
 
     # load/show the image
     image = Image(frame)
@@ -66,17 +61,18 @@ status =  PARAMETERS['videostream']['testing']['grab_frame']# 0 means grab next 
 path = PATHS["main_test_video"]
 get_frame = None
 if status == 0:
-    get_frame = nextVideoFrame.nextFromVideo(path)
+    get_frame = next_video_frame.NextFromVideo(path)
 elif status == 1:
-    get_frame = latestVideoFrame.latestFromVideo(path)
+    get_frame = latest_video_frame.LatestFromVideo(path)
 
 # 
 # setup main(s)
 # 
 simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(
+    team_color=PARAMETERS["embedded_communication"]["team_color"],
     # comment out lines (arguments) below to get closer
     # and closer to realistic output
-    get_frame = get_frame.getFrame, 
+    get_frame = get_frame.get_frame, 
     on_next_frame=debug_each_frame,
     modeling=test_modeling,
     tracker=test_tracking,

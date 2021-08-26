@@ -10,7 +10,7 @@ vertical_fov = PARAMETERS['aiming']['vertical_fov']
 stream_height = PARAMETERS['aiming']['stream_height']
 barrel_camera_gap = PARAMETERS['aiming']['barrel_camera_gap']
 
-def visualizeDepthFrame(depth_frame_array):
+def visualize_depth_frame(depth_frame_array):
     """
     Displays a depth frame in a visualized color format.
 
@@ -28,7 +28,7 @@ def visualizeDepthFrame(depth_frame_array):
     if key & 0xFF == ord('q') or key == 27:
         cv2.destroyAllWindows()
     
-def getDistFromArray(depth_frame_array, bbox):
+def get_dist_from_array(depth_frame_array, bbox):
     """
     Determines the depth of a bounding box by choosing and filtering the depths of specific points in the bounding box.
 
@@ -42,7 +42,7 @@ def getDistFromArray(depth_frame_array, bbox):
         y_top_left = bbox[1]
         width = bbox[2]
         height = bbox[3]
-        # this is used to add to the currentX and currentY so that we can get the different points in the 9x9 grid
+        # this is used to add to the current_x and current_y so that we can get the different points in the 9x9 grid
         x_interval = width/grid_size
         y_interval = height/grid_size
         # stores the x and y of the last point in the grid we got the distance from
@@ -80,7 +80,7 @@ def getDistFromArray(depth_frame_array, bbox):
 
 
 # bbox[x coordinate of the top left of the bounding box, y coordinate of the top left of the bounding box, width of box, height of box]
-def WorldCoordinate(depth_frame, bbox):
+def world_coordinate(depth_frame, bbox):
     """
     Returns an estimate in position relative to the world.
 
@@ -90,16 +90,16 @@ def WorldCoordinate(depth_frame, bbox):
     if not depth_frame:                     # if there is no aligned_depth_frame or color_frame then leave the loop
         return None
     # depth_intrin = depth_frame.profile.as_video_stream_profile().intrinsics
-    depth_value = getDistFromArray(depth_frame)
+    depth_value = get_dist_from_array(depth_frame)
     # depth_pixel = [depth_intrin.ppx, depth_intrin.ppy]
     # depth_pixel = [bbox[0] + .5 * bbox[2], bbox[1] + .5 * bbox[3]]
     depth_point =   rs.deproject_pixel_to_point(bbox, depth_value)
     return depth_point
 
-def PixelCoordinate(point):
+def pixel_coordinate(point):
     return rs.project_point_to_pixel(point)
 
-def bulletDrop(radius, total_angle, proj_velocity, gimbal_pitch, time_interval):    
+def bullet_drop(radius, total_angle, proj_velocity, gimbal_pitch, time_interval):    
     """
     Determines the bullet offset due to bullet drop and camera offset from shooter.
     Fails due to not including all variables.
@@ -112,7 +112,7 @@ def bulletDrop(radius, total_angle, proj_velocity, gimbal_pitch, time_interval):
     drop = geometric_height - physical_height   # drop is a POSITIVE VALUE
     return drop
 
-def bulletDropCompensation(depth_image, best_bounding_box, depth_amount, center, phi):
+def bullet_drop_compensation(depth_image, best_bounding_box, depth_amount, center, phi):
     """
     Determines the bullet offset due to bullet drop and camera offset from shooter.
     Utilizes theory and math.
@@ -123,38 +123,38 @@ def bulletDropCompensation(depth_image, best_bounding_box, depth_amount, center,
     if phi is None:
         return 0
 
-    diffC =   stream_height/2  - (best_bounding_box[1] + 0.5* best_bounding_box[3])# pixels
-    theta = math.atan((diffC/stream_height/2) * math.tan(vertical_fov/2 * math.pi/180)) # theta in 
-    diffC = depth_amount * math.tan(theta) # convert diffC to meters
+    diff_c =   stream_height/2  - (best_bounding_box[1] + 0.5* best_bounding_box[3])# pixels
+    theta = math.atan((diff_c/stream_height/2) * math.tan(vertical_fov/2 * math.pi/180)) # theta in 
+    diff_c = depth_amount * math.tan(theta) # convert diff_c to meters
 
-    depthFromPivot = length_barrel + depth_amount
+    depth_from_pivot = length_barrel + depth_amount
 
-    diffP = float(diffC) + float(camera_gap)
-    rho = math.atan(diffP/depthFromPivot)
+    diff_p = float(diff_c) + float(camera_gap)
+    rho = math.atan(diff_p/depth_from_pivot)
     psi = phi + rho
-    rangeP = depthFromPivot/math.cos(rho)
-    i = rangeP * math.cos(psi)
-    j = rangeP * math.sin(psi)
+    range_p = depth_from_pivot/math.cos(rho)
+    i = range_p * math.cos(psi)
+    j = range_p * math.sin(psi)
     c = length_barrel * math.sin(psi)
     e = length_barrel * math.cos(psi)
-    # t = 1.05*rangeP/bullet_velocity
+    # t = 1.05*range_p/bullet_velocity
     t = (i - e)/(bullet_velocity * math.cos(psi))
 
 
-    psiF = math.asin((j-c-4.9*t**2) / (bullet_velocity*t) )
-    # c = length_barrel * math.sin(psiF)
-    # e = length_barrel * math.cos(psiF)
-    # tF = (i - e)/(bullet_velocity * math.cos(psiF))
-    # psiF = math.asin((j-c-4.9*tF**2) / (bullet_velocity*tF) )
+    psi_f = math.asin((j-c-4.9*t**2) / (bullet_velocity*t) )
+    # c = length_barrel * math.sin(psi_f)
+    # e = length_barrel * math.cos(psi_f)
+    # t_f = (i - e)/(bullet_velocity * math.cos(psi_f))
+    # psi_f = math.asin((j-c-4.9*t_f**2) / (bullet_velocity*t_f) )
 
-    jCheck = (length_barrel * math.sin(psiF)) + ((i - (length_barrel * math.cos(psiF)))/(math.cos(psiF))) * math.sin(psiF) + 4.9 * ((i - (length_barrel * math.cos(psiF)))/(bullet_velocity * math.cos(psiF)))**2
-    print("j: ", j, " jCheck: ", jCheck)
-    changePsi = psiF - psi
-    changeP = stream_height/2/math.tan(vertical_fov/2*math.pi/180)*math.tan(changePsi)
+    j_check = (length_barrel * math.sin(psi_f)) + ((i - (length_barrel * math.cos(psi_f)))/(math.cos(psi_f))) * math.sin(psi_f) + 4.9 * ((i - (length_barrel * math.cos(psi_f)))/(bullet_velocity * math.cos(psi_f)))**2
+    print("j: ", j, " j_check: ", j_check)
+    change_psi = psi_f - psi
+    change_p = stream_height/2/math.tan(vertical_fov/2*math.pi/180)*math.tan(change_psi)
     
-    return changeP
+    return change_p
 
-def bulletDropCompensation2(depth_amount, gimbal_pitch, v_angle, proj_velocity = bullet_velocity):
+def bullet_drop_compensation2(depth_amount, gimbal_pitch, v_angle, proj_velocity = bullet_velocity):
     """
     Determines the bullet offset due to bullet drop and camera offset from shooter.
     Utilizes theory and math.
@@ -168,7 +168,7 @@ def bulletDropCompensation2(depth_amount, gimbal_pitch, v_angle, proj_velocity =
     time_interval = (radius * math.cos(total_angle)) / (proj_velocity * math.cos(gimbal_pitch))
     geometric_height = radius * math.sin(total_angle)
 
-    current_drop = bulletDrop(radius, total_angle, proj_velocity, gimbal_pitch, time_interval)
+    current_drop = bullet_drop(radius, total_angle, proj_velocity, gimbal_pitch, time_interval)
 
     new_height = geometric_height + current_drop
     horizontal_dist = radius * math.cos(total_angle)
@@ -178,7 +178,7 @@ def bulletDropCompensation2(depth_amount, gimbal_pitch, v_angle, proj_velocity =
     new_total_angle = math.atan2(horizontal_dist * math.tan(total_angle) + new_height, horizontal_dist)
     new_time_interval = (new_radius * math.cos(new_total_angle)) / (proj_velocity * math.cos(new_gimbal_pitch))
 
-    future_drop = bulletDrop(new_radius, new_total_angle, proj_velocity, new_gimbal_pitch, new_time_interval)
+    future_drop = bullet_drop(new_radius, new_total_angle, proj_velocity, new_gimbal_pitch, new_time_interval)
 
     error = geometric_height - (new_height - future_drop)   # future drop is + and new_height is -
     final_height = new_height - error
@@ -186,7 +186,7 @@ def bulletDropCompensation2(depth_amount, gimbal_pitch, v_angle, proj_velocity =
     final_gimbal_pitch = math.atan2(final_height, horizontal_dist)
     return final_gimbal_pitch
 
-def bulletOffsetCompensation(depth_amount):
+def bullet_offset_compensation(depth_amount):
     """
     Determines the bullet offset due to bullet drop and camera offset from shooter.
     Utilizes a function fitted from varying depth amounts.

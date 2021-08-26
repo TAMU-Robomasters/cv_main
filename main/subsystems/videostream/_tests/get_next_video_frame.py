@@ -6,11 +6,11 @@ from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 # 
 # initilize
 # 
-class nextFromVideo:
+class NextFromVideo:
     def __init__(self,path):
         test_video = Video(path)
         self.frame_generator = test_video.frames()
-    def getFrame(self):
+    def get_frame(self):
         try:
             return self.frame_generator.__next__()
         except StopIteration:

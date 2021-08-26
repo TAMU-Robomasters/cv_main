@@ -16,9 +16,9 @@ should_use_gpu       = hardware_acceleration == 'gpu'
 # enable certain imports if tensorRT is enabled to prevent crashes in case it is not enabled
 if should_use_tensor_rt:
     import pycuda.autoinit  # This is needed for initializing CUDA driver
-    from source.modeling.yolo_with_plugins import TrtYOLO
+    from modeling.yolo_with_plugins import TrtYOLO
 
-class modelingClass:
+class ModelingClass:
     def __init__(self,team_color):
         self.input_dimension = PARAMETERS['model']['input_dimension']
         print("[INFO] loading YOLO from disk...")
@@ -89,8 +89,8 @@ class modelingClass:
             for i in range(len(boxes)):
                 if confidences[i] >= iconfidence:
                     box = boxes[i]
-                    newBox = [box[0],box[1],abs(box[2]-box[0]),abs(box[3]-box[1])]
-                    new_boxes.append(newBox)
+                    new_box = [box[0],box[1],abs(box[2]-box[0]),abs(box[3]-box[1])]
+                    new_boxes.append(new_box)
                     new_confidences.append(confidences[i])
                     new_class_ids.append(class_ids[i])
 
@@ -106,17 +106,17 @@ class modelingClass:
             
             # provide input and retrive output
             self.net.setInput(blob)
-            layerOutputs = self.net.forward(self.output_layer_names)
+            layer_outputs = self.net.forward(self.output_layer_names)
 
             # loop over each of the layer outputs
-            for output in layerOutputs:
+            for output in layer_outputs:
                 # loop over each of the detections
                 for detection in output:
                     # extract the class ID and confidence (i.e., probability)
                     # of the current object detection
                     scores = detection[5:]
-                    classID = np.argmax(scores)
-                    confidence = scores[classID]
+                    class_id = np.argmax(scores)
+                    confidence = scores[class_id]
 
                     # filter out weak predictions by ensuring the detected
                     # probability is greater than the minimum probability
@@ -127,19 +127,19 @@ class modelingClass:
                         # the bounding box followed by the boxes' width and
                         # height
                         box = detection[0:4] * np.array([self.W,self. H, self.W, self.H])
-                        (centerX, centerY, width, height) = box.astype("int")
+                        (center_x, center_y, width, height) = box.astype("int")
 
                         # use the center (x, y)-coordinates to derive the top
                         # and and left corner of the bounding box
-                        x = int(centerX - (width / 2))
-                        y = int(centerY - (height / 2))
+                        x = int(center_x - (width / 2))
+                        y = int(center_y - (height / 2))
 
                         # update our list of bounding box coordinates,
                         # confidences, and class IDs
                         boxes.append([x, y, int(width), int(height)])
 
                         confidences.append(float(confidence))
-                        class_ids.append(classID)
+                        class_ids.append(class_id)
 
         return boxes, confidences, class_ids
         

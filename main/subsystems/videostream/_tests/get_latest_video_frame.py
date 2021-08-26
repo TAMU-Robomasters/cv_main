@@ -3,7 +3,7 @@ import time
 from toolbox.video_tools import Video
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 
-class latestFromVideo:
+class LatestFromVideo:
     def __init__(self,path):
         test_video = Video(path)
         print('Loading all frames into ram for simulated testing')
@@ -13,7 +13,7 @@ class latestFromVideo:
         self.framerate = PARAMETERS["videostream"]["testing"]["assumed_framerate"]
         self.usedFrames = set([])
 
-    def getFrame(self):
+    def get_frame(self):
         # kick of the start time if hasn't started yet
         if self.start_time == None:
             self.start_time = time.time()
@@ -38,7 +38,7 @@ class latestFromVideo:
 # 
 if __name__ == '__main__':
     print('ENVIRONMENT = ', ENVIRONMENT)
-    video = latestFromVideo()
+    video = LatestFromVideo()
     first_frame = video.get_latest_video_frame()
     seconds_of_wait_time = 2
     time.sleep(seconds_of_wait_time)

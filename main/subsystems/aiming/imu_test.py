@@ -8,7 +8,7 @@ config.enable_stream(rs.stream.accel,rs.format.motion_xyz32f,200)
 config.enable_stream(rs.stream.gyro,rs.format.motion_xyz32f,200)
 profile = pipeline.start(config)
 
-def DistanceInBox(bbox):
+def distance_in_box(bbox):
     try:
         
         # "global variables"

@@ -38,11 +38,11 @@ class VideoStream(threading.Thread):
         """
         Continuously read and save current input from camera
         """
-        cam=cv2.VideoCapture(self.input_source)
+        cam = cv2.VideoCapture(self.input_source)
         while True:
             # Wait for a coherent pair of frames: depth and color
             ok, frame = cam.read()
-            self.frame=frame
+            self.frame = frame
             print(self.frame.shape)
             
             cv2.waitKey(1)

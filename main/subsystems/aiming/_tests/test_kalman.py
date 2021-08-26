@@ -2,19 +2,19 @@ import time
 import numpy as np
 import sys
 import cv2
-import source.aiming.filter as f
-import source.aiming.depth_camera as dc
+import subsystems.aiming.filter as f
+import subsystems.aiming.depth_camera as dc
 
 # relative imports
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
 
-npyFramesLocation = PATHS['npy_frames']
-streamWidth = PARAMETERS['aiming']['stream_width']
-streamHeight = PARAMETERS['aiming']['stream_height']
-kalmanVideoPath = PATHS['kalman_video']
+npy_frames_location = PATHS['npy_frames']
+stream_width = PARAMETERS['aiming']['stream_width']
+stream_height = PARAMETERS['aiming']['stream_height']
+kalman_video_path = PATHS['kalman_video']
 framerate = PARAMETERS['aiming']['stream_framerate']
-gridSize = PARAMETERS['aiming']['grid_size']
-modelFPS = PARAMETERS['aiming']['model_fps']
+grid_size = PARAMETERS['aiming']['grid_size']
+model_fps = PARAMETERS['aiming']['model_fps']
 
 counter = 0
 colors = []
@@ -28,12 +28,12 @@ try:
     while True: # keep getting frames until we run out
         counter+=1
         print("PROCESSING FRAME:",counter)
-        colorFrame = np.load(npyFramesLocation+"/"+str(counter)+"color.dont-sync.npy").reshape(streamHeight,streamWidth,3)
-        depthFrame = np.load(npyFramesLocation+"/"+str(counter)+"depth.dont-sync.npy").reshape(streamHeight,streamWidth)/1000
-        bbox = np.load(npyFramesLocation+"/"+str(counter)+"bbox.dont-sync.npy").flatten()
+        color_frame = np.load(npy_frames_location+"/"+str(counter)+"color.dont-sync.npy").reshape(stream_height,stream_width,3)
+        depth_frame = np.load(npy_frames_location+"/"+str(counter)+"depth.dont-sync.npy").reshape(stream_height,stream_width)/1000
+        bbox = np.load(npy_frames_location+"/"+str(counter)+"bbox.dont-sync.npy").flatten()
 
-        colors.append(colorFrame)
-        depths.append(depthFrame)
+        colors.append(color_frame)
+        depths.append(depth_frame)
         bboxs.append(bbox)
         
 except Exception as e: # this will always run since we run out of frames
@@ -44,9 +44,9 @@ finally:
 
 
     # filter = f.Filter(5)
-    # dc.visualizeDepthFrame(depths[220])
+    # dc.visualize_depth_frame(depths[220])
     depth_value = 1.0
-    filter = f.Filter(modelFPS)
+    filter = f.Filter(model_fps)
     for i in range(len(depths)):
 
         bbox = bboxs[i]
@@ -60,19 +60,19 @@ finally:
             print("INVALID BBOX INVALID BBOX INVALID BBOX",i)
             continue
         
-        # depth_value = dc.getDistFromArray(depth, bbox, gridSize)
+        # depth_value = dc.get_dist_from_array(depth, bbox, grid_size)
         
         X = filter.predict([bbox[0]+bbox[2]/2, bbox[1]+bbox[3]/2, depth_value])
         preds.append(np.array([X[0]-bbox[2]/2, X[1]-bbox[3]/2, bbox[2], bbox[3]]))
         print("0.033:",X)
         depth_value += 0.2
         # time = dc.travelTime(depth_value)
-        # X0_5 = filter.timePredict(0.5)
+        # X0_5 = filter.time_predict(0.5)
         # preds_0_5.append(np.array([X0_5[0]-bbox[2]/2, X0_5[2]-bbox[3]/2, bbox[2], bbox[3]]))
 
         # # 1 second filter
 
-        # X1 = filter.timePredict(1)
+        # X1 = filter.time_predict(1)
         # preds_1.append(np.array([X1[0]-bbox[2]/2, X1[2]-bbox[3]/2, bbox[2], bbox[3]]))
 
 
@@ -83,8 +83,8 @@ finally:
 
 
     # debug and video, the current video will be outputted named kalman video so you can see
-    frame_dimensions = (streamWidth, streamHeight)
-    colorwriter = cv2.VideoWriter(kalmanVideoPath, cv2.VideoWriter_fourcc(*'mp4v'), framerate, frame_dimensions)
+    frame_dimensions = (stream_width, stream_height)
+    colorwriter = cv2.VideoWriter(kalman_video_path, cv2.VideoWriter_fourcc(*'mp4v'), framerate, frame_dimensions)
 
     for loc in range(len(colors)):
         frame = colors[loc]

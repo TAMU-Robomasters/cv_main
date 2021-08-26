@@ -19,38 +19,38 @@ import collections
 
 # relative imports
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
-from source.embedded_communication.embedded_main import embedded_communication
-import source.modeling._tests.test_modeling as test_modeling
-import source.tracking._tests.test_tracking as test_tracking
-import source.aiming.depth_camera as cameraMethods
+from subsystems.embedded_communication.embedded_main import embedded_communication
+import subsystems.modeling._tests.test_modeling as test_modeling
+import subsystems.tracking._tests.test_tracking as test_tracking
+import subsystems.aiming.depth_camera as camera_methods
 
 # import parameters from the info.yaml file
-confidence = PARAMETERS["model"]["confidence"]
-threshold = PARAMETERS["model"]["threshold"]
+confidence      = PARAMETERS["model"]["confidence"]
+threshold       = PARAMETERS["model"]["threshold"]
 model_frequency = PARAMETERS["model"]["frequency"]
 
-modelFPS = PARAMETERS['aiming']['model_fps']
-gridSize = PARAMETERS['aiming']['grid_size']
-horizontalFOV = PARAMETERS['aiming']['horizontal_fov']
-verticalFOV = PARAMETERS['aiming']['vertical_fov']
-streamWidth = PARAMETERS['aiming']['stream_width']
-streamHeight = PARAMETERS['aiming']['stream_height']
-framerate = PARAMETERS['aiming']['stream_framerate']
-horizontal_fov = PARAMETERS['aiming']['horizontal_fov']
-vertical_fov = PARAMETERS['aiming']['vertical_fov']
-std_buffer_size = PARAMETERS['aiming']['std_buffer_size']
+model_fps        = PARAMETERS['aiming']['model_fps']
+grid_size        = PARAMETERS['aiming']['grid_size']
+horizontal_fov   = PARAMETERS['aiming']['horizontal_fov']
+vertical_fov     = PARAMETERS['aiming']['vertical_fov']
+stream_width     = PARAMETERS['aiming']['stream_width']
+stream_height    = PARAMETERS['aiming']['stream_height']
+framerate        = PARAMETERS['aiming']['stream_framerate']
+horizontal_fov   = PARAMETERS['aiming']['horizontal_fov']
+vertical_fov     = PARAMETERS['aiming']['vertical_fov']
+std_buffer_size  = PARAMETERS['aiming']['std_buffer_size']
 heat_buffer_size = PARAMETERS['aiming']['heat_buffer_size']
-rate_of_fire = PARAMETERS['aiming']['rate_of_fire']
-idle_counter = PARAMETERS['aiming']['idle_counter']
-std_error_bound = PARAMETERS['aiming']['std_error_bound']
-min_range = PARAMETERS['aiming']['min_range']
-max_range = PARAMETERS['aiming']['max_range']
+rate_of_fire     = PARAMETERS['aiming']['rate_of_fire']
+idle_counter     = PARAMETERS['aiming']['idle_counter']
+std_error_bound  = PARAMETERS['aiming']['std_error_bound']
+min_range        = PARAMETERS['aiming']['min_range']
+max_range        = PARAMETERS['aiming']['max_range']
 
-grabFrame = PARAMETERS['videostream']['testing']['grab_frame']
+grab_frame      = PARAMETERS['videostream']['testing']['grab_frame']
 record_interval = PARAMETERS['videostream']['testing']['record_interval']
-withGUI = PARAMETERS['testing']['open_each_frame']
+with_gui        = PARAMETERS['testing']['open_each_frame']
 
-colorVideoLocation = PATHS['record_video_output_color']
+color_video_location = PATHS['record_video_output_color']
 
 def setup(
         team_color,
@@ -89,22 +89,22 @@ def setup(
         # Returns the distance between two points
         return distance
     
-    def angleFromCenter(xBboxCenter,yBboxCenter,xCamCenter,yCamCenter):
+    def angle_from_center(x_bbox_center, y_bbox_center, x_cam_center, y_cam_center):
         """
         Returns the x and y angles between the center of the image and the center of a bounding box.
 
-        We send xCamCenter and yCamCenter instead of importing 
+        We send x_cam_center and y_cam_center instead of importing 
         from info.yaml since recorded video footage could be different resolutions.
 
         Input: Bounding box and camera center components.
         Output: Horizontal and vertical angle in radians.
         """
-        horizontal_angle = ((xBboxCenter-xCamCenter)/xCamCenter)*(horizontal_fov/2)
-        vertical_angle = ((yBboxCenter-yCamCenter)/yCamCenter)*(vertical_fov/2)
+        horizontal_angle = ((x_bbox_center-x_cam_center)/x_cam_center)*(horizontal_fov/2)
+        vertical_angle = ((y_bbox_center-y_cam_center)/y_cam_center)*(vertical_fov/2)
 
         return math.radians(horizontal_angle),math.radians(vertical_angle)
 
-    def updateCircularBuffers(x_circular_buffer,y_circular_buffer,prediction):
+    def update_circular_buffers(x_circular_buffer,y_circular_buffer,prediction):
         """
         Update circular buffers with latest prediction and recalculate accuracy through standard deviation.
 
@@ -119,7 +119,7 @@ def setup(
 
         return x_std, y_std
     
-    def getOptimalBoundingBox(boxes,confidences,center):
+    def get_optimal_bounding_box(boxes,confidences,center):
         """
         Decide the single best bounding box to aim at using a score system.
 
@@ -130,12 +130,12 @@ def setup(
         best_bounding_box = boxes[0]
         best_score = 0
         cf = 0
-        normalizationConstant = distance((center[0]*2,center[1]*2),(center[0],center[1])) # Find constant used to scale distance part of score to 1
+        normalization_constant = distance((center[0]*2,center[1]*2),(center[0],center[1])) # Find constant used to scale distance part of score to 1
 
         # Sequentially iterate through all bounding boxes
         for i in range(len(boxes)):
             bbox = boxes[i]
-            score = (1 - distance(center,(bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2))/ normalizationConstant) + confidences[i] # Compute score using distance and confidence
+            score = (1 - distance(center,(bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2))/ normalization_constant) + confidences[i] # Compute score using distance and confidence
 
             # Make current box the best if its score is the best so far
             if score > best_score:
@@ -145,7 +145,7 @@ def setup(
         
         return best_bounding_box, cf
 
-    def sendShoot(xstd,ystd):
+    def send_shoot(xstd,ystd):
         """
         Decide whether to shoot or not.
 
@@ -167,7 +167,7 @@ def setup(
         """
 
         frame_number = 0 # Used for on_next_frame
-        model = modeling.modelingClass(team_color) # Create instance of modeling
+        model = modeling.ModelingClass(team_color) # Create instance of modeling
         horizontal_angle = vertical_angle = x_std = y_std = depth_amount = pixel_diff = phi = cf = shoot = 0 # Initialize constants as "globals"
         reset_position_counter = 0 # Send embedded whether to reset to default position
 
@@ -215,30 +215,31 @@ def setup(
             # Continue control logic if we detected atleast a single bounding box
             if len(boxes)!=0:
                 reset_position_counter = 0
-                best_bounding_box, cf = getOptimalBoundingBox(boxes,confidences,center)
-                prediction = [best_bounding_box[0]+best_bounding_box[2]/2, best_bounding_box[1]+best_bounding_box[3]/2] # Location to shoot [xObjCenter, yObjCenter]
-                depth_amount = cameraMethods.getDistFromArray(depth_image,best_bounding_box) # Find depth from camera to robot
+                best_bounding_box, cf = get_optimal_bounding_box(boxes, confidences, center)
+                # Location to shoot [x_obj_center, y_obj_center]
+                prediction = [ best_bounding_box[0]+best_bounding_box[2]/2, best_bounding_box[1]+best_bounding_box[3]/2]
+                depth_amount = camera_methods.get_dist_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
 
                 print("Best Bounding Box",best_bounding_box)
                 print("Prediction is:",prediction)
                 print("DEPTH:",depth_amount)
 
-                # phi = embedded_communication.getPhi()
+                # phi = embedded_communication.get_phi()
                 # print("PHI:",phi)
                 # pixel_diff = 0
                 # if phi:
                 #     pixel_diff = 0 # Just here in case we comment out the next line
-                #     pixel_diff = cameraMethods.bulletDropCompensation(depth_image,best_bounding_box,depth_amount,center,phi)
+                #     pixel_diff = camera_methods.bullet_drop_compensation(depth_image,best_bounding_box,depth_amount,center,phi)
 
-                pixel_diff = cameraMethods.bulletOffsetCompensation(depth_amount)
+                pixel_diff = camera_methods.bullet_offset_compensation(depth_amount)
                 if pixel_diff is None:
                     x_circular_buffer.clear()
                     y_circular_buffer.clear()
                     pixel_diff = 0
                 prediction[1] -= pixel_diff
 
-                x_std, y_std = updateCircularBuffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
-                horizontal_angle, vertical_angle = angleFromCenter(prediction[0],center[1]*2-prediction[1],center[0],center[1]) # Determine angles to turn by in both x,y components
+                x_std, y_std = update_circular_buffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
+                horizontal_angle, vertical_angle = angle_from_center(prediction[0],center[1]*2-prediction[1],center[0],center[1]) # Determine angles to turn by in both x,y components
 
                 print("Angles calculated are horizontal_angle:",horizontal_angle,"and vertical_angle:",vertical_angle)
 
@@ -249,7 +250,7 @@ def setup(
                     shoot = embedded_communication.send_output(horizontal_angle, vertical_angle, 0)
                     shoot_circular_buffer.append(0)
                 elif len(x_circular_buffer) == std_buffer_size:
-                    send_shoot_val = sendShoot(x_std,y_std)
+                    send_shoot_val = send_shoot(x_std,y_std)
                     shoot = embedded_communication.send_output(horizontal_angle, vertical_angle,send_shoot_val)
                     shoot_circular_buffer.append(send_shoot_val)
                 else:
@@ -265,7 +266,7 @@ def setup(
                 y_circular_buffer.clear()
                 shoot_circular_buffer.append(0)
                 reset_position_counter+=1
-                embedded_communication.send_output(0, 0, 0,extra=(1 if reset_position_counter>=idle_counter else 0)) # Tell embedded to stay still 
+                embedded_communication.send_output(0, 0, 0) # Tell embedded to stay still 
                 print("No Bounding Boxes Found")
 
             # Display time taken for single iteration of loop
@@ -275,25 +276,19 @@ def setup(
 
             # Show live feed is gui is enabled
             if with_gui:
-                # Set cv2 text writing constants
-                font = cv2.FONT_HERSHEY_SIMPLEX 
-                bottomLeftCornerOfText = (10,10) 
-                fontScale = .7
-                fontColor = (255,255,255) 
-                lineType = 2
-
-                cv2.putText(color_image,"horizontal_angle: "+str(np.round(horizontal_angle,2)), (30,50) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"vertical_angle: "+str(np.round(vertical_angle,2)), (30,100) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"depth_amount: "+str(np.round(depth_amount,2)), (30,150) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"pixel_diff: "+str(np.round(pixel_diff,2)), (30,200) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"xSTD: "+str(np.round(x_std,2)), (30,250) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"ySTD: "+str(np.round(y_std,2)), (30,300) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"confidence: "+str(np.round(cf,2)), (30,350) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"FPS: "+str(np.round(1/iteration_time,2)), (30,400) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"Shoot: "+str(shoot), (30,450) , font, fontScale,fontColor,lineType)
+                from toolbox.image_tools import add_text
+                add_text(text="horizontal_angle: "+str(np.round(horizontal_angle,2)), location=(30, 50), image=color_image)
+                add_text(text="vertical_angle: "  +str(np.round(vertical_angle,2))  , location=(30,100), image=color_image)
+                add_text(text="depth_amount: "    +str(np.round(depth_amount,2))    , location=(30,150), image=color_image)
+                add_text(text="pixel_diff: "      +str(np.round(pixel_diff,2))      , location=(30,200), image=color_image)
+                add_text(text="x_std: "           +str(np.round(x_std,2))           , location=(30,250), image=color_image)
+                add_text(text="y_std: "           +str(np.round(y_std,2))           , location=(30,300), image=color_image)
+                add_text(text="confidence: "      +str(np.round(cf,2))              , location=(30,350), image=color_image)
+                add_text(text="fps: "             +str(np.round(1/iteration_time,2)), location=(30,400), image=color_image)
+                add_text(text="shoot: "           +str(shoot)                       , location=(30,450), image=color_image)
 
                 if phi:
-                    cv2.putText(color_image,"Phi: "+str(np.round(phi,2)), (30,450) , font, fontScale,fontColor,lineType)
+                    cv2.putText(color_image,"Phi: "+str(np.round(phi,2)), (30,450) , font, font_scale, font_color, line_type)
 
                 cv2.imshow("RGB Feed",color_image)
                 cv2.waitKey(10)
@@ -324,8 +319,8 @@ def setup(
         y_circular_buffer = collections.deque(maxlen=std_buffer_size)
         
         # initialize model and tracker classes
-        track = tracker.trackingClass()
-        model = modeling.modelingClass(team_color)
+        track = tracker.TrackingClass()
+        model = modeling.ModelingClass(team_color)
         kalman_filter = None
 
         while True: # Counts up infinitely starting at 0
@@ -369,14 +364,14 @@ def setup(
                 # Continue control logic if we detected atleast a single bounding box
                 if len(boxes) != 0:
                     # Get the best bounding box and initialize the tracker
-                    best_bounding_box, cf = getOptimalBoundingBox(boxes,confidences,center)
+                    best_bounding_box, cf = get_optimal_bounding_box(boxes,confidences,center)
                     if best_bounding_box:
                         best_bounding_box = track.init(color_image,tuple(best_bounding_box))
                         print("Now Tracking a New Object.")
 
                         # Reinitialize kalman filters
                         if kalman_filters:
-                            kalman_filter = aiming.Filter(modelFPS)
+                            kalman_filter = aiming.Filter(model_fps)
                             print("Reinitialized Kalman Filter.")
             else:
                 best_bounding_box = track.update(color_image) # Get new position of bounding box from tracker
@@ -386,19 +381,19 @@ def setup(
             # Continue control logic if we detected atleast a single bounding box
             if best_bounding_box is not None:
                 reset_position_counter = 0
-                prediction = [best_bounding_box[0]+best_bounding_box[2]/2,best_bounding_box[1]+best_bounding_box[3]/2] # Location to shoot [xObjCenter, yObjCenter]
+                prediction = [best_bounding_box[0]+best_bounding_box[2]/2,best_bounding_box[1]+best_bounding_box[3]/2] # Location to shoot [x_obj_center, y_obj_center]
                 print("Prediction is:",prediction)
 
                 # Comment this if branch out in case kalman filters doesn't work
                 # if kalman_filters:
-                #     prediction[1] += cameraMethods.getBulletDropPixels(depth_image,best_bounding_box)
-                    # kalmanBox = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
-                    # prediction = kalman_filter.predict(kalmanBox, frame) # figure out where to aim, returns (xObjCenter, yObjCenter)
+                #     prediction[1] += camera_methods.getBulletDropPixels(depth_image,best_bounding_box)
+                    # kalman_box = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
+                    # prediction = kalman_filter.predict(kalman_box, frame) # figure out where to aim, returns (x_obj_center, y_obj_center)
                     # print("Kalman Filter updated Prediction to:",prediction)
 
-                depth_amount = cameraMethods.getDistFromArray(depth_image,best_bounding_box) # Find depth from camera to robot
+                depth_amount = camera_methods.get_dist_from_array(depth_image,best_bounding_box) # Find depth from camera to robot
 
-                pixel_diff = cameraMethods.bulletOffsetCompensation(depth_amount)
+                pixel_diff = camera_methods.bullet_offset_compensation(depth_amount)
                 if pixel_diff is None:
                     x_circular_buffer.clear()
                     y_circular_buffer.clear()
@@ -406,8 +401,8 @@ def setup(
 
                 prediction[1] -= pixel_diff
 
-                x_std, y_std = updateCircularBuffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
-                horizontal_angle, vertical_angle = angleFromCenter(prediction[0],prediction[1],center[0],center[1]) # Determine angles to turn by in both x,y components
+                x_std, y_std = update_circular_buffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
+                horizontal_angle, vertical_angle = angle_from_center(prediction[0],prediction[1],center[0],center[1]) # Determine angles to turn by in both x,y components
                 print("Angles calculated are horizontal_angle:",horizontal_angle,"and vertical_angle:",vertical_angle)
 
                 # Send embedded the angles to turn to and the accuracy, make accuracy terrible if we dont have enough data in buffer                
@@ -416,7 +411,7 @@ def setup(
                     y_circular_buffer.clear()
                     embedded_communication.send_output(horizontal_angle, vertical_angle, 0) # Tell embedded to stay still 
                 elif len(x_circular_buffer) == std_buffer_size:
-                    send_shoot_val = sendShoot(x_std,y_std)
+                    send_shoot_val = send_shoot(x_std,y_std)
                     embedded_communication.send_output(horizontal_angle, vertical_angle, send_shoot_val)
                 else:
                     embedded_communication.send_output(horizontal_angle, vertical_angle, 0)
@@ -438,25 +433,18 @@ def setup(
 
             # Show live feed is gui is enabled
             if with_gui:
-                # Set cv2 text writing constants
-                font = cv2.FONT_HERSHEY_SIMPLEX 
-                bottomLeftCornerOfText = (10,10) 
-                fontScale = .7
-                fontColor = (255,255,255) 
-                lineType = 2
-
-                # Draw text on image
-                cv2.putText(color_image,"horizontal_angle: "+str(np.round(horizontal_angle,2)), (30,50) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"vertical_angle: "+str(np.round(vertical_angle,2)), (30,100) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"depth_amount: "+str(np.round(depth_amount,2)), (30,150) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"pixel_diff: "+str(np.round(pixel_diff,2)), (30,200) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"xSTD: "+str(np.round(x_std,2)), (30,250) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"ySTD: "+str(np.round(y_std,2)), (30,300) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"confidence: "+str(np.round(cf,2)), (30,350) , font, fontScale,fontColor,lineType)
-                cv2.putText(color_image,"FPS: "+str(np.round(1/iteration_time,2)), (30,400) , font, fontScale,fontColor,lineType)
-
+                from toolbox.image_tools import add_text
+                add_text(text="horizontal_angle: "+str(np.round(horizontal_angle,2)), location=(30, 50), image=color_image)
+                add_text(text="vertical_angle: "  +str(np.round(vertical_angle,2))  , location=(30,100), image=color_image)
+                add_text(text="depth_amount: "    +str(np.round(depth_amount,2))    , location=(30,150), image=color_image)
+                add_text(text="pixel_diff: "      +str(np.round(pixel_diff,2))      , location=(30,200), image=color_image)
+                add_text(text="x_std: "           +str(np.round(x_std,2))           , location=(30,250), image=color_image)
+                add_text(text="y_std: "           +str(np.round(y_std,2))           , location=(30,300), image=color_image)
+                add_text(text="confidence: "      +str(np.round(cf,2))              , location=(30,350), image=color_image)
+                add_text(text="fps: "             +str(np.round(1/iteration_time,2)), location=(30,400), image=color_image)
+                
                 if phi:
-                    cv2.putText(color_image,"phi: "+str(np.round(phi,2)), (30,450) , font, fontScale,fontColor,lineType)
+                    cv2.putText(color_image,"phi: "+str(np.round(phi,2)), (30,450) , font, font_scale, font_color, line_type)
 
                 cv2.imshow("feed",color_image)
                 cv2.waitKey(10)
@@ -466,7 +454,7 @@ def setup(
                 on_next_frame(frame_number, color_image, ([best_bounding_box], [1])if best_bounding_box else ([], []),(horizontal_angle,vertical_angle))
                 
     
-    def modelMulti(color_image,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames,center):
+    def model_multi(color_image, confidence, threshold, best_bounding_box, track, model, between_frames, collect_frames, center):
         # Run the model and update best bounding box to the new bounding box if it exists, otherwise keep tracking the old bounding box
         boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
         bbox = None
@@ -478,18 +466,18 @@ def setup(
             bbox = min(bboxes, key=bboxes.get)
 
         if bbox:
-            potentialbbox = track.init(color_image,bbox)
-            print(potentialbbox)
+            potential_bounding_box = track.init(color_image,bbox)
+            print(potential_bounding_box)
 
-            for f in range(len(betweenFrames)):
-                if potentialbbox is None:
+            for f in range(len(between_frames)):
+                if potential_bounding_box is None:
                     break
-                potentialbbox = track.update(betweenFrames[f])
-                print(potentialbbox)
+                potential_bounding_box = track.update(between_frames[f])
+                print(potential_bounding_box)
 
-            best_bounding_box[:] = potentialbbox if potentialbbox else [-1,-1,-1,-1]
-            betweenFrames[:] = []
-            collectFrames.value = False
+            best_bounding_box[:] = potential_bounding_box if potential_bounding_box else [-1,-1,-1,-1]
+            between_frames[:] = []
+            collect_frames.value = False
         
     def multiprocessing_with_tracker():
         """
@@ -500,18 +488,18 @@ def setup(
         # Manager is required in order to share instances of classes between processes
         class MyManager(BaseManager):
             pass
-        MyManager.register('tracker', tracker.trackingClass)
-        MyManager.register('modeling', modeling.modelingClass)
+        MyManager.register('tracker', tracker.TrackingClass)
+        MyManager.register('modeling', modeling.ModelingClass)
         manager = MyManager()
         manager.start()
 
-        realCounter = 1
+        real_counter = 1
         frame_number = 0 # used for on_next_frame
         best_bounding_box = Array('d',[-1,-1,-1,-1]) # must be of Array type to be modified by multiprocess
         process = None
-        variableManager = multiprocessing.Manager()
-        betweenFrames = variableManager.list()
-        collectFrames = Value('b',False)
+        variable_manager = multiprocessing.Manager()
+        between_frames = variable_manager.list()
+        collect_frames = Value('b',False)
 
 
         # create shared instances of tracker and model between multiprocesses
@@ -536,9 +524,9 @@ def setup(
                     continue
                 color_image = frame
 
-            if collectFrames.value:
-                betweenFrames.append(color_image)
-            realCounter+=1
+            if collect_frames.value:
+                between_frames.append(color_image)
+            real_counter+=1
             frame_number+=1
 
             # Finds the coordinate for the center of the screen
@@ -547,25 +535,25 @@ def setup(
             # run model if there is no current bounding box in another process
             if best_bounding_box[:] == [-1,-1,-1,-1]:
                 if process is None or process.is_alive()==False:
-                    collectFrames.value = True
-                    process = Process(target=modelMulti,args=(color_image,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames,center))
+                    collect_frames.value = True
+                    process = Process(target=model_multi, args=(color_image, confidence, threshold, best_bounding_box, track, model, between_frames, collect_frames, center))
                     process.start() 
-                    realCounter=1
+                    real_counter=1
 
             else:
             # run model in another process every model_frequency frames
-                if realCounter % model_frequency == 0:
+                if real_counter % model_frequency == 0:
                     # call model and initialize tracker
                     if process is None or process.is_alive()==False:
-                        collectFrames.value = True
-                        process = Process(target=modelMulti,args=(color_image,confidence,threshold,best_bounding_box,track,model,betweenFrames,collectFrames,center))
+                        collect_frames.value = True
+                        process = Process(target=model_multi,args=(color_image, confidence, threshold, best_bounding_box, track, model, between_frames, collect_frames, center))
                         process.start() 
                 
                 #track bounding box, even if we are modeling for a new one
-                if track.trackerAlive():
+                if track.tracker_alive():
                     try:
-                        potentialbbox = track.update(color_image)
-                        best_bounding_box[:] = potentialbbox if potentialbbox else [-1,-1,-1,-1]
+                        potential_bounding_box = track.update(color_image)
+                        best_bounding_box[:] = potential_bounding_box if potential_bounding_box else [-1,-1,-1,-1]
                     except:
                         best_bounding_box[:] = [-1,-1,-1,-1]
                 else:
@@ -573,12 +561,12 @@ def setup(
 
             # figure out where to aim
             if testing == False:
-                z0 = cameraMethods.getDistFromArray(depth_image,best_bounding_box,gridSize)
-                kalmanBox = [best_bounding_box[0],best_bounding_box[1],z0] # Put data into format the kalman filter asks for
-                prediction = kalman_filter.predict(kalmanBox) # figure out where to aim
+                z0 = camera_methods.get_dist_from_array(depth_image,best_bounding_box,grid_size)
+                kalman_box = [best_bounding_box[0],best_bounding_box[1],z0] # Put data into format the kalman filter asks for
+                prediction = kalman_filter.predict(kalman_box) # figure out where to aim
             
                 # send data to embedded
-                horizontal_angle, vertical_angle = angleFromCenter(prediction[0],prediction[1],center[0],center[1],horizontalFOV,verticalFOV) # (xObj,yObj,xCam/2,yCam/2,hFov,vFov)
+                horizontal_angle, vertical_angle = angle_from_center(prediction[0],prediction[1],center[0],center[1],horizontal_fov,vertical_fov) # (x_obj,y_obj,x_cam/2,y_cam/2,h_fov,v_fov)
                 embedded_communication.send_output(horizontal_angle, vertical_angle)
 
             # optional value for debugging/testing
@@ -590,7 +578,7 @@ def setup(
     # return a list of the different main options
     return simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker
     
-def beginVideoRecording():
+def begin_video_recording():
     """
     Run live video recording using nvenc.
 
@@ -599,15 +587,15 @@ def beginVideoRecording():
     """
 
     # Setup video output path based on date and counter
-    c=1
-    filePath = colorVideoLocation.replace(".dont-sync",datetime.datetime.now().strftime("%Y-%m-%d")+"_"+str(c)+".dont-sync")
-    while os.path.isfile(filePath):
-        c+=1
-        filePath = colorVideoLocation.replace(".dont-sync",datetime.datetime.now().strftime("%Y-%m-%d")+"_"+str(c)+".dont-sync")
+    c = 1
+    file_path = color_video_location.replace(".dont-sync",datetime.datetime.now().strftime("%Y-%m-%d")+"_"+str(c)+".dont-sync")
+    while os.path.isfile(file_path):
+        c += 1
+        file_path = color_video_location.replace(".dont-sync",datetime.datetime.now().strftime("%Y-%m-%d")+"_"+str(c)+".dont-sync")
 
     # Start up video output
-    gst_out = "appsrc ! video/x-raw, format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc ! h264parse ! matroskamux ! filesink location="+filePath
-    video_output = cv2.VideoWriter(gst_out, cv2.CAP_GSTREAMER, 0, float(framerate), (int(streamWidth), int(streamHeight)))
+    gst_out = "appsrc ! video/x-raw, format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc ! h264parse ! matroskamux ! filesink location="+file_path
+    video_output = cv2.VideoWriter(gst_out, cv2.CAP_GSTREAMER, 0, float(framerate), (int(stream_width), int(stream_height)))
     if not video_output.isOpened():
         print("Failed to open output")
 
@@ -615,16 +603,16 @@ def beginVideoRecording():
 
 if __name__ == '__main__':
     # Relative imports here since pyrealsense requires camera to be plugged in or code will crash
-    import source.videostream._tests.get_live_video_frame as liveVideo
-    import source.aiming.filter as test_aiming
+    import videostream._tests.get_live_video_frame as live_video
+    import aiming.filter as test_aiming
 
-    camera = liveVideo.liveFeed()
+    camera = live_video.LiveFeed()
     video_output = None
 
     try:
         # Setup video recording configuration if enabled
         if record_interval>0:
-            video_output = beginVideoRecording()
+            video_output = begin_video_recording()
 
         # GPIO Based Team Color Decision Making
         # led_pin = 12

@@ -66,7 +66,7 @@ class EmbeddedCommunication:
         if self.port is not None:
             return self.port.readline()
 
-    def getPhi(self):
+    def get_phi(self):
         """
         Read phi value sent from dev board.
 

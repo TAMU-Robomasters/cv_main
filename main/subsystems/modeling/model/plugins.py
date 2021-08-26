@@ -150,14 +150,14 @@ def add_yolo_plugins(network, model_name, num_classes, logger):
         new_tensors[i] = network.add_plugin_v2(
             [old_tensor],
             plugin_creator.create_plugin('YoloLayer_TRT', trt.PluginFieldCollection([
-                trt.PluginField("yoloWidth", np.array(yolo_whs[i][0], dtype=np.int32), trt.PluginFieldType.INT32),
-                trt.PluginField("yoloHeight", np.array(yolo_whs[i][1], dtype=np.int32), trt.PluginFieldType.INT32),
-                trt.PluginField("inputMultiplier", np.array(input_multiplier, dtype=np.int32), trt.PluginFieldType.INT32),
-                trt.PluginField("newCoords", np.array(new_coords, dtype=np.int32), trt.PluginFieldType.INT32),
-                trt.PluginField("numClasses", np.array(num_classes, dtype=np.int32), trt.PluginFieldType.INT32),
-                trt.PluginField("numAnchors", np.array(len(anchors[i]) // 2, dtype=np.int32), trt.PluginFieldType.INT32),
+                trt.PluginField("yolo_width", np.array(yolo_whs[i][0], dtype=np.int32), trt.PluginFieldType.INT32),
+                trt.PluginField("yolo_height", np.array(yolo_whs[i][1], dtype=np.int32), trt.PluginFieldType.INT32),
+                trt.PluginField("input_multiplier", np.array(input_multiplier, dtype=np.int32), trt.PluginFieldType.INT32),
+                trt.PluginField("new_coords", np.array(new_coords, dtype=np.int32), trt.PluginFieldType.INT32),
+                trt.PluginField("num_classes", np.array(num_classes, dtype=np.int32), trt.PluginFieldType.INT32),
+                trt.PluginField("num_anchors", np.array(len(anchors[i]) // 2, dtype=np.int32), trt.PluginFieldType.INT32),
                 trt.PluginField("anchors", np.ascontiguousarray(anchors[i], dtype=np.float32), trt.PluginFieldType.FLOAT32),
-                trt.PluginField("scaleXY", np.array(scales[i], dtype=np.float32), trt.PluginFieldType.FLOAT32),
+                trt.PluginField("scale_xy", np.array(scales[i], dtype=np.float32), trt.PluginFieldType.FLOAT32),
             ]))
         ).get_output(0)
 

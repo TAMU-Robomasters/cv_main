@@ -9,7 +9,6 @@ class Image(object):
         """
         @arg1: can either be a string (the path to an image file) or an ndarray (a cv2 image)
         """
-        self.face_boxes = None
         if type(arg1) == str:
             self.path = arg1
             self.img = cv2.imread(arg1)
@@ -79,3 +78,12 @@ class Image(object):
         # Draw bounding box on image
         self.img = cv2.rectangle(self.img, start, end, color, thickness)
         return self
+
+
+def add_text(*, image, text, location):
+    font = cv2.FONT_HERSHEY_SIMPLEX 
+    bottom_left_corner_of_text = (10,10) 
+    font_scale = .7
+    font_color = (255,255,255) 
+    line_type = 2
+    return cv2.putText(image, text, location, font, font_scale, font_color, line_type)

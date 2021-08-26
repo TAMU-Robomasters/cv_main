@@ -8,39 +8,39 @@ import os
 from toolbox.video_tools import Video
 from toolbox.image_tools import Image
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
-import source.modeling.modeling_main as modeling
-import source.tracking.tracking_main as tracking
-import source.videostream._tests.get_next_video_frame as nextVideoFrame
+import subsystems.modeling.modeling_main as modeling
+import subsystems.tracking.tracking_main as tracking
+import subsystems.videostream._tests.get_next_video_frame as next_video_frame
 
 os.system("mkdir -p ./source/scripts")
 
-streamWidth = PARAMETERS['aiming']['stream_width']
-streamHeight = PARAMETERS['aiming']['stream_height']
+stream_width = PARAMETERS['aiming']['stream_width']
+stream_height = PARAMETERS['aiming']['stream_height']
 framerate = PARAMETERS['aiming']['stream_framerate']
-gridSize = PARAMETERS['aiming']['grid_size']
-timeRecord = PARAMETERS['videostream']['testing']['record_time']
-colorVideoLocation = PATHS['record_video_output_color']
-npyFramesLocation = PATHS['npy_frames']
+grid_size = PARAMETERS['aiming']['grid_size']
+time_record = PARAMETERS['videostream']['testing']['record_time']
+color_video_location = PATHS['record_video_output_color']
+npy_frames_location = PATHS['npy_frames']
 confidence = PARAMETERS["model"]["confidence"]
 threshold = PARAMETERS["model"]["threshold"]
 model_frequency = PARAMETERS["model"]["frequency"]
 
-os.system("mkdir -p "+npyFramesLocation)
-os.system("rm "+npyFramesLocation+"/*")
+os.system("mkdir -p "+npy_frames_location)
+os.system("rm "+npy_frames_location+"/*")
 
 pipeline = rs.pipeline()                                            
 config = rs.config()                                                
-config.enable_stream(rs.stream.depth, streamWidth, streamHeight, rs.format.z16, framerate)  
-config.enable_stream(rs.stream.color, streamWidth, streamHeight, rs.format.bgr8, framerate) 
+config.enable_stream(rs.stream.depth, stream_width, stream_height, rs.format.z16, framerate)  
+config.enable_stream(rs.stream.color, stream_width, stream_height, rs.format.bgr8, framerate) 
 pipeline.start(config)
 
-frame_dimensions = (streamWidth, streamHeight)
-colorwriter = cv2.VideoWriter(colorVideoLocation, cv2.VideoWriter_fourcc(*'mp4v'), framerate, frame_dimensions)
+frame_dimensions = (stream_width, stream_height)
+colorwriter = cv2.VideoWriter(color_video_location, cv2.VideoWriter_fourcc(*'mp4v'), framerate, frame_dimensions)
 t0 = time.time()
 counter = 0
 
 try:
-    while (time.time()-t0)<timeRecord:
+    while (time.time()-t0)<time_record:
         counter+=1
         frames = pipeline.wait_for_frames()
         color_frame = frames.get_color_frame()
@@ -52,7 +52,7 @@ try:
         color_image = np.asanyarray(color_frame.get_data())
         depth_image = np.asanyarray(depth_frame.get_data()).flatten()
         colorwriter.write(color_image)
-        np.save(npyFramesLocation+"/"+str(counter)+"depth.dont-sync.npy",depth_image)
+        np.save(npy_frames_location+"/"+str(counter)+"depth.dont-sync.npy",depth_image)
     
         print("FRAME ORIGINAL:",counter)
 finally:
@@ -66,25 +66,25 @@ def distance(point_1: tuple, point_2: tuple):
     return distance
 
 
-model = modeling.modelingClass()
-track = tracking.trackingClass()
-colorVideo = nextVideoFrame.nextFromVideo(colorVideoLocation)
+model = modeling.ModelingClass()
+track = tracking.TrackingClass()
+color_video = next_video_frame.NextFromVideo(color_video_location)
 best_bounding_box = None
-realCounter = 0
+real_counter = 0
 counter = 0
 
-color_image = colorVideo.getFrame()
+color_image = color_video.get_frame()
 while color_image is not None:
     counter+=1
-    realCounter+=1
-    print("FRAME PROCESSING:",realCounter)
-    np.save(npyFramesLocation+"/"+str(realCounter)+"color.dont-sync.npy",color_image.flatten())
+    real_counter+=1
+    print("FRAME PROCESSING:",real_counter)
+    np.save(npy_frames_location+"/"+str(real_counter)+"color.dont-sync.npy",color_image.flatten())
     center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
 
     if counter % model_frequency == 0 or (best_bounding_box is None):
         counter = 0
         best_bounding_box = None
-        boxes, confidences, classIDs, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
+        boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
         print("MODEL")
         if len(boxes) != 0:
             print("FOUND BOX")
@@ -96,5 +96,5 @@ while color_image is not None:
     else:
         best_bounding_box = track.update(color_image)
         print("TRACKER")
-    np.save(npyFramesLocation+"/"+str(realCounter)+"bbox.dont-sync.npy",np.array(best_bounding_box if best_bounding_box else [-1,-1,-1,-1]).flatten())
-    color_image = colorVideo.getFrame()
+    np.save(npy_frames_location+"/"+str(real_counter)+"bbox.dont-sync.npy",np.array(best_bounding_box if best_bounding_box else [-1,-1,-1,-1]).flatten())
+    color_image = color_video.get_frame()

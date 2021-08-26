@@ -4,7 +4,7 @@ import cv2 # alternative: from cv2 import TrackerMOSSE_create which is a way fas
 # local imports
 from toolbox.image_tools import Image
 from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, COLOR_GREEN, print
-class trackingClass:
+class TrackingClass:
     def __init__(self):
         self.tracker =  None
     # Finds the absolute distance between two points
@@ -37,5 +37,5 @@ class trackingClass:
             self.exists = False
         # Returns the location if the location was updated, otherwise None
         return location if ok else None
-    def trackerAlive(self):
+    def tracker_alive(self):
         return self.exists

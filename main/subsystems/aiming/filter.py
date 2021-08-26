@@ -3,7 +3,7 @@ import filterpy
 from statistics import stdev
 from filterpy.kalman import KalmanFilter
 from filterpy.common import Q_discrete_white_noise
-import source.aiming.depth_camera as dc
+import subsystems.aiming.depth_camera as dc
 import pyrealsense2.pyrealsense2 as rs
 
 
@@ -50,10 +50,10 @@ class Filter():
 
         self.f.predict()
 
-    def timePredict(self, depth):
+    def time_predict(self, depth):
         return depth/26
 
-    def processIMU(self, data, frame):
+    def process_imu(self, data, frame):
 
         gyro_frame = frame.first_or_default(rs.stream.gyro)
         accel_frame = frame.first_or_default(rs.stream.accel)
@@ -141,7 +141,7 @@ class Filter():
         pos_y = int(data[1])
         pos_z = data[2]
         
-        vel_data = self.processIMU(data, frame)
+        vel_data = self.process_imu(data, frame)
         if vel_data is None:
             vel_data = [0, 0, 0, 0, 0, 0]
         
@@ -154,13 +154,13 @@ class Filter():
         X = self.f.x
         U = self.f.u
     
-        time = self.timePredict(pos_z)
+        time = self.time_predict(pos_z)
         depth_frame = frame.getDepthFrame()
-        x_in_meters = dc.WorldCoordinate(depth_frame,[X[0], X[2]])
+        x_in_meters = dc.world_coordinate(depth_frame,[X[0], X[2]])
 
         X = [x_in_meters[0] + time * (x_in_meters[1] + vel_data[0] + vel_data[3]), x_in_meters[2] + time * (x_in_meters[3] + vel_data[1] + vel_data[4]), x_in_meters[4] + time * (x_in_meters[5] + vel_data[2] + vel_data[5])]
         # X = [X[0] + time * X[1] + 0.5 * U[0] * time**2, X[2] + time * X[3] + 0.5 * U[1] * time**2, X[4] + time * X[5] + 0.5 * U[2] * time**2]
-        X = dc.PixelCoordinate(X)
+        X = dc.pixel_coordinate(X)
         location = [X[0], X[1]]
         return location
 
