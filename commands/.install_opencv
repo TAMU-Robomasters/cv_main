@@ -34,7 +34,6 @@ mkdir build && cd build
 
 # generate build files
 cmake -D CMAKE_BUILD_TYPE=RELEASE \
-<<<<<<< HEAD
 	-D CMAKE_INSTALL_PREFIX=/usr/local \
 	-D INSTALL_PYTHON_EXAMPLES=OFF \
 	-D INSTALL_C_EXAMPLES=OFF \
@@ -53,7 +52,6 @@ cmake -D CMAKE_BUILD_TYPE=RELEASE \
 	-D HAVE_opencv_python3=ON \
 	-D PYTHON_DEFAULT_EXECUTABLE=$(which python3) \
 	-D BUILD_EXAMPLES=OFF ..
-=======
     -D CMAKE_INSTALL_PREFIX=/usr/local \
     -D INSTALL_PYTHON_EXAMPLES=OFF \
     -D INSTALL_C_EXAMPLES=OFF \
@@ -76,7 +74,6 @@ cmake -D CMAKE_BUILD_TYPE=RELEASE \
 	-D PYTHON_DEFAULT_EXECUTABLE=$(which python3) \
     -D BUILD_EXAMPLES=OFF ..
 
->>>>>>> origin
 
 # build using all cores and install libraries
 make -j$(nproc)
