@@ -4,6 +4,7 @@
     tree "$PROJECTR_COMMANDS_FOLDER/project" -C --dirsfirst -A -F --noreport | sed 's/^/        /' | sed -E 's/(\*|@)$/ /' | sed "1d"
     echo 
     echo "examples:"
+    echo "    test_main"
     echo "    project clean"
     echo "    project commands"
     
