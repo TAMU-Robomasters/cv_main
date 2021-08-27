@@ -92,6 +92,10 @@ load = [ "python38Packages", "pyrealsense2",]
 from = "3f50332bc4913a56ad216ca01f5d0bd24277a6b2"
 
 [[packages]]
+load = [ "python38Packages", "numpy",]
+from = "860b56be91fb874d48e23a950815969a7b832fbc"
+
+[[packages]]
 load = [ "poetry",]
 from = "3f50332bc4913a56ad216ca01f5d0bd24277a6b2"
 
