@@ -39,6 +39,7 @@ let
             then
                 true # add important (LD_LIBRARY_PATH, PATH, etc) nix-Linux code here
                 export EXTRA_CCFLAGS="$EXTRA_CCFLAGS:-I/usr/include"
+                export LD_LIBRARY_PATH="${main.makeLibraryPath [ main.packages.glib ] }:$LD_LIBRARY_PATH"
             fi
         '';
         # for python with CUDA 
