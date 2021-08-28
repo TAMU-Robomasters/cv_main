@@ -7,20 +7,20 @@ paths:
     source_dir: ./main
     main_test_video: ./main/_tests/data/test.avi
     main_test_image: ./main/_tests/data/test.png
-    video_output: ./result.dont-sync.mp4
-    record_video_output_color: ./recorded_videos/recorded_video_with_color.dont-sync.mp4
-    kalman_video: ./kalman_video.dont-sync.mp4
+    video_output: ./result.do_not_sync.mp4
+    record_video_output_color: ./recorded_videos/recorded_video_with_color.do_not_sync.mp4
+    kalman_video: ./kalman_video.do_not_sync.mp4
     npy_frames: ./main/scripts/data1 # replace with whichever frame set you want to use in the source/scripts/data<num> directory
     # model
     model_weights: ./main/subsystems/modeling/model/yolov4-tiny-416.weights
     model_config: ./main/subsystems/modeling/model/yolov4-tiny-416.cfg
     model_labels: ./main/subsystems/modeling/model/yolov4-tiny-416.names
-    model_trt: ./main/subsystems/modeling/model/yolov4-tiny-416.dont-sync.trt
-    frame_save_location: ./main/subsystems/modeling/_tests/test.dont-sync.png
+    model_trt: ./main/subsystems/modeling/model/yolov4-tiny-416.do_not_sync.trt
+    frame_save_location: ./main/subsystems/modeling/_tests/test.do_not_sync.png
     #aiming
     R_test_image: ./main/_tests/data/mask_r_blur.png
     rune_test_video: ./main/_tests/data/rune3.mp4
-    color_depth_bbox: ./output.dont-sync.txt
+    color_depth_bbox: ./output.do_not_sync.txt
 
 # NOTE: these are overridden by environments (below)
 default_parameters:

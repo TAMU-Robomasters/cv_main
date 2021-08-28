@@ -22,9 +22,9 @@ try:
     while True: # keep getting frames until we run out
         counter+=1
         print("PROCESSING FRAME:",counter)
-        color_frame = np.load(npy_frames_location+"/"+str(counter)+"color.dont-sync.npy").reshape(stream_height,stream_width,3)
-        depth_frame = np.load(npy_frames_location+"/"+str(counter)+"depth.dont-sync.npy").reshape(stream_height,stream_width)/1000
-        bbox = np.load(npy_frames_location+"/"+str(counter)+"bbox.dont-sync.npy").flatten()
+        color_frame = np.load(npy_frames_location+"/"+str(counter)+"color.do_not_sync.npy").reshape(stream_height,stream_width,3)
+        depth_frame = np.load(npy_frames_location+"/"+str(counter)+"depth.do_not_sync.npy").reshape(stream_height,stream_width)/1000
+        bbox = np.load(npy_frames_location+"/"+str(counter)+"bbox.do_not_sync.npy").flatten()
 
         colors.append(color_frame)
         depths.append(depth_frame)

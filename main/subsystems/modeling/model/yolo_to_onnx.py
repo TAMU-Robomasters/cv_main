@@ -855,7 +855,7 @@ def main():
     weights_file_path = '%s.weights' % args.model
     if not os.path.isfile(weights_file_path):
         raise SystemExit('ERROR: file (%s) not found!' % weights_file_path)
-    output_file_path = '%s.dont-sync.onnx' % args.model
+    output_file_path = '%s.do_not_sync.onnx' % args.model
 
     if not verify_classes(args.model, args.category_num):
         raise SystemExit('ERROR: bad category_num (%d)' % args.category_num)
