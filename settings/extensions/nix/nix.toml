@@ -3,10 +3,10 @@
 # 
     # you can search for them here: https://search.nixos.org/packages
     #
-    # if you find a package like: nixpkg.python37Packages.setuptools
+    # if you find a package like: nixpkg.python38Packages.setuptools
     # then add a section like this:
     #    [[packages]]
-    #    load = [ "python37Packages", "setuptools",]
+    #    load = [ "python38Packages", "setuptools",]
     # 
     # if you need a specific version 
     # search for the package (e.g. "setuptools") on here: https://lazamar.co.uk/nix-versions/
@@ -15,7 +15,7 @@
     # once you copy the hash, you can add the package below like
     # 
     #    [[packages]]
-    #    load = [ "python37Packages", "setuptools",]
+    #    load = [ "python38Packages", "setuptools",]
     #    from = "3f50332bc4913a56ad216ca01f5d0bd24277a6b2"
 
 # 
@@ -42,27 +42,27 @@
 # 
 
 [[packages]]
-load = [ "python37",]
+load = [ "python38",]
 from = "3f50332bc4913a56ad216ca01f5d0bd24277a6b2"
 
 [[packages]]
-load = [ "python37Packages", "setuptools",]
+load = [ "python38Packages", "setuptools",]
 from = "3f50332bc4913a56ad216ca01f5d0bd24277a6b2"
 
 [[packages]]
-load = [ "python37Packages", "pip",]
+load = [ "python38Packages", "pip",]
 from = "3f50332bc4913a56ad216ca01f5d0bd24277a6b2"
 
 [[packages]]
-load = [ "python37Packages", "virtualenv",]
+load = [ "python38Packages", "virtualenv",]
 from = "3f50332bc4913a56ad216ca01f5d0bd24277a6b2"
 
 [[packages]]
-load = [ "python37Packages", "wheel",]
+load = [ "python38Packages", "wheel",]
 from = "3f50332bc4913a56ad216ca01f5d0bd24277a6b2"
 
 [[packages]]
-load = [ "python37Packages", "scipy",]
+load = [ "python38Packages", "scipy",]
 from = "3f50332bc4913a56ad216ca01f5d0bd24277a6b2"
 
 # opencv
@@ -73,11 +73,11 @@ override = { enableGtk3 = true, enableFfmpeg = true, enableCuda = false, enableU
 from = { fetchGit = { url = "https://github.com/NixOS/nixpkgs/", rev = "a332da8588aeea4feb9359d23f58d95520899e3c" }, options = { config = { allowUnfree = true } }, }
 
 [[packages]]
-load = [ "python37Packages", "pyrealsense2",]
-from = "3f50332bc4913a56ad216ca01f5d0bd24277a6b2"
+load = [ "python38Packages", "pyrealsense2",]
+from = "860b56be91fb874d48e23a950815969a7b832fbc"
 
 [[packages]]
-load = [ "python37Packages", "numpy",]
+load = [ "python38Packages", "numpy",]
 from = "860b56be91fb874d48e23a950815969a7b832fbc"
 
 [[packages]]
