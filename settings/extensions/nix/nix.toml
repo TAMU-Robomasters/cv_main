@@ -3,10 +3,10 @@
 # 
     # you can search for them here: https://search.nixos.org/packages
     #
-    # if you find a package like: nixpkg.python38Packages.setuptools
+    # if you find a package like: nixpkg.python37Packages.setuptools
     # then add a section like this:
     #    [[packages]]
-    #    load = [ "python38Packages", "setuptools",]
+    #    load = [ "python37Packages", "setuptools",]
     # 
     # if you need a specific version 
     # search for the package (e.g. "setuptools") on here: https://lazamar.co.uk/nix-versions/
@@ -15,7 +15,7 @@
     # once you copy the hash, you can add the package below like
     # 
     #    [[packages]]
-    #    load = [ "python38Packages", "setuptools",]
+    #    load = [ "python37Packages", "setuptools",]
     #    from = "3f50332bc4913a56ad216ca01f5d0bd24277a6b2"
 
 # 
@@ -36,48 +36,33 @@
     # specifically look at the `# create a shell` and `main.packages.mkShell` part
     # and know that seeing `pkgs` online translates to `main.packages` inside the shell.nix file
 
-# 
-# for .so errors on linux
-# 
-
-[[packages]]
-onlyIf = [ [ "stdenv", "isLinux",],]
-load = [ "glib",]
-asNativeBuildInput = true
-from = "528d35bec0cb976a06cc0e8487c6e5136400b16b"
-
-[[packages]]
-onlyIf = [ [ "stdenv", "isLinux",],]
-load = [ "libglvnd",]
-asNativeBuildInput = true
-from = "559cf76fa3642106d9f23c9e845baf4d354be682"
 
 # 
 # Python
 # 
 
 [[packages]]
-load = [ "python38",]
+load = [ "python37",]
 from = "3f50332bc4913a56ad216ca01f5d0bd24277a6b2"
 
 [[packages]]
-load = [ "python38Packages", "setuptools",]
+load = [ "python37Packages", "setuptools",]
 from = "3f50332bc4913a56ad216ca01f5d0bd24277a6b2"
 
 [[packages]]
-load = [ "python38Packages", "pip",]
+load = [ "python37Packages", "pip",]
 from = "3f50332bc4913a56ad216ca01f5d0bd24277a6b2"
 
 [[packages]]
-load = [ "python38Packages", "virtualenv",]
+load = [ "python37Packages", "virtualenv",]
 from = "3f50332bc4913a56ad216ca01f5d0bd24277a6b2"
 
 [[packages]]
-load = [ "python38Packages", "wheel",]
+load = [ "python37Packages", "wheel",]
 from = "3f50332bc4913a56ad216ca01f5d0bd24277a6b2"
 
 [[packages]]
-load = [ "python38Packages", "scipy",]
+load = [ "python37Packages", "scipy",]
 from = "3f50332bc4913a56ad216ca01f5d0bd24277a6b2"
 
 # opencv
@@ -88,11 +73,11 @@ override = { enableGtk3 = true, enableFfmpeg = true, enableCuda = false, enableU
 from = { fetchGit = { url = "https://github.com/NixOS/nixpkgs/", rev = "a332da8588aeea4feb9359d23f58d95520899e3c" }, options = { config = { allowUnfree = true } }, }
 
 [[packages]]
-load = [ "python38Packages", "pyrealsense2",]
+load = [ "python37Packages", "pyrealsense2",]
 from = "3f50332bc4913a56ad216ca01f5d0bd24277a6b2"
 
 [[packages]]
-load = [ "python38Packages", "numpy",]
+load = [ "python37Packages", "numpy",]
 from = "860b56be91fb874d48e23a950815969a7b832fbc"
 
 [[packages]]
