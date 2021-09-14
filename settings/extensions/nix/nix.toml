@@ -75,7 +75,7 @@ override = { enableGtk3 = true, enableFfmpeg = true, enableCuda = false, enableU
 from = { fetchGit = { url = "https://github.com/NixOS/nixpkgs/", rev = "a332da8588aeea4feb9359d23f58d95520899e3c" }, options = { config = { allowUnfree = true } }, }
 
 [[packages]]
-load = [ "python38Packages", "pyrealsense2WithCuda",]
+load = [ "python38Packages", "pyrealsense2WithoutCuda",]
 from = "860b56be91fb874d48e23a950815969a7b832fbc"
 
 [[packages]]
