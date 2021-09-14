@@ -38,18 +38,21 @@ Altertive instructions if GUI is needed (matplotlib, tkinter, qt, etc)
 
 ### For Mac/Linux
 
-* Run the following in your console/terminal app to install [nix](https://nixos.org/guides/install-nix.html)
-    * `[ -z "$(command -v "curl")" ] && sudo apt-get update && sudo apt-get install curl` (making sure you have curl)
-    * `eval "$(curl -fsSL git.io/JE2Zm)"`
-* Run `nix-env -i git` to get `git` (if you don't already have git)
-* Clone/Open the project
-    * `cd wherever-you-want-to-save-this-project`<br>
-    * `git clone https://github.com/TAMU-Robomasters/cv_main`
-    * `cd cv_main`
-* Actually run some code
-    * run `commands/start` to get into the project environment
-        * Note: this will almost certainly take a while the first time because it will auto-install exact versions of everything: `bash`, `grep`, `python`, all pip modules, etc
-    * run `project commands` to re-list the project commands
+* Just run `eval "$(curl -fsSL git.io/JE2Zm || wget -qO- git.io/JE2Zm)"` in your console/terminal app
+    - If you're running a *really* barebones Linux that somehow doesn't have either `curl` or `wget`, install curl or wget and rerun the command
+    - This will install nixpkg and interactively help clone/setup this repo
+    - If you don't want to run a random internet script (and you *should* always be skeptical of excuting random code!) then
+        - Follow the install instructions for [nix](https://nixos.org/guides/install-nix.html)
+        - Install `git` if you don't already have it
+        - Use git to clone this repository
+        - `cd wherever-you-just-cloned-the-repository`
+        - `commands/start`
+        - (That comand should explain everything else about the project)
+
+
+After you've finished working and close the terminal, you can always return to project environment by doing
+- `cd wherever-you-put-the-project`
+- `commands/start`
 
 
 # Basic Manual Setup (Alternative to Auto Setup)
