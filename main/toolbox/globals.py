@@ -67,9 +67,20 @@ MODEL_COLORS = np.random.randint(0, 255, size=(len(MODEL_LABELS), 3), dtype="uin
 COLOR_GREEN = (0, 255, 0)
 COLOR_YELLOW = (255, 255, 00)
 
+# 
+# print
+# 
 original_print = print
 def print(*args,**kwargs):
     global MODE
     if MODE == "development":
         return original_print(*args,**kwargs)
     # if not in development (e.g. production) don't print anything
+
+# 
+# dynamic imports
+# 
+if MACHINE == "laptop":
+    realsense = None
+else:
+    import pyrealsense2.pyrealsense2 as realsense

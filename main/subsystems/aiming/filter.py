@@ -4,8 +4,6 @@ from statistics import stdev
 from filterpy.kalman import KalmanFilter
 from filterpy.common import Q_discrete_white_noise
 import subsystems.aiming.depth_camera as dc
-import pyrealsense2.pyrealsense2 as rs
-
 
 class Filter():
     def __init__(self, FPS):  # t = time interval
@@ -54,7 +52,7 @@ class Filter():
         return depth/26
 
     def process_imu(self, data, frame):
-
+        import pyrealsense2.pyrealsense2 as rs
         gyro_frame = frame.first_or_default(rs.stream.gyro)
         accel_frame = frame.first_or_default(rs.stream.accel)
 

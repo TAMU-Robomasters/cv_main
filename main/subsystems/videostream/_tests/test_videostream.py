@@ -1,8 +1,8 @@
-import pyrealsense2 as rs
 import numpy as np
 import cv2
-import pdb,time
+import pdb, time
 from toolbox.globals import MACHINE, PATHS, PARAMETERS, print
+from toolbox.globals import realsense as rs
 
 # parameters
 # TODO: put this in the info.yaml
