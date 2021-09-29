@@ -11,7 +11,7 @@ from toolbox.file_system_tools import FS
 # exports:
 #     PATHS
 #     PARAMETERS
-#     ENVIRONMENT
+#     MACHINE
 #     MODE
 #     INFO
 #     MODEL_LABELS
@@ -40,11 +40,11 @@ for each_key in PATHS.keys():
         PATHS[each_key] = FS.absolute_path(PATHS[each_key])
 
 # 
-# MODE and ENVIRONMENT
+# MODE and MACHINE
 # 
 import os
 # laptop or tx2 (default laptop), and it to be overridden by the 'PROJECT_ENVIRONMENT' environment variable
-ENVIRONMENT = os.environ.get('PROJECT_ENVIRONMENT',"laptop")
+MACHINE = os.environ.get('PROJECT_ENVIRONMENT',"laptop")
 # development or production (default to development), and allow for it to be overridden as well
 MODE = os.environ.get('PROJECT_MODE',"development")
 
@@ -52,7 +52,7 @@ MODE = os.environ.get('PROJECT_MODE',"development")
 # PARAMETERS
 # 
 PARAMETERS = INFO["default_parameters"]
-ENVIRONMENT_PARAMETERS = INFO["environment_parameters"][ENVIRONMENT]
+ENVIRONMENT_PARAMETERS = INFO["environment_parameters"][MACHINE]
 from dict_recursive_update import recursive_update
 PARAMETERS = recursive_update(PARAMETERS, ENVIRONMENT_PARAMETERS)
 

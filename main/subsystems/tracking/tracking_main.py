@@ -3,7 +3,7 @@ import cv2 # alternative: from cv2 import TrackerMOSSE_create which is a way fas
 
 # local imports
 from toolbox.image_tools import Image
-from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, COLOR_GREEN, print
+from toolbox.globals import MACHINE, PATHS, PARAMETERS, COLOR_GREEN, print
 class TrackingClass:
     def __init__(self):
         self.tracker =  None

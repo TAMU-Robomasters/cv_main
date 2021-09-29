@@ -1,4 +1,4 @@
-from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
+from toolbox.globals import MACHINE, PATHS, PARAMETERS, print
 
 # summary
 #    this file should listen to events from the the driver and activate code accordingly

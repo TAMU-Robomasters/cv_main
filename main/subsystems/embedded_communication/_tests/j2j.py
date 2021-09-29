@@ -1,4 +1,4 @@
-from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
+from toolbox.globals import MACHINE, PATHS, PARAMETERS, print
 import serial
 import time
 import math

@@ -6,7 +6,7 @@ import subsystems.aiming.filter as f
 import subsystems.aiming.depth_camera as dc
 
 # relative imports
-from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
+from toolbox.globals import MACHINE, PATHS, PARAMETERS, print
 
 npy_frames_location = PATHS['npy_frames']
 stream_width = PARAMETERS['aiming']['stream_width']

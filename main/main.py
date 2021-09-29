@@ -18,7 +18,7 @@ import datetime
 import collections
 
 # relative imports
-from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
+from toolbox.globals import MACHINE, PATHS, PARAMETERS, print
 from subsystems.embedded_communication.embedded_main import embedded_communication
 import subsystems.modeling._tests.test_modeling as test_modeling
 import subsystems.tracking._tests.test_tracking as test_tracking

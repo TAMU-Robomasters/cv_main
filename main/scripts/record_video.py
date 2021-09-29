@@ -7,7 +7,7 @@ import os
 # relative imports
 from toolbox.video_tools import Video
 from toolbox.image_tools import Image
-from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
+from toolbox.globals import MACHINE, PATHS, PARAMETERS, print
 import subsystems.modeling.modeling_main as modeling
 import subsystems.tracking.tracking_main as tracking
 import subsystems.videostream._tests.get_next_video_frame as next_video_frame

@@ -1,7 +1,7 @@
 import time
 # relative imports
 from toolbox.video_tools import Video
-from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
+from toolbox.globals import MACHINE, PATHS, PARAMETERS, print
 import pyrealsense2.pyrealsense2 as rs
 import numpy as np
 

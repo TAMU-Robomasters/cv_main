@@ -10,7 +10,7 @@ import numpy as np
 import cv2
 import tensorrt as trt
 import pycuda.driver as cuda
-from toolbox.globals import ENVIRONMENT,PATHS,PARAMETERS,MODE,MODEL_COLORS,MODEL_LABELS, print
+from toolbox.globals import MACHINE,PATHS,PARAMETERS,MODE,MODEL_COLORS,MODEL_LABELS, print
 
 
 try:

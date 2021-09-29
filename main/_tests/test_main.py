@@ -3,7 +3,7 @@ import cv2
 import time
 import numpy as np
 # import local
-from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
+from toolbox.globals import MACHINE, PATHS, PARAMETERS, print
 from toolbox.image_tools import Image
 from toolbox.video_tools import Video
 from main import setup

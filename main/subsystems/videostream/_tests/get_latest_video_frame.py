@@ -1,7 +1,7 @@
 import time
 # relative imports
 from toolbox.video_tools import Video
-from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
+from toolbox.globals import MACHINE, PATHS, PARAMETERS, print
 
 class LatestFromVideo:
     def __init__(self,path):
@@ -37,7 +37,7 @@ class LatestFromVideo:
 # smoketest for the simulated videostream
 # 
 if __name__ == '__main__':
-    print('ENVIRONMENT = ', ENVIRONMENT)
+    print('MACHINE = ', MACHINE)
     video = LatestFromVideo()
     first_frame = video.get_latest_video_frame()
     seconds_of_wait_time = 2

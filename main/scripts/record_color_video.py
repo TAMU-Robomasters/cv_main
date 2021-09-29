@@ -6,7 +6,7 @@ import cv2
 # relative imports
 from toolbox.video_tools import Video
 from toolbox.image_tools import Image
-from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
+from toolbox.globals import MACHINE, PATHS, PARAMETERS, print
 
 stream_width = PARAMETERS['aiming']['stream_width']
 stream_height = PARAMETERS['aiming']['stream_height']

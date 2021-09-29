@@ -5,7 +5,7 @@ import sys
 import cv2
 
 # relative imports
-from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, print
+from toolbox.globals import MACHINE, PATHS, PARAMETERS, print
 
 npy_frames_location = PATHS['npy_frames']
 stream_width = PARAMETERS['aiming']['stream_width']

@@ -6,7 +6,7 @@ import time
 import argparse
 
 # relative imports
-from toolbox.globals import ENVIRONMENT, PATHS, PARAMETERS, MODE, MODEL_COLORS, MODEL_LABELS, print
+from toolbox.globals import MACHINE, PATHS, PARAMETERS, MODE, MODEL_COLORS, MODEL_LABELS, print
 
 # import parameters from the info.yaml file
 hardware_acceleration = PARAMETERS['model']['hardware_acceleration']
