@@ -30,7 +30,6 @@ class EmbeddedCommunication:
         Input: Data to send which can be written as bytes.
         Output: None.
         """
-        print("Sending To Embedded")
 
         # Convert all data to constrained bytes.
         x = np.uint16(int(x*10000)+32768)
@@ -43,8 +42,9 @@ class EmbeddedCommunication:
 
         reset_default_position = np.uint8(reset_default_position)
         shoot = np.uint8(shoot)
-        print("Reset default position:",reset_default_position)
-        print("Shoot Value:",shoot)
+        
+        print(" reset_position:", reset_default_position)
+        print(" shoot:", shoot)
 
         if self.port is not None:
             self.port.write("a".encode())

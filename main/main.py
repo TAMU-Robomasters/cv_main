@@ -180,12 +180,13 @@ def setup(
         shoot_circular_buffer = collections.deque(maxlen=heat_buffer_size)
 
         while True:
+            print.collect_prints = True
             heat_estimate = max(10*(rate_of_fire/(1/np.mean(ft_circular_buffer)))* (np.sum(shoot_circular_buffer)-50*np.sum(ft_circular_buffer)),0) # Equation to calculate barrel heat
-            print("Heat Estimate:",heat_estimate)
+            print(" heat_estimate:",heat_estimate)
 
             t = time.time()
             frame = get_frame()  
-            color_image = None           
+            color_image = None
             depth_image = None
 
             # Differentiate between live camera feed and recorded video data
@@ -198,10 +199,14 @@ def setup(
 
                 # Add frame to video recording based on recording frequency
                 if video_output and frame_number % record_interval == 0:
-                    print("Saving Frame",frame_number)
+                    print(" saving_frame:",frame_number)
                     video_output.write(color_image)
             else:
                 if frame is None: # If there is no more frames then end method
+                    # flush the print
+                    print(" "*100)
+                    print.collect_prints = False
+                    print("")
                     break
                 if isinstance(frame,int): # If an int was returned we simply had a faulty frame
                     continue
@@ -219,10 +224,7 @@ def setup(
                 # Location to shoot [x_obj_center, y_obj_center]
                 prediction = [ best_bounding_box[0]+best_bounding_box[2]/2, best_bounding_box[1]+best_bounding_box[3]/2]
                 depth_amount = camera_methods.get_dist_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
-
-                print("Best Bounding Box",best_bounding_box)
-                print("Prediction is:",prediction)
-                print("DEPTH:",depth_amount)
+                print(" best_bounding_box:",best_bounding_box, " prediction:", prediction, " depth_amount: ", depth_amount)
 
                 # phi = embedded_communication.get_phi()
                 # print("PHI:",phi)
@@ -241,7 +243,7 @@ def setup(
                 x_std, y_std = update_circular_buffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
                 horizontal_angle, vertical_angle = angle_from_center(prediction[0],center[1]*2-prediction[1],center[0],center[1]) # Determine angles to turn by in both x,y components
 
-                print("Angles calculated are horizontal_angle:",horizontal_angle,"and vertical_angle:",vertical_angle)
+                print(" horizontal_angle:",f"{horizontal_angle:.4f}"," vertical_angle:", f"{vertical_angle:.4f}")
 
                 # Send embedded the angles to turn to and the accuracy, make accuracy terrible if we dont have enough data in buffer 
                 if depth_amount < min_range or depth_amount > max_range:
@@ -267,12 +269,15 @@ def setup(
                 shoot_circular_buffer.append(0)
                 reset_position_counter+=1
                 embedded_communication.send_output(0, 0, 0) # Tell embedded to stay still 
-                print("No Bounding Boxes Found")
+                print(" bounding_boxes: []")
 
             # Display time taken for single iteration of loop
             iteration_time = time.time()-t
             ft_circular_buffer.append(iteration_time)
-            print('Processing frame',frame_number,'took',iteration_time,"seconds for model only\n")
+            # relase all print info on one line
+            print(" "*200)
+            print.collect_prints = False
+            print(f'\rframe#: {frame_number} model took: {iteration_time:.4f}sec,', sep='', end='', flush=True)
 
             # Show live feed is gui is enabled
             if with_gui:
@@ -382,7 +387,7 @@ def setup(
             if best_bounding_box is not None:
                 reset_position_counter = 0
                 prediction = [best_bounding_box[0]+best_bounding_box[2]/2,best_bounding_box[1]+best_bounding_box[3]/2] # Location to shoot [x_obj_center, y_obj_center]
-                print("Prediction is:",prediction)
+                print(" prediction: ",prediction)
 
                 # Comment this if branch out in case kalman filters doesn't work
                 # if kalman_filters:

@@ -74,8 +74,19 @@ original_print = print
 def print(*args,**kwargs):
     global MODE
     if MODE == "development":
-        return original_print(*args,**kwargs)
+        # bundle up prints
+        if print.collect_prints:
+            for each in args:
+                print.collection.append(each)
+        # release bundle
+        else:
+            args = list(args)
+            args += print.collection
+            print.collection = []
+            return original_print(*args,**kwargs)
     # if not in development (e.g. production) don't print anything
+print.collection = []
+print.collect_prints = False
 
 # 
 # dynamic imports

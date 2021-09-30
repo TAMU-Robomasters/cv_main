@@ -68,7 +68,7 @@ elif status == 1:
 # 
 # setup main(s)
 # 
-simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(
+simple_synchronous, synchronous_with_tracker, multiprocessing_with_tracker = setup(
     team_color=PARAMETERS["embedded_communication"]["team_color"],
     # comment out lines (arguments) below to get closer
     # and closer to realistic output
@@ -98,6 +98,8 @@ else:
     multiprocessing_with_tracker()
 
 # save all the frames as a video
-print("Starting process of saving frames to a video file")
+print.collect_prints = False
+print() # dump any pending prints
+print("\nStarting process of saving frames to a video file")
 Video.create_from_frames(frames, save_to=PATHS["video_output"])
 print(f"video output has been saved to {PATHS['video_output']}")
