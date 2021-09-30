@@ -7,7 +7,7 @@ authors = [""]
 [tool.poetry.dependencies]
 python = ">=3.7,<3.10"
 pip = "20.1.1"
-PyYAML = "5.1.2"
+PyYAML = "5.4"
 regex = "2020.7.14"
 filterpy = "1.4.4"
 pyserial = "3.4"
