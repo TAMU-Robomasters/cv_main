@@ -302,6 +302,12 @@ def setup(
             cv2.waitKey(10)
     
     def kalman_logic(boxes, confidences, screen_center, track, color_image):
+        """
+        Kalman filter logic with a bounding box.
+
+        Input: Bounding boxes, confidences, screen center, track, and color image.
+        Output: None.
+        """
         best_bounding_box = kalman_filter = None
         # Continue control logic if we detected atleast a single bounding box
         if len(boxes) != 0:
@@ -347,7 +353,7 @@ def setup(
                 elif isinstance(color_image,int):
                     continue
 
-            frame_number+=1
+            frame_number += 1
             boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, confidence, threshold, filter_team_color)
             screen_center = (color_image.shape[1] / 2, color_image.shape[0] / 2)
 
