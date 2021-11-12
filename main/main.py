@@ -91,7 +91,7 @@ def setup(
         """
         Returns the x and y angles between the screen_center of the image and the screen_center of a bounding box.
 
-        We send x_cam_center and y_cam_center instead of importing 
+        We send screen_center instead of importing 
         from info.yaml since recorded video footage could be different resolutions.
 
         Input: Bounding box and camera screen_center.
@@ -160,7 +160,7 @@ def setup(
 
     def update_live_recorded_video(color_image, frame_number):
         """
-        Update the recorded video (live camera) by adding the latest frame
+        Update the recorded video (live camera) by adding the latest frame.
 
         Input: Frame number.
         Output: None.
@@ -173,6 +173,12 @@ def setup(
 
 
     def parse_frame(frame, frame_number):
+        """
+        Convert the frame into a color image and depth image.
+
+        Input: Frame and frame number.
+        Output: Color image and depth image.
+        """
         color_image = None
         depth_image = None
 
@@ -199,6 +205,13 @@ def setup(
 
     
     def decide_shooting_location(boxes, confidences, screen_center, depth_image, x_circular_buffer, y_circular_buffer):
+        """
+        Decide the shooting location based on the best bounding box. Find depth of detected robot. Update the circular buffers.
+
+        Input: All detected bounding boxes with their confidences, center of the screen, depth image, and the circular buffers.
+        Output: The predicted location to shoot, the depth, and how locked on we are.
+        """
+
         best_bounding_box, cf = get_optimal_bounding_box(boxes, confidences, screen_center)
 
         # Location to shoot [x_obj_center, y_obj_center]
@@ -225,6 +238,12 @@ def setup(
 
 
     def send_embedded_command(found_robot, horizontal_angle, vertical_angle, depth_amount, x_circular_buffer, y_circular_buffer, x_std, y_std):
+        """
+        Tell embedded where to shoot and whether or not to shoot.
+
+        Input: If a robot was detected, the angles to turn by, the depth, the circular buffers for x and y, and how locked on we are.
+        Output: None.
+        """
 
         if found_robot:
             # Send embedded the angles to turn to and the accuracy, make accuracy terrible if we dont have enough data in buffer 
@@ -245,6 +264,12 @@ def setup(
             print(" bounding_boxes: []")
     
     def display_information(found_robot, initial_time, frame_number, color_image, depth_image, horizontal_angle, vertical_angle, depth_amount, pixel_diff, x_std, y_std, cf, shoot, phi):  
+        """
+        Display text on the screen and draw bounding box on robot.
+
+        Input: Information to be displayed
+        Output: None.
+        """
 
         # If gui is enabled then draw bounding boxes around the selected robot
         if with_gui and found_robot:
