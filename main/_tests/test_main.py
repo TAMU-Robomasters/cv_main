@@ -68,7 +68,7 @@ elif status == 1:
 # 
 # setup main(s)
 # 
-simple_synchronous, synchronous_with_tracker, multiprocessing_with_tracker = setup(
+simple_synchronous, synchronous_with_tracker = setup(
     team_color=PARAMETERS["embedded_communication"]["team_color"],
     # comment out lines (arguments) below to get closer
     # and closer to realistic output
@@ -92,10 +92,8 @@ main_function = PARAMETERS['testing']['main_function']
 print("MAIN",main_function)
 if main_function == 0:
     simple_synchronous()
-elif main_function == 1:
-    synchronous_with_tracker()
 else:
-    multiprocessing_with_tracker()
+    synchronous_with_tracker()
 
 # save all the frames as a video
 print.collect_prints = False

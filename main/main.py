@@ -301,6 +301,22 @@ def setup(
             cv2.imshow("RGB Feed",color_image)
             cv2.waitKey(10)
     
+    def kalman_logic(boxes, confidences, screen_center, track, color_image):
+        best_bounding_box = kalman_filter = None
+        # Continue control logic if we detected atleast a single bounding box
+        if len(boxes) != 0:
+            # Get the best bounding box and initialize the tracker
+            best_bounding_box, cf = get_optimal_bounding_box(boxes,confidences,screen_center)
+            if best_bounding_box:
+                best_bounding_box = track.init(color_image,tuple(best_bounding_box))
+                print("Now Tracking a New Object.")
+
+                # Reinitialize kalman filters
+                if kalman_filters:
+                    kalman_filter = aiming.Filter(model_fps)
+                    print("Reinitialized Kalman Filter.")
+
+        return best_bounding_box, kalman_filter
     
     #
     # option #1
@@ -367,9 +383,11 @@ def setup(
         cf = 0
         best_bounding_box = None
         reset_position_counter = 0
+        horizontal_angle = vertical_angle = x_std = y_std = depth_amount = pixel_diff = phi = cf = shoot = 0 # Initialize constants as "globals"
+
+
         # Create two circular buffers to store predicted shooting locations (used to ensure we are locked on a target)
-        x_circular_buffer = collections.deque(maxlen=std_buffer_size)
-        y_circular_buffer = collections.deque(maxlen=std_buffer_size)
+        x_circular_buffer, y_circular_buffer = collections.deque(maxlen=std_buffer_size), collections.deque(maxlen=std_buffer_size)
         
         # initialize model and tracker classes
         track = tracker.TrackingClass()
@@ -377,35 +395,18 @@ def setup(
         kalman_filter = None
 
         while True: # Counts up infinitely starting at 0
-            print()
-            t = time.time()
-            frame = get_frame()  
-            color_image = None    
-            depth_image = None
+            initial_time = time.time()
+            color_image, depth_image = parse_frame(get_frame(), frame_number)
 
-            # Differentiate between live camera feed and recorded video data
-            if live_camera:
-                # Parse color and depth images into usable formats
-                color_frame = frame.get_color_frame()
-                color_image = np.asanyarray(color_frame.get_data()) 
-                depth_frame = frame.get_depth_frame() 
-                depth_image = np.asanyarray(depth_frame.get_data()) 
-
-                # Add frame to video recording based on recording frequency
-                if video_output and frame_number % record_interval == 0:
-                    print("Saving Frame",frame_number)
-                    video_output.write(color_image)
-            else:
-                if frame is None: # If there is no more frames then end method
+            # Control logic for recorded video feed
+            if not live_camera:
+                if color_image is None:
                     break
-                if isinstance(frame,int): # If an int was returned we simply had a faulty frame
+                elif isinstance(color_image,int):
                     continue
-                color_image = frame
-
 
             frame_number+=1
             counter+=1
-
             screen_center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # Finds the coordinate for the screen_center of the screen
             
             # Run model every model_frequency frames or whenever the tracker fails
@@ -413,19 +414,7 @@ def setup(
                 counter=1
                 best_bounding_box = None
                 boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, confidence, threshold, filter_team_color) # Call model
-
-                # Continue control logic if we detected atleast a single bounding box
-                if len(boxes) != 0:
-                    # Get the best bounding box and initialize the tracker
-                    best_bounding_box, cf = get_optimal_bounding_box(boxes,confidences,screen_center)
-                    if best_bounding_box:
-                        best_bounding_box = track.init(color_image,tuple(best_bounding_box))
-                        print("Now Tracking a New Object.")
-
-                        # Reinitialize kalman filters
-                        if kalman_filters:
-                            kalman_filter = aiming.Filter(model_fps)
-                            print("Reinitialized Kalman Filter.")
+                best_bounding_box, kalman_filter = kalman_logic(boxes, confidences, screen_center, track, color_image)
             else:
                 best_bounding_box = track.update(color_image) # Get new position of bounding box from tracker
 
@@ -433,11 +422,13 @@ def setup(
 
             # Continue control logic if we detected atleast a single bounding box
             if best_bounding_box is not None:
+                found_robot = True
                 reset_position_counter = 0
+
                 prediction = [best_bounding_box[0]+best_bounding_box[2]/2,best_bounding_box[1]+best_bounding_box[3]/2] # Location to shoot [x_obj_center, y_obj_center]
                 print(" prediction: ",prediction)
 
-                # Comment this if branch out in case kalman filters doesn't work
+                # Comment this if branch out in case kalman filters doesn'initial_time work
                 # if kalman_filters:
                 #     prediction[1] += camera_methods.getBulletDropPixels(depth_image,best_bounding_box)
                     # kalman_box = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
@@ -455,181 +446,25 @@ def setup(
                 prediction[1] -= pixel_diff
 
                 x_std, y_std = update_circular_buffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
-                horizontal_angle, vertical_angle = angle_from_center(prediction[0],prediction[1],screen_center[0],screen_center[1]) # Determine angles to turn by in both x,y components
+                horizontal_angle, vertical_angle = angle_from_center(prediction, screen_center) # Determine angles to turn by in both x,y components
                 print("Angles calculated are horizontal_angle:",horizontal_angle,"and vertical_angle:",vertical_angle)
-
-                # Send embedded the angles to turn to and the accuracy, make accuracy terrible if we dont have enough data in buffer                
-                if depth_amount < min_range or depth_amount > max_range:
-                    x_circular_buffer.clear()
-                    y_circular_buffer.clear()
-                    embedded_communication.send_output(horizontal_angle, vertical_angle, 0) # Tell embedded to stay still 
-                elif len(x_circular_buffer) == std_buffer_size:
-                    send_shoot_val = send_shoot(x_std,y_std)
-                    embedded_communication.send_output(horizontal_angle, vertical_angle, send_shoot_val)
-                else:
-                    embedded_communication.send_output(horizontal_angle, vertical_angle, 0)
 
                 # If gui is enabled then draw bounding boxes around the selected robot
                 if with_gui:
                     cv2.rectangle(color_image, (int(best_bounding_box[0]), int(best_bounding_box[1])), (int(best_bounding_box[0]) + int(best_bounding_box[2]), int(best_bounding_box[1]) + int(best_bounding_box[3])), (255,0,0), 2)
             else:
-                # Clears buffers since no robots detected
-                x_circular_buffer.clear()
-                y_circular_buffer.clear()
-                reset_position_counter += 1
-                embedded_communication.send_output(0, 0, 0,extra=(1 if reset_position_counter>=idle_counter else 0)) # Tell embedded to stay still and not shoot
-                print("No Bounding Boxes Found")
+                found_robot = False
 
+            send_embedded_command(found_robot, horizontal_angle, vertical_angle, depth_amount, x_circular_buffer, y_circular_buffer, x_std, y_std)
             # Display time taken for single iteration of loop
-            iteration_time = time.time() - t
-            print('Processing frame',frame_number,'took',iteration_time,"seconds for model+tracker")
-
-            # Show live feed is gui is enabled
-            if with_gui:
-                from toolbox.image_tools import add_text
-                add_text(text="horizontal_angle: "+str(np.round(horizontal_angle,2)), location=(30, 50), image=color_image)
-                add_text(text="vertical_angle: "  +str(np.round(vertical_angle,2))  , location=(30,100), image=color_image)
-                add_text(text="depth_amount: "    +str(np.round(depth_amount,2))    , location=(30,150), image=color_image)
-                add_text(text="pixel_diff: "      +str(np.round(pixel_diff,2))      , location=(30,200), image=color_image)
-                add_text(text="x_std: "           +str(np.round(x_std,2))           , location=(30,250), image=color_image)
-                add_text(text="y_std: "           +str(np.round(y_std,2))           , location=(30,300), image=color_image)
-                add_text(text="confidence: "      +str(np.round(cf,2))              , location=(30,350), image=color_image)
-                add_text(text="fps: "             +str(np.round(1/iteration_time,2)), location=(30,400), image=color_image)
-                
-                if phi:
-                    cv2.putText(color_image,"phi: "+str(np.round(phi,2)), (30,450) , font, font_scale, font_color, line_type)
-
-                cv2.imshow("feed",color_image)
-                cv2.waitKey(10)
+            display_information(found_robot, initial_time, frame_number, color_image, depth_image, horizontal_angle, vertical_angle, depth_amount, pixel_diff, x_std, y_std, cf, shoot, phi)
 
             # Optional value for debugging/testing for video footage only
             if not (on_next_frame is None):
                 on_next_frame(frame_number, color_image, ([best_bounding_box], [1])if best_bounding_box else ([], []),(horizontal_angle,vertical_angle))
-                
-    
-    def model_multi(color_image, confidence, threshold, best_bounding_box, track, model, between_frames, collect_frames, screen_center):
-        # Run the model and update best bounding box to the new bounding box if it exists, otherwise keep tracking the old bounding box
-        boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
-        bbox = None
-
-        if len(boxes) != 0:
-            # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the screen_center as the value
-            bboxes = {tuple(bbox): distance(screen_center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
-            # Finds the centermost bounding box
-            bbox = min(bboxes, key=bboxes.get)
-
-        if bbox:
-            potential_bounding_box = track.init(color_image,bbox)
-            print(potential_bounding_box)
-
-            for f in range(len(between_frames)):
-                if potential_bounding_box is None:
-                    break
-                potential_bounding_box = track.update(between_frames[f])
-                print(potential_bounding_box)
-
-            best_bounding_box[:] = potential_bounding_box if potential_bounding_box else [-1,-1,-1,-1]
-            between_frames[:] = []
-            collect_frames.value = False
-        
-    def multiprocessing_with_tracker():
-        """
-        the 3nd main function
-        - multiprocessing
-        - does use the tracker(KCF)
-        """
-        # Manager is required in order to share instances of classes between processes
-        class MyManager(BaseManager):
-            pass
-        MyManager.register('tracker', tracker.TrackingClass)
-        MyManager.register('modeling', modeling.ModelingClass)
-        manager = MyManager()
-        manager.start()
-
-        real_counter = 1
-        frame_number = 0 # used for on_next_frame
-        best_bounding_box = Array('d',[-1,-1,-1,-1]) # must be of Array type to be modified by multiprocess
-        process = None
-        variable_manager = multiprocessing.Manager()
-        between_frames = variable_manager.list()
-        collect_frames = Value('b',False)
-
-
-        # create shared instances of tracker and model between multiprocesses
-        track = manager.tracker()
-        model = manager.modeling()
-
-        while True:
-            # grabs frame and ends loop if we reach the last one
-            frame = get_frame()  
-            color_image = None           
-            depth_image = None
-
-            if testing == False:
-                color_frame = frame.get_color_frame()
-                color_image = np.asanyarray(color_frame.get_data()) 
-                depth_frame = frame.get_depth_frame() 
-                depth_image = np.asanyarray(depth_frame.get_data()) 
-            else:
-                if frame is None:
-                    break
-                if isinstance(frame,int):
-                    continue
-                color_image = frame
-
-            if collect_frames.value:
-                between_frames.append(color_image)
-            real_counter+=1
-            frame_number+=1
-
-            # Finds the coordinate for the screen_center of the screen
-            screen_center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
-            
-            # run model if there is no current bounding box in another process
-            if best_bounding_box[:] == [-1,-1,-1,-1]:
-                if process is None or process.is_alive()==False:
-                    collect_frames.value = True
-                    process = Process(target=model_multi, args=(color_image, confidence, threshold, best_bounding_box, track, model, between_frames, collect_frames, screen_center))
-                    process.start() 
-                    real_counter=1
-
-            else:
-            # run model in another process every model_frequency frames
-                if real_counter % model_frequency == 0:
-                    # call model and initialize tracker
-                    if process is None or process.is_alive()==False:
-                        collect_frames.value = True
-                        process = Process(target=model_multi,args=(color_image, confidence, threshold, best_bounding_box, track, model, between_frames, collect_frames, screen_center))
-                        process.start() 
-                
-                #track bounding box, even if we are modeling for a new one
-                if track.tracker_alive():
-                    try:
-                        potential_bounding_box = track.update(color_image)
-                        best_bounding_box[:] = potential_bounding_box if potential_bounding_box else [-1,-1,-1,-1]
-                    except:
-                        best_bounding_box[:] = [-1,-1,-1,-1]
-                else:
-                    best_bounding_box[:] = [-1,-1,-1,-1]
-
-            # figure out where to aim
-            if testing == False:
-                z0 = camera_methods.get_dist_from_array(depth_image,best_bounding_box,grid_size)
-                kalman_box = [best_bounding_box[0],best_bounding_box[1],z0] # Put data into format the kalman filter asks for
-                prediction = kalman_filter.predict(kalman_box) # figure out where to aim
-            
-                # send data to embedded
-                horizontal_angle, vertical_angle = angle_from_center(prediction[0],prediction[1],screen_center[0],screen_center[1],horizontal_fov,vertical_fov) # (x_obj,y_obj,x_cam/2,y_cam/2,h_fov,v_fov)
-                embedded_communication.send_output(horizontal_angle, vertical_angle)
-
-            # optional value for debugging/testing
-            if not (on_next_frame is None) :
-                on_next_frame(frame_number, color_image, ([best_bounding_box[:]], [1])if best_bounding_box[:] != [-1,-1,-1,-1] else ([], []), (0,0))
-            
-        process.join() # make sure process is complete to avoid errors being thrown
 
     # return a list of the different main options
-    return simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker
+    return simple_synchronous, synchronous_with_tracker 
     
 def begin_video_recording():
     """
@@ -667,21 +502,7 @@ if __name__ == '__main__':
         if record_interval>0:
             video_output = begin_video_recording()
 
-        # GPIO Based Team Color Decision Making
-        # led_pin = 12
-        # but_pin = 18
-        # GPIO.setmode(GPIO.BOARD)  # BOARD pin-numbering scheme
-        # GPIO.setup(led_pin, GPIO.OUT)  # LED pin set as output
-        # GPIO.setup(but_pin, GPIO.IN)  # Button pin set as input
-
-        # # Initial state for LEDs:
-        # GPIO.output(led_pin, GPIO.LOW)
-        # team_color = GPIO.input(but_pin)
-        # print("GPIO:",team_color)
-        # team_color = 1 if team_color == 0 else 0
-
         team_color = PARAMETERS['embedded_communication']['team_color']
-
 
         # Must send classes so multiprocessing is possible
         simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(
@@ -705,4 +526,3 @@ if __name__ == '__main__':
             print("Saving Recorded Video")
             video_output.release()
             print("Finished Saving Video")
-        # GPIO.cleanup()
