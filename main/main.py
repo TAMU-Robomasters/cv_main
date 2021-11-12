@@ -84,23 +84,26 @@ def setup(
         Output: Distance in pixels.
         """
 
-        # Calculates the distance using Python spagettie
         distance = (sum((p1 - p2) ** 2.0 for p1, p2 in zip(point_1, point_2))) ** (1 / 2)
-        # Returns the distance between two points
         return distance
     
-    def angle_from_center(x_bbox_center, y_bbox_center, x_cam_center, y_cam_center):
+    def angle_from_center(prediction, screen_center):
         """
-        Returns the x and y angles between the center of the image and the center of a bounding box.
+        Returns the x and y angles between the screen_center of the image and the screen_center of a bounding box.
 
         We send x_cam_center and y_cam_center instead of importing 
         from info.yaml since recorded video footage could be different resolutions.
 
-        Input: Bounding box and camera center components.
+        Input: Bounding box and camera screen_center.
         Output: Horizontal and vertical angle in radians.
         """
+
+        x_bbox_center, y_bbox_center, x_cam_center, y_cam_center = prediction[0], screen_center[1]*2-prediction[1], screen_center[0], screen_center[1]
+
         horizontal_angle = ((x_bbox_center-x_cam_center)/x_cam_center)*(horizontal_fov/2)
         vertical_angle = ((y_bbox_center-y_cam_center)/y_cam_center)*(vertical_fov/2)
+
+        print("horizontal_angle:",f"{horizontal_angle:.4f}"," vertical_angle:", f"{vertical_angle:.4f}")
 
         return math.radians(horizontal_angle),math.radians(vertical_angle)
 
@@ -119,23 +122,23 @@ def setup(
 
         return x_std, y_std
     
-    def get_optimal_bounding_box(boxes,confidences,center):
+    def get_optimal_bounding_box(boxes,confidences,screen_center):
         """
         Decide the single best bounding box to aim at using a score system.
 
-        Input: All detected bounding boxes with their confidences and the center location of the image.
+        Input: All detected bounding boxes with their confidences and the screen_center location of the image.
         Output: Best bounding box and its confidence.
         """
 
         best_bounding_box = boxes[0]
         best_score = 0
         cf = 0
-        normalization_constant = distance((center[0]*2,center[1]*2),(center[0],center[1])) # Find constant used to scale distance part of score to 1
+        normalization_constant = distance((screen_center[0]*2,screen_center[1]*2),(screen_center[0],screen_center[1])) # Find constant used to scale distance part of score to 1
 
         # Sequentially iterate through all bounding boxes
         for i in range(len(boxes)):
             bbox = boxes[i]
-            score = (1 - distance(center,(bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2))/ normalization_constant) + confidences[i] # Compute score using distance and confidence
+            score = (1 - distance(screen_center,(bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2))/ normalization_constant) + confidences[i] # Compute score using distance and confidence
 
             # Make current box the best if its score is the best so far
             if score > best_score:
@@ -155,7 +158,126 @@ def setup(
 
         return 1 if ((xstd+ystd)/2 < std_error_bound) else 0
 
-    # 
+    def update_live_recorded_video(color_image, frame_number):
+        """
+        Update the recorded video (live camera) by adding the latest frame
+
+        Input: Frame number.
+        Output: None.
+        """
+
+        # Add frame to video recording based on recording frequency
+        if video_output and frame_number % record_interval == 0:
+            print(" saving_frame:",frame_number)
+            video_output.write(color_image)
+
+
+    def parse_frame(frame, frame_number):
+        color_image = None
+        depth_image = None
+
+        if live_camera:
+            # Parse color and depth images into usable formats
+            color_frame = frame.get_color_frame()
+            color_image = np.asanyarray(color_frame.get_data()) 
+            depth_frame = frame.get_depth_frame() 
+            depth_image = np.asanyarray(depth_frame.get_data()) 
+
+            update_live_recorded_video(color_image, frame_number)
+        else:
+            if frame is None: # If there is no more frames then end method
+                # flush the print
+                print(" "*100)
+                print.collect_prints = False
+                print("")
+                color_image = None
+            if isinstance(frame,int): # If an int was returned we simply had a faulty frame
+                color_image = 0
+            color_image = frame
+
+        return color_image, depth_image
+
+    
+    def decide_shooting_location(boxes, confidences, screen_center, depth_image, x_circular_buffer, y_circular_buffer):
+        best_bounding_box, cf = get_optimal_bounding_box(boxes, confidences, screen_center)
+
+        # Location to shoot [x_obj_center, y_obj_center]
+        prediction = [ best_bounding_box[0]+best_bounding_box[2]/2, best_bounding_box[1]+best_bounding_box[3]/2]
+        depth_amount = camera_methods.get_dist_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
+        print(" best_bounding_box:",best_bounding_box, " prediction:", prediction, " depth_amount: ", depth_amount)
+
+        # phi = embedded_communication.get_phi()
+        # print("PHI:",phi)
+        # pixel_diff = 0
+        # if phi:
+        #     pixel_diff = 0 # Just here in case we comment out the next line
+        #     pixel_diff = camera_methods.bullet_drop_compensation(depth_image,best_bounding_box,depth_amount,screen_center,phi)
+
+        pixel_diff = camera_methods.bullet_offset_compensation(depth_amount)
+        if pixel_diff is None:
+            x_circular_buffer.clear()
+            y_circular_buffer.clear()
+            pixel_diff = 0
+        prediction[1] -= pixel_diff
+        x_std, y_std = update_circular_buffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
+
+        return prediction, depth_amount, x_std, y_std,
+
+
+    def send_embedded_command(found_robot, horizontal_angle, vertical_angle, depth_amount, x_circular_buffer, y_circular_buffer, x_std, y_std):
+
+        if found_robot:
+            # Send embedded the angles to turn to and the accuracy, make accuracy terrible if we dont have enough data in buffer 
+            if depth_amount < min_range or depth_amount > max_range:
+                x_circular_buffer.clear()
+                y_circular_buffer.clear()
+                shoot = embedded_communication.send_output(horizontal_angle, vertical_angle, 0)
+            elif len(x_circular_buffer) == std_buffer_size:
+                send_shoot_val = send_shoot(x_std,y_std)
+                shoot = embedded_communication.send_output(horizontal_angle, vertical_angle,send_shoot_val)
+            else:
+                shoot = embedded_communication.send_output(horizontal_angle, vertical_angle, 0)
+        else:
+            # Clears buffers since no robots detected
+            x_circular_buffer.clear()
+            y_circular_buffer.clear()
+            embedded_communication.send_output(0, 0, 0) # Tell embedded to stay still 
+            print(" bounding_boxes: []")
+    
+    def display_information(found_robot, initial_time, frame_number, color_image, depth_image, horizontal_angle, vertical_angle, depth_amount, pixel_diff, x_std, y_std, cf, shoot, phi):  
+
+        # If gui is enabled then draw bounding boxes around the selected robot
+        if with_gui and found_robot:
+            cv2.rectangle(found_robot, color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (255,0,0), 2)  
+
+        # Display time taken for single iteration of loop
+        iteration_time = time.time()-initial_time
+        # relase all print info on one line
+        print(" "*200)
+        print.collect_prints = False
+        print(f'\rframe#: {frame_number} model took: {iteration_time:.4f}sec,', sep='', end='', flush=True)
+
+        # Show live feed is gui is enabled
+        if with_gui:
+            from toolbox.image_tools import add_text
+            add_text(text="horizontal_angle: "+str(np.round(horizontal_angle,2)), location=(30, 50), image=color_image)
+            add_text(text="vertical_angle: "  +str(np.round(vertical_angle,2))  , location=(30,100), image=color_image)
+            add_text(text="depth_amount: "    +str(np.round(depth_amount,2))    , location=(30,150), image=color_image)
+            add_text(text="pixel_diff: "      +str(np.round(pixel_diff,2))      , location=(30,200), image=color_image)
+            add_text(text="x_std: "           +str(np.round(x_std,2))           , location=(30,250), image=color_image)
+            add_text(text="y_std: "           +str(np.round(y_std,2))           , location=(30,300), image=color_image)
+            add_text(text="confidence: "      +str(np.round(cf,2))              , location=(30,350), image=color_image)
+            add_text(text="fps: "             +str(np.round(1/iteration_time,2)), location=(30,400), image=color_image)
+            add_text(text="shoot: "           +str(shoot)                       , location=(30,450), image=color_image)
+
+            if phi:
+                cv2.putText(color_image,"Phi: "+str(np.round(phi,2)), (30,450) , font, font_scale, font_color, line_type)
+
+            cv2.imshow("RGB Feed",color_image)
+            cv2.waitKey(10)
+    
+    
+    #
     # option #1
     #
     def simple_synchronous():
@@ -166,139 +288,40 @@ def setup(
         - no kalman filters since we need to track for that to be possible
         """
 
-        frame_number = 0 # Used for on_next_frame
+        frame_number = 0
+        found_robot = False
         model = modeling.ModelingClass(team_color) # Create instance of modeling
         horizontal_angle = vertical_angle = x_std = y_std = depth_amount = pixel_diff = phi = cf = shoot = 0 # Initialize constants as "globals"
-        reset_position_counter = 0 # Send embedded whether to reset to default position
-
-        # Create two circular buffers to store predicted shooting locations (used to ensure we are locked on a target)
-        x_circular_buffer = collections.deque(maxlen=std_buffer_size)
-        y_circular_buffer = collections.deque(maxlen=std_buffer_size)
-
-        # Create two circular buffers to store frame times and whether we shoot or not to calculate barrel heat.
-        ft_circular_buffer = collections.deque(maxlen=heat_buffer_size)
-        shoot_circular_buffer = collections.deque(maxlen=heat_buffer_size)
+        x_circular_buffer, y_circular_buffer = collections.deque(maxlen=std_buffer_size), collections.deque(maxlen=std_buffer_size) # Used to ensure we are locked on a target
 
         while True:
             print.collect_prints = True
-            heat_estimate = max(10*(rate_of_fire/(1/np.mean(ft_circular_buffer)))* (np.sum(shoot_circular_buffer)-50*np.sum(ft_circular_buffer)),0) # Equation to calculate barrel heat
-            print(" heat_estimate:",heat_estimate)
+            initial_time = time.time()
+            color_image, depth_image = parse_frame(get_frame(), frame_number)
 
-            t = time.time()
-            frame = get_frame()  
-            color_image = None
-            depth_image = None
-
-            # Differentiate between live camera feed and recorded video data
-            if live_camera:
-                # Parse color and depth images into usable formats
-                color_frame = frame.get_color_frame()
-                color_image = np.asanyarray(color_frame.get_data()) 
-                depth_frame = frame.get_depth_frame() 
-                depth_image = np.asanyarray(depth_frame.get_data()) 
-
-                # Add frame to video recording based on recording frequency
-                if video_output and frame_number % record_interval == 0:
-                    print(" saving_frame:",frame_number)
-                    video_output.write(color_image)
-            else:
-                if frame is None: # If there is no more frames then end method
-                    # flush the print
-                    print(" "*100)
-                    print.collect_prints = False
-                    print("")
+            # Control logic for recorded video feed
+            if not live_camera:
+                if color_image is None:
                     break
-                if isinstance(frame,int): # If an int was returned we simply had a faulty frame
+                elif isinstance(color_image,int):
                     continue
-                color_image = frame
 
             frame_number+=1
-
-            boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, confidence, threshold, filter_team_color) # Run the model
-            center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # Finds the coordinate for the center of the screen
+            boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, confidence, threshold, filter_team_color)
+            screen_center = (color_image.shape[1] / 2, color_image.shape[0] / 2)
 
             # Continue control logic if we detected atleast a single bounding box
             if len(boxes)!=0:
-                reset_position_counter = 0
-                best_bounding_box, cf = get_optimal_bounding_box(boxes, confidences, center)
-                # Location to shoot [x_obj_center, y_obj_center]
-                prediction = [ best_bounding_box[0]+best_bounding_box[2]/2, best_bounding_box[1]+best_bounding_box[3]/2]
-                depth_amount = camera_methods.get_dist_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
-                print(" best_bounding_box:",best_bounding_box, " prediction:", prediction, " depth_amount: ", depth_amount)
+                found_robot = True
+                prediction, depth_amount, x_std, y_std = decide_shooting_location(boxes, confidences, screen_center, depth_image, x_circular_buffer, y_circular_buffer)
+                horizontal_angle, vertical_angle = angle_from_center(prediction, screen_center)
+            else: 
+                found_robot = False
 
-                # phi = embedded_communication.get_phi()
-                # print("PHI:",phi)
-                # pixel_diff = 0
-                # if phi:
-                #     pixel_diff = 0 # Just here in case we comment out the next line
-                #     pixel_diff = camera_methods.bullet_drop_compensation(depth_image,best_bounding_box,depth_amount,center,phi)
+            send_embedded_command(found_robot, horizontal_angle, vertical_angle, depth_amount, x_circular_buffer, y_circular_buffer, x_std, y_std)
+            display_information(found_robot, initial_time, frame_number, color_image, depth_image, horizontal_angle, vertical_angle, depth_amount, pixel_diff, x_std, y_std, cf, shoot, phi)
 
-                pixel_diff = camera_methods.bullet_offset_compensation(depth_amount)
-                if pixel_diff is None:
-                    x_circular_buffer.clear()
-                    y_circular_buffer.clear()
-                    pixel_diff = 0
-                prediction[1] -= pixel_diff
-
-                x_std, y_std = update_circular_buffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
-                horizontal_angle, vertical_angle = angle_from_center(prediction[0],center[1]*2-prediction[1],center[0],center[1]) # Determine angles to turn by in both x,y components
-
-                print(" horizontal_angle:",f"{horizontal_angle:.4f}"," vertical_angle:", f"{vertical_angle:.4f}")
-
-                # Send embedded the angles to turn to and the accuracy, make accuracy terrible if we dont have enough data in buffer 
-                if depth_amount < min_range or depth_amount > max_range:
-                    x_circular_buffer.clear()
-                    y_circular_buffer.clear()
-                    shoot = embedded_communication.send_output(horizontal_angle, vertical_angle, 0)
-                    shoot_circular_buffer.append(0)
-                elif len(x_circular_buffer) == std_buffer_size:
-                    send_shoot_val = send_shoot(x_std,y_std)
-                    shoot = embedded_communication.send_output(horizontal_angle, vertical_angle,send_shoot_val)
-                    shoot_circular_buffer.append(send_shoot_val)
-                else:
-                    shoot = embedded_communication.send_output(horizontal_angle, vertical_angle, 0)
-                    shoot_circular_buffer.append(0)
-                
-                # If gui is enabled then draw bounding boxes around the selected robot
-                if with_gui:
-                    cv2.rectangle(color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (255,0,0), 2)
-            else:
-                # Clears buffers since no robots detected
-                x_circular_buffer.clear()
-                y_circular_buffer.clear()
-                shoot_circular_buffer.append(0)
-                reset_position_counter+=1
-                embedded_communication.send_output(0, 0, 0) # Tell embedded to stay still 
-                print(" bounding_boxes: []")
-
-            # Display time taken for single iteration of loop
-            iteration_time = time.time()-t
-            ft_circular_buffer.append(iteration_time)
-            # relase all print info on one line
-            print(" "*200)
-            print.collect_prints = False
-            print(f'\rframe#: {frame_number} model took: {iteration_time:.4f}sec,', sep='', end='', flush=True)
-
-            # Show live feed is gui is enabled
-            if with_gui:
-                from toolbox.image_tools import add_text
-                add_text(text="horizontal_angle: "+str(np.round(horizontal_angle,2)), location=(30, 50), image=color_image)
-                add_text(text="vertical_angle: "  +str(np.round(vertical_angle,2))  , location=(30,100), image=color_image)
-                add_text(text="depth_amount: "    +str(np.round(depth_amount,2))    , location=(30,150), image=color_image)
-                add_text(text="pixel_diff: "      +str(np.round(pixel_diff,2))      , location=(30,200), image=color_image)
-                add_text(text="x_std: "           +str(np.round(x_std,2))           , location=(30,250), image=color_image)
-                add_text(text="y_std: "           +str(np.round(y_std,2))           , location=(30,300), image=color_image)
-                add_text(text="confidence: "      +str(np.round(cf,2))              , location=(30,350), image=color_image)
-                add_text(text="fps: "             +str(np.round(1/iteration_time,2)), location=(30,400), image=color_image)
-                add_text(text="shoot: "           +str(shoot)                       , location=(30,450), image=color_image)
-
-                if phi:
-                    cv2.putText(color_image,"Phi: "+str(np.round(phi,2)), (30,450) , font, font_scale, font_color, line_type)
-
-                cv2.imshow("RGB Feed",color_image)
-                cv2.waitKey(10)
-
-            # Optional value for debugging/testing for video footage only
+            # Save modeled video for recorded video feed
             if not (on_next_frame is None):
                 on_next_frame(frame_number, color_image, (boxes, confidences), (horizontal_angle,vertical_angle))
 
@@ -358,7 +381,7 @@ def setup(
             frame_number+=1
             counter+=1
 
-            center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # Finds the coordinate for the center of the screen
+            screen_center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # Finds the coordinate for the screen_center of the screen
             
             # Run model every model_frequency frames or whenever the tracker fails
             if counter % model_frequency == 0 or (best_bounding_box is None):
@@ -369,7 +392,7 @@ def setup(
                 # Continue control logic if we detected atleast a single bounding box
                 if len(boxes) != 0:
                     # Get the best bounding box and initialize the tracker
-                    best_bounding_box, cf = get_optimal_bounding_box(boxes,confidences,center)
+                    best_bounding_box, cf = get_optimal_bounding_box(boxes,confidences,screen_center)
                     if best_bounding_box:
                         best_bounding_box = track.init(color_image,tuple(best_bounding_box))
                         print("Now Tracking a New Object.")
@@ -407,7 +430,7 @@ def setup(
                 prediction[1] -= pixel_diff
 
                 x_std, y_std = update_circular_buffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
-                horizontal_angle, vertical_angle = angle_from_center(prediction[0],prediction[1],center[0],center[1]) # Determine angles to turn by in both x,y components
+                horizontal_angle, vertical_angle = angle_from_center(prediction[0],prediction[1],screen_center[0],screen_center[1]) # Determine angles to turn by in both x,y components
                 print("Angles calculated are horizontal_angle:",horizontal_angle,"and vertical_angle:",vertical_angle)
 
                 # Send embedded the angles to turn to and the accuracy, make accuracy terrible if we dont have enough data in buffer                
@@ -459,14 +482,14 @@ def setup(
                 on_next_frame(frame_number, color_image, ([best_bounding_box], [1])if best_bounding_box else ([], []),(horizontal_angle,vertical_angle))
                 
     
-    def model_multi(color_image, confidence, threshold, best_bounding_box, track, model, between_frames, collect_frames, center):
+    def model_multi(color_image, confidence, threshold, best_bounding_box, track, model, between_frames, collect_frames, screen_center):
         # Run the model and update best bounding box to the new bounding box if it exists, otherwise keep tracking the old bounding box
         boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
         bbox = None
 
         if len(boxes) != 0:
-            # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the center as the value
-            bboxes = {tuple(bbox): distance(center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
+            # Makes a dictionary of bounding boxes using the bounding box as the key and its distance from the screen_center as the value
+            bboxes = {tuple(bbox): distance(screen_center, (bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2)) for bbox in boxes}
             # Finds the centermost bounding box
             bbox = min(bboxes, key=bboxes.get)
 
@@ -534,14 +557,14 @@ def setup(
             real_counter+=1
             frame_number+=1
 
-            # Finds the coordinate for the center of the screen
-            center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
+            # Finds the coordinate for the screen_center of the screen
+            screen_center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # (x from columns/2, y from rows/2)
             
             # run model if there is no current bounding box in another process
             if best_bounding_box[:] == [-1,-1,-1,-1]:
                 if process is None or process.is_alive()==False:
                     collect_frames.value = True
-                    process = Process(target=model_multi, args=(color_image, confidence, threshold, best_bounding_box, track, model, between_frames, collect_frames, center))
+                    process = Process(target=model_multi, args=(color_image, confidence, threshold, best_bounding_box, track, model, between_frames, collect_frames, screen_center))
                     process.start() 
                     real_counter=1
 
@@ -551,7 +574,7 @@ def setup(
                     # call model and initialize tracker
                     if process is None or process.is_alive()==False:
                         collect_frames.value = True
-                        process = Process(target=model_multi,args=(color_image, confidence, threshold, best_bounding_box, track, model, between_frames, collect_frames, center))
+                        process = Process(target=model_multi,args=(color_image, confidence, threshold, best_bounding_box, track, model, between_frames, collect_frames, screen_center))
                         process.start() 
                 
                 #track bounding box, even if we are modeling for a new one
@@ -571,7 +594,7 @@ def setup(
                 prediction = kalman_filter.predict(kalman_box) # figure out where to aim
             
                 # send data to embedded
-                horizontal_angle, vertical_angle = angle_from_center(prediction[0],prediction[1],center[0],center[1],horizontal_fov,vertical_fov) # (x_obj,y_obj,x_cam/2,y_cam/2,h_fov,v_fov)
+                horizontal_angle, vertical_angle = angle_from_center(prediction[0],prediction[1],screen_center[0],screen_center[1],horizontal_fov,vertical_fov) # (x_obj,y_obj,x_cam/2,y_cam/2,h_fov,v_fov)
                 embedded_communication.send_output(horizontal_angle, vertical_angle)
 
             # optional value for debugging/testing
