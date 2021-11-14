@@ -7,9 +7,10 @@ import argparse
 
 # relative imports
 from toolbox.globals import MACHINE, PATHS, PARAMETERS, MODE, MODEL_COLORS, MODEL_LABELS, print
+import subsystems.aiming.aiming_methods as aiming_methods
 
 # import parameters from the info.yaml file
-hardware_acceleration = PARAMETERS['model']['hardware_acceleration']
+from subsystems.integration.import_parameters import *
 should_use_tensor_rt = hardware_acceleration == 'tensor_rt'
 should_use_gpu       = hardware_acceleration == 'gpu'
 
@@ -58,6 +59,32 @@ class ModelingClass:
 
         print(enemy_boxes)
         return enemy_boxes,enemy_confidences,enemy_class_ids
+
+    def get_optimal_bounding_box(self, boxes, confidences, screen_center):
+        """
+        Decide the single best bounding box to aim at using a score system.
+
+        Input: All detected bounding boxes with their confidences and the screen_center location of the image.
+        Output: Best bounding box and its confidence.
+        """
+
+        best_bounding_box = boxes[0]
+        best_score = 0
+        cf = 0
+        normalization_constant = aiming_methods.distance((screen_center[0]*2,screen_center[1]*2),(screen_center[0],screen_center[1])) # Find constant used to scale distance part of score to 1
+
+        # Sequentially iterate through all bounding boxes
+        for i in range(len(boxes)):
+            bbox = boxes[i]
+            score = (1 - aiming_methods.distance(screen_center,(bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2))/ normalization_constant) + confidences[i] # Compute score using distance and confidence
+
+            # Make current box the best if its score is the best so far
+            if score > best_score:
+                best_bounding_box = boxes[i]
+                best_score = score
+                cf = confidences[i]
+        
+        return best_bounding_box, cf
 
     def original_get_bounding_boxes(self,frame, iconfidence, ithreshold):
         """

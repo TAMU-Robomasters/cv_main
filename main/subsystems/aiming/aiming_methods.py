@@ -2,13 +2,9 @@ import numpy as np
 import cv2
 import math
 from toolbox.globals import PARAMETERS,print
+from subsystems.integration.import_parameters import *
+import subsystems.integration.integration_methods as integration_methods
 
-bullet_velocity = PARAMETERS['aiming']['bullet_velocity']
-length_barrel = PARAMETERS['aiming']['length_barrel']
-camera_gap = PARAMETERS['aiming']['camera_gap']
-vertical_fov = PARAMETERS['aiming']['vertical_fov']
-stream_height = PARAMETERS['aiming']['stream_height']
-barrel_camera_gap = PARAMETERS['aiming']['barrel_camera_gap']
 
 def visualize_depth_frame(depth_frame_array):
     """
@@ -77,7 +73,6 @@ def get_dist_from_array(depth_frame_array, bbox):
         return distance if (distance and distance>0 and distance<10) else 1
     except:
         return 1
-
 
 # bbox[x coordinate of the top left of the bounding box, y coordinate of the top left of the bounding box, width of box, height of box]
 def world_coordinate(depth_frame, bbox):
@@ -198,3 +193,92 @@ def bullet_offset_compensation(depth_amount):
         return (1.11208 * depth_amount ** 2) + (.1152 * depth_amount) + (-17.7672)
     else:
         return None
+
+def distance(point_1: tuple, point_2: tuple):
+    """
+    Returns the distance between two points.
+
+    Input: Two points.
+    Output: Distance in pixels.
+    """
+
+    distance = (sum((p1 - p2) ** 2.0 for p1, p2 in zip(point_1, point_2))) ** (1 / 2)
+    return distance
+
+def angle_from_center(prediction, screen_center):
+    """
+    Returns the x and y angles between the screen_center of the image and the screen_center of a bounding box.
+
+    We send screen_center instead of importing 
+    from info.yaml since recorded video footage could be different resolutions.
+
+    Input: Bounding box and camera screen_center.
+    Output: Horizontal and vertical angle in radians.
+    """
+
+    x_bbox_center, y_bbox_center, x_cam_center, y_cam_center = prediction[0], screen_center[1]*2-prediction[1], screen_center[0], screen_center[1]
+
+    horizontal_angle = ((x_bbox_center-x_cam_center)/x_cam_center)*(horizontal_fov/2)
+    vertical_angle = ((y_bbox_center-y_cam_center)/y_cam_center)*(vertical_fov/2)
+
+    print("horizontal_angle:",f"{horizontal_angle:.4f}"," vertical_angle:", f"{vertical_angle:.4f}")
+
+    return math.radians(horizontal_angle),math.radians(vertical_angle)
+
+def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, using_tracker):
+    """
+    Decide the shooting location based on the best bounding box. Find depth of detected robot. Update the circular buffers.
+
+    Input: All detected bounding boxes with their confidences, center of the screen, depth image, and the circular buffers.
+    Output: The predicted location to shoot, the depth, and how locked on we are.
+    """
+
+    # Location to shoot [x_obj_center, y_obj_center]
+    prediction = [best_bounding_box[0]+best_bounding_box[2]/2, best_bounding_box[1]+best_bounding_box[3]/2]
+
+    # Comment this if branch out in case kalman filters doesn't work
+    # if kalman_filters and using_tracker:
+    #     prediction[1] += getBulletDropPixels(depth_image,best_bounding_box)
+        # kalman_box = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
+        # prediction = kalman_filter.predict(kalman_box, frame) # figure out where to aim, returns (x_obj_center, y_obj_center)
+        # print("Kalman Filter updated Prediction to:",prediction)
+
+    depth_amount = get_dist_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
+    print(" best_bounding_box:",best_bounding_box, " prediction:", prediction, " depth_amount: ", depth_amount)
+
+    # phi = embedded_communication.get_phi()
+    # print("PHI:",phi)
+    # pixel_diff = 0
+    # if phi:
+    #     pixel_diff = 0 # Just here in case we comment out the next line
+    #     pixel_diff = bullet_drop_compensation(depth_image,best_bounding_box,depth_amount,screen_center,phi)
+
+    pixel_diff = bullet_offset_compensation(depth_amount)
+    if pixel_diff is None:
+        x_circular_buffer.clear()
+        y_circular_buffer.clear()
+        pixel_diff = 0
+
+    prediction[1] -= pixel_diff
+    x_std, y_std = integration_methods.update_circular_buffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
+
+    return prediction, depth_amount, x_std, y_std
+
+def initialize_tracker_and_kalman(best_bounding_box, track, color_image, kalman_filters):
+    """
+    Kalman filter logic with a bounding box.
+
+    Input: Bounding boxes, confidences, screen center, track, and color image.
+    Output: None.
+    """
+    
+    kalman_filter = None
+    best_bounding_box = track.init(color_image,tuple(best_bounding_box))
+    print("Now Tracking a New Object.")
+
+    # Reinitialize kalman filters
+    if kalman_filters:
+        kalman_filter = aiming.Filter(model_fps)
+        print("Reinitialized Kalman Filter.")
+
+    return best_bounding_box, kalman_filter

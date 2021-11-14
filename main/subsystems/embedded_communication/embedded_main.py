@@ -4,6 +4,9 @@ import time
 import numpy as np
 import time
 
+import subsystems.integration.integration_methods as integration_methods
+from subsystems.integration.import_parameters import *
+
 class EmbeddedCommunication:
     """
     Jetson <-> DJI board communication
@@ -86,6 +89,32 @@ class EmbeddedCommunication:
             return signed_p
         except:
             return None
+
+    def send_embedded_command(self, found_robot, horizontal_angle, vertical_angle, depth_amount, x_circular_buffer, y_circular_buffer, x_std, y_std):
+        """
+        Tell embedded where to shoot and whether or not to shoot.
+
+        Input: If a robot was detected, the angles to turn by, the depth, the circular buffers for x and y, and how locked on we are.
+        Output: None.
+        """
+
+        if found_robot:
+            # Send embedded the angles to turn to and the accuracy, make accuracy terrible if we dont have enough data in buffer 
+            if depth_amount < min_range or depth_amount > max_range:
+                x_circular_buffer.clear()
+                y_circular_buffer.clear()
+                shoot = self.send_output(horizontal_angle, vertical_angle, 0)
+            elif len(x_circular_buffer) == std_buffer_size:
+                send_shoot_val = integration_methods.send_shoot(x_std,y_std)
+                shoot = self.send_output(horizontal_angle, vertical_angle,send_shoot_val)
+            else:
+                shoot = self.send_output(horizontal_angle, vertical_angle, 0)
+        else:
+            # Clears buffers since no robots detected
+            x_circular_buffer.clear()
+            y_circular_buffer.clear()
+            embedded_communication.send_output(0, 0, 0) # Tell embedded to stay still 
+            print(" bounding_boxes: []")
             
 
 embedded_communication = EmbeddedCommunication(
