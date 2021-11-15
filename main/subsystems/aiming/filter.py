@@ -131,8 +131,6 @@ class Filter():
 
         return [gyro_vel[0], gyro_vel[1], gyro_vel[2], self.velocity[0], self.velocity[1], self.velocity[2]]
 
-
-
     def predict(self, data, frame):
         # center of bounding box given by (x, y, z) (x,y) in pixels z in meters
         pos_x = int(data[0])

@@ -43,7 +43,6 @@ def send_shoot(xstd,ystd):
 
     return 1 if ((xstd+ystd)/2 < std_error_bound) else 0
 
-
 def parse_frame(frame, frame_number, live_camera):
     """
     Convert the frame into a color image and depth image.

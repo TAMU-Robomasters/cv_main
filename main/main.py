@@ -61,28 +61,32 @@ def setup(
         - no kalman filters since we need to track for that to be possible
         """
 
+        # Initialize default values
         found_robot = False
-        model = modeling.ModelingClass(team_color) # Create instance of modeling
-        frame_number = horizontal_angle = vertical_angle = x_std = y_std = depth_amount = pixel_diff = phi = cf = shoot = 0 # Initialize constants as "globals"
+        frame_number = horizontal_angle = vertical_angle = x_std = y_std = depth_amount = pixel_diff = phi = cf = shoot = 0
         x_circular_buffer, y_circular_buffer = collections.deque(maxlen=std_buffer_size), collections.deque(maxlen=std_buffer_size) # Used to ensure we are locked on a target
+        model = modeling.ModelingClass(team_color) # Create instance of modeling
 
+        # Run detection infinitely
         while True:
+            # Grab frame and record initial time
             print.collect_prints = True
             initial_time = time.time()
             color_image, depth_image = integration_methods.parse_frame(get_frame(), frame_number, live_camera)
 
-            # Control logic for recorded video feed
+            # Stop if we run out of frames or continue if we grabbed a faulty frame
             if not live_camera:
                 if color_image is None:
                     break
                 elif isinstance(color_image,int):
                     continue
 
+            # Grab all detected bounding boxes
             frame_number += 1
             boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, confidence, threshold, filter_team_color)
             screen_center = (color_image.shape[1] / 2, color_image.shape[0] / 2)
 
-            # Continue control logic if we detected atleast a single bounding box
+            # If we detected robots, find bounding box closest to center of screen and determine angles to turn by
             if len(boxes)!=0:
                 found_robot = True
                 best_bounding_box, cf = model.get_optimal_bounding_box(boxes, confidences, screen_center, aiming_methods.distance)
@@ -91,6 +95,7 @@ def setup(
             else: 
                 found_robot = False
 
+            # Actually move the robot to aim
             embedded_communication.send_embedded_command(found_robot, horizontal_angle, vertical_angle, depth_amount, x_circular_buffer, y_circular_buffer, x_std, y_std)
             integration_methods.display_information(found_robot, initial_time, frame_number, color_image, depth_image, horizontal_angle, vertical_angle, depth_amount, pixel_diff, x_std, y_std, cf, shoot, phi)
 
@@ -109,21 +114,21 @@ def setup(
         - does use kalman filters
         """
 
-        # Initialize base variables as "globals" for the method
+        # Initialize default values
         counter = 1
         best_bounding_box = kalman_filter = None
-        frame_number = horizontal_angle = vertical_angle = x_std = y_std = depth_amount = pixel_diff = phi = cf = shoot = 0 # Initialize constants as "globals"
+        frame_number = horizontal_angle = vertical_angle = x_std = y_std = depth_amount = pixel_diff = phi = cf = shoot = 0
         x_circular_buffer, y_circular_buffer = collections.deque(maxlen=std_buffer_size), collections.deque(maxlen=std_buffer_size) # Used to ensure we are locked on a target
-        
-        # Initialize model and tracker classes
         track = tracker.TrackingClass()
         model = modeling.ModelingClass(team_color)
 
-        while True: # Counts up infinitely starting at 0
+        # Run detection infinitely
+        while True:
+            # Grab frame and record initial time
             initial_time = time.time()
             color_image, depth_image = integration_methods.parse_frame(get_frame(), frame_number, live_camera)
 
-            # Control logic for recorded video feed
+            # Stop if we run out of frames or continue if we grabbed a faulty frame
             if not live_camera:
                 if color_image is None:
                     break
@@ -134,7 +139,7 @@ def setup(
             counter+=1
             screen_center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # Finds the coordinate for the screen_center of the screen
             
-            # Run model every model_frequency frames or whenever the tracker fails
+            # Run model, find best bbox, and re-initialize tracker/kalman filters every model_frequency frames or whenever the tracker fails
             if counter % model_frequency == 0 or (best_bounding_box is None):
                 counter=1
                 best_bounding_box = None
@@ -145,14 +150,16 @@ def setup(
             else:
                 best_bounding_box = track.update(color_image) # Get new position of bounding box from tracker
 
-            # Continue control logic if we detected atleast a single bounding box
+            # If we detected robots, determine angle to turn by
             if best_bounding_box is not None:
+                # Find bounding box closest to center of screen and determine angles to turn by
                 found_robot = True
                 prediction, depth_amount, x_std, y_std = aiming_methods.decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, True, integration_methods.update_circular_buffers)
                 horizontal_angle, vertical_angle = aiming_methods.angle_from_center(prediction, screen_center)
             else:
                 found_robot = False
 
+            # Actually move the robot to aim
             embedded_communication.send_embedded_command(found_robot, horizontal_angle, vertical_angle, depth_amount, x_circular_buffer, y_circular_buffer, x_std, y_std)
             integration_methods.display_information(found_robot, initial_time, frame_number, color_image, depth_image, horizontal_angle, vertical_angle, depth_amount, pixel_diff, x_std, y_std, cf, shoot, phi)
 
