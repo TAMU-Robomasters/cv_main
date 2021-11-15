@@ -20,13 +20,12 @@ import collections
 # relative imports
 from toolbox.globals import MACHINE, PATHS, PARAMETERS, print
 from subsystems.embedded_communication.embedded_main import embedded_communication
-import subsystems.modeling._tests.test_modeling as test_modeling
-import subsystems.tracking._tests.test_tracking as test_tracking
+import subsystems.modeling.modeling_main as test_modeling
+import subsystems.tracking.tracking_main as test_tracking
 import subsystems.aiming.aiming_methods as aiming_methods
 import subsystems.integration.integration_methods as integration_methods
 from subsystems.integration.import_parameters import *
-
-color_video_location = PATHS['record_video_output_color']
+from subsystems.integration.import_paths import *
 
 def setup(
         team_color,
@@ -86,8 +85,8 @@ def setup(
             # Continue control logic if we detected atleast a single bounding box
             if len(boxes)!=0:
                 found_robot = True
-                best_bounding_box, cf = model.get_optimal_bounding_box(boxes, confidences, screen_center)
-                prediction, depth_amount, x_std, y_std = aiming_methods.decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, False)
+                best_bounding_box, cf = model.get_optimal_bounding_box(boxes, confidences, screen_center, aiming_methods.distance)
+                prediction, depth_amount, x_std, y_std = aiming_methods.decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, False, integration_methods.update_circular_buffers)
                 horizontal_angle, vertical_angle = aiming_methods.angle_from_center(prediction, screen_center)
             else: 
                 found_robot = False
@@ -106,8 +105,8 @@ def setup(
         """
         the 2nd main function
         - no multiprocessing
-        - does use the tracker(KCF)
-        - uses kalman filters
+        - does use the tracker (KCF)
+        - does use kalman filters
         """
 
         # Initialize base variables as "globals" for the method
@@ -141,7 +140,7 @@ def setup(
                 best_bounding_box = None
                 boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, confidence, threshold, filter_team_color) # Call model
                 if len(boxes)!=0:
-                    best_bounding_box, cf = model.get_optimal_bounding_box(boxes, confidences, screen_center)
+                    best_bounding_box, cf = model.get_optimal_bounding_box(boxes, confidences, screen_center, aiming_methods.distance)
                     best_bounding_box, kalman_filter = aiming_methods.initialize_tracker_and_kalman(best_bounding_box, track, color_image, kalman_filters)
             else:
                 best_bounding_box = track.update(color_image) # Get new position of bounding box from tracker
@@ -149,7 +148,7 @@ def setup(
             # Continue control logic if we detected atleast a single bounding box
             if best_bounding_box is not None:
                 found_robot = True
-                prediction, depth_amount, x_std, y_std = aiming_methods.decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, True)
+                prediction, depth_amount, x_std, y_std = aiming_methods.decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, True, integration_methods.update_circular_buffers)
                 horizontal_angle, vertical_angle = aiming_methods.angle_from_center(prediction, screen_center)
             else:
                 found_robot = False
@@ -177,8 +176,6 @@ if __name__ == '__main__':
         # Setup video recording configuration if enabled
         if record_interval>0:
             video_output = integration_methods.begin_video_recording()
-
-        team_color = PARAMETERS['embedded_communication']['team_color']
 
         # Must send classes so multiprocessing is possible
         simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(

@@ -7,7 +7,6 @@ import argparse
 
 # relative imports
 from toolbox.globals import MACHINE, PATHS, PARAMETERS, MODE, MODEL_COLORS, MODEL_LABELS, print
-import subsystems.aiming.aiming_methods as aiming_methods
 
 # import parameters from the info.yaml file
 from subsystems.integration.import_parameters import *
@@ -60,7 +59,7 @@ class ModelingClass:
         print(enemy_boxes)
         return enemy_boxes,enemy_confidences,enemy_class_ids
 
-    def get_optimal_bounding_box(self, boxes, confidences, screen_center):
+    def get_optimal_bounding_box(self, boxes, confidences, screen_center, distance):
         """
         Decide the single best bounding box to aim at using a score system.
 
@@ -71,12 +70,12 @@ class ModelingClass:
         best_bounding_box = boxes[0]
         best_score = 0
         cf = 0
-        normalization_constant = aiming_methods.distance((screen_center[0]*2,screen_center[1]*2),(screen_center[0],screen_center[1])) # Find constant used to scale distance part of score to 1
+        normalization_constant = distance((screen_center[0]*2,screen_center[1]*2),(screen_center[0],screen_center[1])) # Find constant used to scale distance part of score to 1
 
         # Sequentially iterate through all bounding boxes
         for i in range(len(boxes)):
             bbox = boxes[i]
-            score = (1 - aiming_methods.distance(screen_center,(bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2))/ normalization_constant) + confidences[i] # Compute score using distance and confidence
+            score = (1 - distance(screen_center,(bbox[0] + bbox[2] / 2, bbox[1] + bbox[3] / 2))/ normalization_constant) + confidences[i] # Compute score using distance and confidence
 
             # Make current box the best if its score is the best so far
             if score > best_score:

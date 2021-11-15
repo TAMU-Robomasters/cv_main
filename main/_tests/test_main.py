@@ -18,9 +18,9 @@ import subsystems.videostream._tests.get_latest_video_frame as latest_video_fram
 # simulated embedded output
 from subsystems.embedded_communication._tests.simulated_output import send_output as simulated_send_output
 # simulated modeling
-import subsystems.modeling._tests.test_modeling as test_modeling
+import subsystems.modeling.modeling_main as test_modeling
 # simulated tracking
-import subsystems.tracking._tests.test_tracking as test_tracking
+import subsystems.tracking.tracking_main as test_tracking
 # simulated aiming 
 import subsystems.aiming.filter as test_aiming
 

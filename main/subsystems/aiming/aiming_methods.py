@@ -1,10 +1,9 @@
 import numpy as np
 import cv2
 import math
+
 from toolbox.globals import PARAMETERS,print
 from subsystems.integration.import_parameters import *
-import subsystems.integration.integration_methods as integration_methods
-
 
 def visualize_depth_frame(depth_frame_array):
     """
@@ -225,7 +224,7 @@ def angle_from_center(prediction, screen_center):
 
     return math.radians(horizontal_angle),math.radians(vertical_angle)
 
-def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, using_tracker):
+def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, using_tracker, update_circular_buffers):
     """
     Decide the shooting location based on the best bounding box. Find depth of detected robot. Update the circular buffers.
 
@@ -260,7 +259,7 @@ def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_ci
         pixel_diff = 0
 
     prediction[1] -= pixel_diff
-    x_std, y_std = integration_methods.update_circular_buffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
+    x_std, y_std = update_circular_buffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
 
     return prediction, depth_amount, x_std, y_std
 
