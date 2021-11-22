@@ -3,7 +3,7 @@ import filterpy
 from statistics import stdev
 from filterpy.kalman import KalmanFilter
 from filterpy.common import Q_discrete_white_noise
-import subsystems.aiming.depth_camera as dc
+import subsystems.aiming.aiming_methods as dc
 
 class Filter():
     def __init__(self, FPS):  # t = time interval
@@ -130,8 +130,6 @@ class Filter():
         gyro_vel = np.cross(gyro_data, data)
 
         return [gyro_vel[0], gyro_vel[1], gyro_vel[2], self.velocity[0], self.velocity[1], self.velocity[2]]
-
-
 
     def predict(self, data, frame):
         # center of bounding box given by (x, y, z) (x,y) in pixels z in meters

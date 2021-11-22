@@ -7,12 +7,14 @@ from toolbox.globals import MACHINE, PATHS, PARAMETERS, COLOR_GREEN, print
 class TrackingClass:
     def __init__(self):
         self.tracker =  None
+
     # Finds the absolute distance between two points
     def distance(self,point_1: tuple, point_2: tuple):
         # Calculates the distance using Python spagettie
         distance = (sum((p1 - p2) ** 2.0 for p1, p2 in zip(point_1, point_2))) ** (1 / 2)
         # Returns the distance between two points
         return distance
+        
     # Starts tracking the object surrounded by the bounding box in the image
     # bbox is [x, y, width, height]
     def init(self,image, best_bounding_box):
