@@ -19,7 +19,7 @@ if err != sl.ERROR_CODE.SUCCESS:
 image = sl.Mat()
 depth_map = sl.Mat()
 runtime_parameters = sl.RuntimeParameters()
-if zed.grab(runtime_parameters) == SUCCESS:
+if zed.grab(runtime_parameters) == sl.ERROR_CODE.SUCCESS:
     zed.retrieve_image(image, sl.VIEW.LEFT)
     zed.retreive_measure(depth_map, sl.MEASURE.DEPTH)
 
