@@ -14,16 +14,16 @@ import subsystems.videostream._tests.get_next_video_frame as next_video_frame
 
 os.system("mkdir -p ./source/scripts")
 
-stream_width = PARAMETERS['aiming']['stream_width']
-stream_height = PARAMETERS['aiming']['stream_height']
-framerate = PARAMETERS['aiming']['stream_framerate']
-grid_size = PARAMETERS['aiming']['grid_size']
-time_record = PARAMETERS['videostream']['testing']['record_time']
+stream_width         = PARAMETERS['aiming']['stream_width']
+stream_height        = PARAMETERS['aiming']['stream_height']
+framerate            = PARAMETERS['aiming']['stream_framerate']
+grid_size            = PARAMETERS['aiming']['grid_size']
+time_record          = PARAMETERS['videostream']['testing']['record_time']
+confidence           = PARAMETERS["model"]["confidence"]
+threshold            = PARAMETERS["model"]["threshold"]
+model_frequency      = PARAMETERS["model"]["frequency"]
 color_video_location = PATHS['record_video_output_color']
-npy_frames_location = PATHS['npy_frames']
-confidence = PARAMETERS["model"]["confidence"]
-threshold = PARAMETERS["model"]["threshold"]
-model_frequency = PARAMETERS["model"]["frequency"]
+npy_frames_location  = PATHS['npy_frames']
 
 os.system("mkdir -p "+npy_frames_location)
 os.system("rm "+npy_frames_location+"/*")
@@ -84,7 +84,7 @@ while color_image is not None:
     if counter % model_frequency == 0 or (best_bounding_box is None):
         counter = 0
         best_bounding_box = None
-        boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, confidence, threshold)
+        boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, threshold)
         print("MODEL")
         if len(boxes) != 0:
             print("FOUND BOX")

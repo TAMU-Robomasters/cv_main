@@ -6,12 +6,11 @@ import time
 import argparse
 
 # relative imports
-from toolbox.globals import MACHINE, PATHS, PARAMETERS, MODE, MODEL_COLORS, MODEL_LABELS, print
+from toolbox.globals import MACHINE, PATHS, params, MODE, MODEL_COLORS, MODEL_LABELS, print
 
 # import parameters from the info.yaml file
-from subsystems.integration.import_parameters import *
-should_use_tensor_rt = hardware_acceleration == 'tensor_rt'
-should_use_gpu       = hardware_acceleration == 'gpu'
+should_use_tensor_rt = params.model.hardware_acceleration == 'tensor_rt'
+should_use_gpu       = params.model.hardware_acceleration == 'gpu'
 
 # enable certain imports if tensorRT is enabled to prevent crashes in case it is not enabled
 if should_use_tensor_rt:
@@ -19,10 +18,9 @@ if should_use_tensor_rt:
     from modeling.yolo_with_plugins import TrtYOLO
 
 class ModelingClass:
-    def __init__(self,team_color):
-        self.input_dimension = PARAMETERS['model']['input_dimension']
+    def __init__(self):
+        self.input_dimension = params.model.input_dimension
         print("[INFO] loading YOLO from disk...")
-        self.team_color = team_color
         # Setup modeling system based on forms of gpu acceleration
         if should_use_tensor_rt: # tensorRT enabled
             print("RUNNING WITH TENSORRT")
@@ -51,7 +49,7 @@ class ModelingClass:
         enemy_class_ids = []
 
         for index in range(len(boxes)):
-            if class_ids[index] != self.team_color:
+            if class_ids[index] != params.team_color:
                 enemy_boxes.append(boxes[index])
                 enemy_confidences.append(confidences[index])
                 enemy_class_ids.append(class_ids[index])
@@ -66,7 +64,10 @@ class ModelingClass:
         Input: All detected bounding boxes with their confidences and the screen_center location of the image.
         Output: Best bounding box and its confidence.
         """
-
+        # no boxes
+        if len(boxes) == 0:
+            return None, 1
+        
         best_bounding_box = boxes[0]
         best_score = 0
         cf = 0
@@ -85,9 +86,9 @@ class ModelingClass:
         
         return best_bounding_box, cf
 
-    def original_get_bounding_boxes(self,frame, iconfidence, ithreshold):
+    def original_get_bounding_boxes(self, frame, ithreshold):
         """
-        ex: boxes, confidences, class_ids = get_bounding_boxes(frame, 0.5, 0.3)
+        ex: boxes, confidences, class_ids = get_bounding_boxes(frame, 0.3)
         
         @frame: should be an cv2 image (basically a numpy array)
         @iconfidence: should be a value between 0-1
@@ -100,6 +101,8 @@ class ModelingClass:
             - a list of class_ids
         NOTE: this code is derived from https://www.pyimagesearch.com/2018/11/12/yolo-object-detection-with-opencv/
         """
+        iconfidence = params.model.confidence
+        
         # initialize our lists of detected bounding boxes, confidences, and class IDs, respectively
         boxes = []
         confidences = []
@@ -169,12 +172,11 @@ class ModelingClass:
 
         return boxes, confidences, class_ids
         
-    def get_bounding_boxes(self,frame, iconfidence, ithreshold, filter_team_color):
+    def get_bounding_boxes(self,frame, ithreshold, filter_team_color):
         """	
         this function is the debugging counterpart to the actual get_bounding_boxes()	
             
         @frame: should be an cv2 image (basically a numpy array)	
-        @iconfidence: should be a value between 0-1	
         @ithreshold: should be a value between 0-1	
         -	
         @@returns:	
@@ -187,7 +189,7 @@ class ModelingClass:
         # 	
         # wrap the original, but display every frame	
         # 
-        boxes, confidences, class_ids = self.original_get_bounding_boxes(frame, iconfidence, ithreshold)
+        boxes, confidences, class_ids = self.original_get_bounding_boxes(frame, ithreshold)
 
         if filter_team_color:
             boxes, confidences, class_ids = self.filter_team(boxes, confidences, class_ids)

@@ -71,7 +71,7 @@ optional = false
 python-versions = ">=3.6"
 
 [package.dependencies]
-numpy = ">=1.19.3"
+numpy = ">=1.17.3"
 
 [[package]]
 name = "pillow"
@@ -143,10 +143,18 @@ category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
+[[package]]
+name = "super-map"
+version = "1.1.1"
+description = "Like dict, but easier"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<3.10"
-content-hash = "fc42ae68e08ab4587c2815186fad4bca7ec0941376ec8d07f081b6d98c1aed04"
+content-hash = "ee62891093050fa83f932286ddb86c2272834e8d21c337746ea1a007947f5648"
 
 [metadata.files]
 cycler = [
@@ -416,4 +424,8 @@ scipy = [
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
+]
+super-map = [
+    {file = "super_map-1.1.1-py3-none-any.whl", hash = "sha256:66796b870f4d070c4e876cf81ca51e5c9e2c8771c8e4a3c5f5a554c13f12206f"},
+    {file = "super_map-1.1.1.tar.gz", hash = "sha256:2955b2408d1fe2f31ecfc80a851910910b7bfde2cdc667a4e6e5b4b53968b7ea"},
 ]

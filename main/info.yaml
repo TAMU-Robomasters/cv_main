@@ -5,7 +5,7 @@
 paths:
     project_root: ./
     source_dir: ./main
-    main_test_video: ./main/_tests/data/test.avi
+    main_test_video: &main_test_video ./main/_tests/data/test.avi
     main_test_image: ./main/_tests/data/test.png
     video_output: ./result.do_not_sync.mp4
     record_video_output_color: ./recorded_videos/recorded_video_with_color.do_not_sync.mp4
@@ -24,6 +24,7 @@ paths:
 
 # NOTE: these are overridden by environments (below)
 default_parameters:
+    team_color: 'red' # 'rea' or 'blue'
     model:
         confidence: 0.8
         threshold: 0.3
@@ -65,21 +66,22 @@ default_parameters:
         #bullet drop
         barrel_camera_gap: 0.0364   # in meters
     videostream:
-        testing:
+        simulation:
+            grab_method: 'next_frame' # 'next_frame', or 'latest_frame'
             assumed_framerate: 30 # frames per second
-            grab_frame: 0 # For video feed only: 0 means grab next frame, 1 means grab latest frame
+            input_file: *main_test_video
+        
+        testing:
             record_time: 10 # seconds to record for
             record_interval: 0 # records one out of every x frames, <1 to not record
     testing:
         save_frame_to_file: true
         open_each_frame: false
-        main_function: 0 # 0 is simple synchronous, 1 is synchronous with tracker, 2 is multiprocessing with tracker
+        main_function: 'simple_synchronous' # 'simple_synchronous',  'synchronous_with_tracker', or  'multiprocessing_with_tracker'
         filter_team_color: False
     embedded_communication:
         serial_baudrate: 115200
         serial_port: null
-        team_color: 0 # red
-        # team_color: 1 # blue
 
 environment_parameters:
     laptop:

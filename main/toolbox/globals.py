@@ -1,5 +1,6 @@
 import yaml
 import numpy as np
+from super_map import Map, LazyDict
 # relative imports
 from toolbox.file_system_tools import FS
 
@@ -55,6 +56,8 @@ PARAMETERS = INFO["default_parameters"]
 ENVIRONMENT_PARAMETERS = INFO["environment_parameters"][MACHINE]
 from dict_recursive_update import recursive_update
 PARAMETERS = recursive_update(PARAMETERS, ENVIRONMENT_PARAMETERS)
+recursive_lazy_dict = lambda arg: arg if not isinstance(arg, dict) else LazyDict({ key: recursive_lazy_dict(value) for key, value in arg.items() })
+params = recursive_lazy_dict(PARAMETERS)
 
 # 
 # modeling

@@ -1,9 +1,39 @@
 import numpy as np
 import cv2
 import math
+import collections
 
-from toolbox.globals import PARAMETERS,print
-from subsystems.integration.import_parameters import *
+from toolbox.globals import PARAMETERS, params, print
+
+prediction_time     = params.aiming.prediction_time
+stream_width        = params.aiming.stream_width
+stream_height       = params.aiming.stream_height
+stream_framerate    = params.aiming.stream_framerate
+grid_size           = params.aiming.grid_size
+horizontal_fov      = params.aiming.horizontal_fov
+vertical_fov        = params.aiming.vertical_fov
+model_fps           = params.aiming.model_fps
+bullet_velocity     = params.aiming.bullet_velocity
+length_barrel       = params.aiming.length_barrel
+camera_gap          = params.aiming.camera_gap
+std_buffer_size     = params.aiming.std_buffer_size
+heat_buffer_size    = params.aiming.heat_buffer_size
+rate_of_fire        = params.aiming.rate_of_fire
+idle_counter        = params.aiming.idle_counter
+std_error_bound     = params.aiming.std_error_bound
+min_range           = params.aiming.min_range
+max_range           = params.aiming.max_range
+blue_light          = params.aiming.blue_light
+blue_dark           = params.aiming.blue_dark
+area_arrow_bound    = params.aiming.area_arrow_bound
+center_image_offset = params.aiming.center_image_offset
+min_area            = params.aiming.min_area
+r_timer             = params.aiming.r_timer
+barrel_camera_gap   = params.aiming.barrel_camera_gap
+
+# these are used to ensure we are locked on a target
+x_circular_buffer = collections.deque(maxlen=params.aiming.std_buffer_size)
+y_circular_buffer = collections.deque(maxlen=params.aiming.std_buffer_size)
 
 def visualize_depth_frame(depth_frame_array):
     """
@@ -224,7 +254,7 @@ def angle_from_center(prediction, screen_center):
 
     return math.radians(horizontal_angle),math.radians(vertical_angle)
 
-def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, using_tracker, update_circular_buffers):
+def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, using_tracker):
     """
     Decide the shooting location based on the best bounding box. Find depth of detected robot. Update the circular buffers.
 
@@ -261,7 +291,7 @@ def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_ci
     prediction[1] -= pixel_diff
     x_std, y_std = update_circular_buffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
 
-    return prediction, depth_amount, x_std, y_std
+    return prediction, depth_amount, x_std, y_std, pixel_diff
 
 def initialize_tracker_and_kalman(best_bounding_box, track, color_image, kalman_filters):
     """
@@ -281,3 +311,28 @@ def initialize_tracker_and_kalman(best_bounding_box, track, color_image, kalman_
         print("Reinitialized Kalman Filter.")
 
     return best_bounding_box, kalman_filter
+
+def update_circular_buffers(x_circular_buffer,y_circular_buffer,prediction):
+    """
+    Update circular buffers with latest prediction and recalculate accuracy through standard deviation.
+
+    Input: Circular buffers for both components and the new prediction.
+    Output: Standard deviations in both components.
+    """
+
+    x_circular_buffer.append(prediction[0])
+    y_circular_buffer.append(prediction[1])
+    x_std = np.std(x_circular_buffer)
+    y_std = np.std(y_circular_buffer)
+
+    return x_std, y_std
+
+def send_shoot(xstd,ystd):
+    """
+    Decide whether to shoot or not.
+
+    Input: Standard Deviations for both x and y.
+    Output: Yes or no.
+    """
+
+    return 1 if ((xstd+ystd)/2 < std_error_bound) else 0

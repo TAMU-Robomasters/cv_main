@@ -13,7 +13,7 @@ Its the home of all Tamu RoboMaster's cool code. (If you're looking for *boring*
     - 1. It has a `setup()` function that outputs different runtime options (ex: fancy, straighforward, etc)
     - 2. The `setup()` () needs 5 main things to work though
         - See `main/_tests/test_main.py` for all of these in action
-        - 1. `get_frame` (e.g. `setup(get_frame=a_function)`)
+        - 1. `video_stream` (e.g. `setup(video_stream=an_object)`)
             - This function gets an image. This could be from a video file (for testing) or a live webcam feed
         - 2. `modeling` (e.g. `setup(modeling=a_module)`)
             - This one is a bit more complicated (see `./main/subsystems/modeling/modeling_main.py`) for an example
