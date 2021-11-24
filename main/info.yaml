@@ -77,7 +77,7 @@ default_parameters:
     testing:
         save_frame_to_file: true
         open_each_frame: false
-        main_function: 'simple_synchronous' # 'simple_synchronous',  'synchronous_with_tracker', or  'multiprocessing_with_tracker'
+        main_function: 'simple_synchronous' # 'simple_synchronous' or 'synchronous_with_tracker'
         filter_team_color: False
     embedded_communication:
         serial_baudrate: 115200
