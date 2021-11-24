@@ -91,7 +91,8 @@ def display_information(found_robot, initial_time, frame_number, color_image, de
     # relase all print info on one line
     print(" "*200)
     print.collect_prints = False
-    print(f'\rframe#: {frame_number} model took: {iteration_time:.4f}sec,', sep='', end='', flush=True)
+    # print(f'\rframe#: {frame_number} model took: {iteration_time:.4f}sec,', sep='', end='', flush=True)
+    print(f'\r', sep='', end='', flush=True)
 
     # Show live feed is gui is enabled
     if with_gui:

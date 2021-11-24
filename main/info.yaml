@@ -5,7 +5,7 @@
 paths:
     project_root: ./
     source_dir: ./main
-    main_test_video: ./main/_tests/data/test.avi
+    main_test_video: ./main/_tests/data/test_spin.MOV
     main_test_image: ./main/_tests/data/test.png
     video_output: ./result.do_not_sync.mp4
     record_video_output_color: ./recorded_videos/recorded_video_with_color.do_not_sync.mp4

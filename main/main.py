@@ -86,6 +86,8 @@ def setup(
             boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, confidence, threshold, filter_team_color)
             screen_center = (color_image.shape[1] / 2, color_image.shape[0] / 2)
 
+            print(boxes)
+
             # If we detected robots, find bounding box closest to center of screen and determine angles to turn by
             if len(boxes)!=0:
                 found_robot = True

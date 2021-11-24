@@ -220,7 +220,7 @@ def angle_from_center(prediction, screen_center):
     horizontal_angle = ((x_bbox_center-x_cam_center)/x_cam_center)*(horizontal_fov/2)
     vertical_angle = ((y_bbox_center-y_cam_center)/y_cam_center)*(vertical_fov/2)
 
-    print("horizontal_angle:",f"{horizontal_angle:.4f}"," vertical_angle:", f"{vertical_angle:.4f}")
+    # print("horizontal_angle:",f"{horizontal_angle:.4f}"," vertical_angle:", f"{vertical_angle:.4f}")
 
     return math.radians(horizontal_angle),math.radians(vertical_angle)
 
@@ -243,7 +243,7 @@ def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_ci
         # print("Kalman Filter updated Prediction to:",prediction)
 
     depth_amount = get_dist_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
-    print(" best_bounding_box:",best_bounding_box, " prediction:", prediction, " depth_amount: ", depth_amount)
+    # print(" best_bounding_box:",best_bounding_box, " prediction:", prediction, " depth_amount: ", depth_amount)
 
     # phi = embedded_communication.get_phi()
     # print("PHI:",phi)
