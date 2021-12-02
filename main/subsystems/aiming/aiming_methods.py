@@ -4,6 +4,7 @@ import math
 
 from toolbox.globals import PARAMETERS,print
 from subsystems.integration.import_parameters import *
+import subsystems.aiming.filter as aiming
 
 def visualize_depth_frame(depth_frame_array):
     """
@@ -224,7 +225,7 @@ def angle_from_center(prediction, screen_center):
 
     return math.radians(horizontal_angle),math.radians(vertical_angle)
 
-def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, using_tracker, update_circular_buffers):
+def decide_shooting_location(kalman_filter, frame, best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, kalman_filters, using_tracker, update_circular_buffers):
     """
     Decide the shooting location based on the best bounding box. Find depth of detected robot. Update the circular buffers.
 
@@ -236,11 +237,12 @@ def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_ci
     prediction = [best_bounding_box[0]+best_bounding_box[2]/2, best_bounding_box[1]+best_bounding_box[3]/2]
 
     # Comment this if branch out in case kalman filters doesn't work
-    # if kalman_filters and using_tracker:
-    #     prediction[1] += getBulletDropPixels(depth_image,best_bounding_box)
-        # kalman_box = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
-        # prediction = kalman_filter.predict(kalman_box, frame) # figure out where to aim, returns (x_obj_center, y_obj_center)
-        # print("Kalman Filter updated Prediction to:",prediction)
+    if kalman_filters and kalman_filter and using_tracker:
+        # prediction[1] += getBulletDropPixels(depth_image,best_bounding_box)
+        z0 = get_dist_from_array(depth_image,best_bounding_box)
+        kalman_box = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
+        prediction = kalman_filter.predict(kalman_box, frame, world_coordinate, pixel_coordinate) # figure out where to aim, returns (x_obj_center, y_obj_center)
+        print("Kalman Filter updated Prediction to:",prediction)
 
     depth_amount = get_dist_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
     print(" best_bounding_box:",best_bounding_box, " prediction:", prediction, " depth_amount: ", depth_amount)

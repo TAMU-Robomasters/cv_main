@@ -126,7 +126,8 @@ def setup(
         while True:
             # Grab frame and record initial time
             initial_time = time.time()
-            color_image, depth_image = integration_methods.parse_frame(get_frame(), frame_number, live_camera)
+            frame = get_frame()
+            color_image, depth_image = integration_methods.parse_frame(frame, frame_number, live_camera)
 
             # Stop if we run out of frames or continue if we grabbed a faulty frame
             if not live_camera:
@@ -154,7 +155,7 @@ def setup(
             if best_bounding_box is not None:
                 # Find bounding box closest to center of screen and determine angles to turn by
                 found_robot = True
-                prediction, depth_amount, x_std, y_std = aiming_methods.decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, True, integration_methods.update_circular_buffers)
+                prediction, depth_amount, x_std, y_std = aiming_methods.decide_shooting_location(kalman_filter, frame, best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, kalman_filters, True, integration_methods.update_circular_buffers)
                 horizontal_angle, vertical_angle = aiming_methods.angle_from_center(prediction, screen_center)
             else:
                 found_robot = False
@@ -195,9 +196,9 @@ if __name__ == '__main__':
             aiming = test_aiming,
             embedded_communication = embedded_communication,
             live_camera = True,
-            kalman_filters = False,
+            kalman_filters = True,
             with_gui = False,
-            filter_team_color = True,
+            filter_team_color = False,
             video_output = video_output
         )
 
