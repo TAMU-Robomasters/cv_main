@@ -39,7 +39,8 @@ def setup(
         kalman_filters = False,
         with_gui = False,
         filter_team_color = False,
-        video_output = None
+        video_output = None,
+        profile = None
     ):
     """
     This function is used to connect main with other modules.
@@ -90,7 +91,7 @@ def setup(
             if len(boxes)!=0:
                 found_robot = True
                 best_bounding_box, cf = model.get_optimal_bounding_box(boxes, confidences, screen_center, aiming_methods.distance)
-                prediction, depth_amount, x_std, y_std = aiming_methods.decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, False, integration_methods.update_circular_buffers)
+                prediction, depth_amount, x_std, y_std = aiming_methods.decide_shooting_location(profile, best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, False, integration_methods.update_circular_buffers)
                 horizontal_angle, vertical_angle = aiming_methods.angle_from_center(prediction, screen_center)
             else: 
                 found_robot = False
@@ -155,7 +156,7 @@ def setup(
             if best_bounding_box is not None:
                 # Find bounding box closest to center of screen and determine angles to turn by
                 found_robot = True
-                prediction, depth_amount, x_std, y_std = aiming_methods.decide_shooting_location(kalman_filter, frame, best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, kalman_filters, True, integration_methods.update_circular_buffers)
+                prediction, depth_amount, x_std, y_std = aiming_methods.decide_shooting_location(profile, kalman_filter, frame, best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, kalman_filters, True, integration_methods.update_circular_buffers)
                 horizontal_angle, vertical_angle = aiming_methods.angle_from_center(prediction, screen_center)
             else:
                 found_robot = False
@@ -179,7 +180,7 @@ if __name__ == '__main__':
 
     camera = live_video.LiveFeed()
     video_output = None
-
+    profile = camera.get_profile()
     try:
         # Setup video recording configuration if enabled
         if record_interval>0:
@@ -199,7 +200,8 @@ if __name__ == '__main__':
             kalman_filters = True,
             with_gui = False,
             filter_team_color = False,
-            video_output = video_output
+            video_output = video_output,
+            profile = profile
         )
 
         synchronous_with_tracker() # CHANGE THIS LINE FOR DIFFERENT MAIN METHODS
