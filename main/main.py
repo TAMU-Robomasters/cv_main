@@ -173,8 +173,8 @@ def setup(
 
 if __name__ == '__main__':
     # Relative imports here since pyrealsense requires camera to be plugged in or code will crash
-    import videostream._tests.get_live_video_frame as live_video
-    import aiming.filter as test_aiming
+    import subsystems.videostream._tests.get_live_video_frame as live_video
+    import subsystems.aiming.filter as test_aiming
 
     camera = live_video.LiveFeed()
     video_output = None
@@ -184,13 +184,16 @@ if __name__ == '__main__':
         if record_interval>0:
             video_output = integration_methods.begin_video_recording()
 
+        print("Video Output",video_output)
         # Must send classes so multiprocessing is possible
-        simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(
+        simple_synchronous, synchronous_with_tracker= setup(
             team_color,
             get_frame = camera.get_live_video_frame, 
+            on_next_frame = None,
             modeling = test_modeling,
             tracker = test_tracking,
             aiming = test_aiming,
+            embedded_communication = embedded_communication,
             live_camera = True,
             kalman_filters = False,
             with_gui = False,
@@ -198,7 +201,7 @@ if __name__ == '__main__':
             video_output = video_output
         )
 
-        simple_synchronous() # CHANGE THIS LINE FOR DIFFERENT MAIN METHODS
+        synchronous_with_tracker() # CHANGE THIS LINE FOR DIFFERENT MAIN METHODS
 
     finally:
         # Save video output

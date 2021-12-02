@@ -100,7 +100,7 @@ environment_parameters:
     
     xavier:
         model:
-            hardware_acceleration: "tensor_rt"
+            hardware_acceleration: "gpu"
         embedded_communication:
             serial_port: "/dev/ttyTHS0" # UART serial 0 works but try 1
         
