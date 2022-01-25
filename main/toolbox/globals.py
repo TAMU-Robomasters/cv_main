@@ -93,5 +93,23 @@ print.collect_prints = False
 # 
 if MACHINE == "laptop":
     realsense = None
+    zed = None
 else:
     import pyrealsense2.pyrealsense2 as realsense
+    if PARAMETERS['videostream']['hardware']['camera'] == 'ZED':
+        import pyzed.sl as zed
+        if MODE == "development":
+            print('Using camera: zed')
+            print('Overriding aiming config vals with zed presets')
+        # FIXME - better to use overriding feature already present in environment parameters?
+        # Would require a CAMERA_TYPE environment variable.
+        PARAMETERS['aiming']['stream_width'] = PARAMETERS['aiming']['zed_stream_width']
+        PARAMETERS['aiming']['stream_height'] = PARAMETERS['aiming']['zed_stream_height']
+        PARAMETERS['aiming']['stream_framerate'] = PARAMETERS['aiming']['zed_stream_framerate']
+        PARAMETERS['aiming']['grid_size'] = PARAMETERS['aiming']['zed_grid_size']
+        PARAMETERS['aiming']['horizontal_fov'] = PARAMETERS['aiming']['zed_horizontal_fov']
+        PARAMETERS['aiming']['vertical_fov'] = PARAMETERS['aiming']['zed_vertical_fov']
+    else:
+        import pyrealsense2.pyrealsense2 as realsense
+        if MODE == "development":
+            print('Using camera: realsense')

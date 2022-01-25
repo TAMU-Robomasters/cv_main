@@ -33,13 +33,21 @@ default_parameters:
     aiming:
         prediction_time: 2 # time interval in seconds to predict using kalman filters
         
-        # depth camera
+        # realsense camera
         stream_width: 848
         stream_height: 480
         stream_framerate: 30
         grid_size: 4
         horizontal_fov: 86
         vertical_fov: 57
+        # ZED camera
+        zed_stream_width: 1280
+        zed_stream_height: 720
+        zed_stream_framerate: 30
+        zed_grid_size: 4 # TODO - what is this? is it different from zed to realsense?
+        zed_horizontal_fov: 104
+        zed_vertical_fov: 72
+
         model_fps: 30
         bullet_velocity: 26
         length_barrel: .22
@@ -65,6 +73,8 @@ default_parameters:
         #bullet drop
         barrel_camera_gap: 0.0364   # in meters
     videostream:
+        hardware:
+            camera: 'ZED'
         testing:
             assumed_framerate: 30 # frames per second
             grab_frame: 0 # For video feed only: 0 means grab next frame, 1 means grab latest frame
