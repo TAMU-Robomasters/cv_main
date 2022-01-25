@@ -44,7 +44,7 @@ for each_key in PATHS.keys():
 # 
 import os
 # laptop or tx2 (default laptop), and it to be overridden by the 'PROJECT_ENVIRONMENT' environment variable
-MACHINE = os.environ.get('PROJECT_ENVIRONMENT',"laptop")
+MACHINE = os.environ.get('PROJECT_ENVIRONMENT',"xavier")
 # development or production (default to development), and allow for it to be overridden as well
 MODE = os.environ.get('PROJECT_MODE',"development")
 
@@ -92,6 +92,7 @@ print.collect_prints = False
 # dynamic imports
 # 
 if MACHINE == "laptop":
+    print("MACHINE IS LAPTOP")
     realsense = None
     zed = None
 else:

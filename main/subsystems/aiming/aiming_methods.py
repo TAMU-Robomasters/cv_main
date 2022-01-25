@@ -4,6 +4,8 @@ import math
 
 from toolbox.globals import PARAMETERS,print
 from subsystems.integration.import_parameters import *
+import subsystems.aiming.filter as aiming
+import pyrealsense2.pyrealsense2 as realsense
 
 def visualize_depth_frame(depth_frame_array):
     """
@@ -74,7 +76,7 @@ def get_dist_from_array(depth_frame_array, bbox):
         return 1
 
 # bbox[x coordinate of the top left of the bounding box, y coordinate of the top left of the bounding box, width of box, height of box]
-def world_coordinate(depth_frame, bbox):
+def world_coordinate(depth_frame, bbox, profile):
     """
     Returns an estimate in position relative to the world.
 
@@ -83,15 +85,17 @@ def world_coordinate(depth_frame, bbox):
     """
     if not depth_frame:                     # if there is no aligned_depth_frame or color_frame then leave the loop
         return None
-    # depth_intrin = depth_frame.profile.as_video_stream_profile().intrinsics
-    depth_value = get_dist_from_array(depth_frame)
-    # depth_pixel = [depth_intrin.ppx, depth_intrin.ppy]
-    # depth_pixel = [bbox[0] + .5 * bbox[2], bbox[1] + .5 * bbox[3]]
-    depth_point =   rs.deproject_pixel_to_point(bbox, depth_value)
+    
+    depth_intrin = depth_frame.profile.as_video_stream_profile().intrinsics
+    depth_sensor = profile.get_device().first_depth_sensor()
+    depth_scale = depth_sensor.get_depth_scale()
+    depth_point = realsense.rs2_deproject_pixel_to_point(depth_intrin, bbox, get_dist_from_array(depth_frame, bbox))
+    # depth_point = deproject_pixel_to_point(bbox, get_dist_from_array(depth_frame))
     return depth_point
 
-def pixel_coordinate(point):
-    return rs.project_point_to_pixel(point)
+def pixel_coordinate(depth_frame, point):
+    depth_intrin = depth_frame.profile.as_video_stream_profile().intrinsics
+    return realsense.rs2_project_point_to_pixel(depth_intrin, point)
 
 def bullet_drop(radius, total_angle, proj_velocity, gimbal_pitch, time_interval):    
     """
@@ -224,7 +228,7 @@ def angle_from_center(prediction, screen_center):
 
     return math.radians(horizontal_angle),math.radians(vertical_angle)
 
-def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, using_tracker, update_circular_buffers):
+def decide_shooting_location(profile, kalman_filter, frame, best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, kalman_filters, using_tracker, update_circular_buffers):
     """
     Decide the shooting location based on the best bounding box. Find depth of detected robot. Update the circular buffers.
 
@@ -236,11 +240,14 @@ def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_ci
     prediction = [best_bounding_box[0]+best_bounding_box[2]/2, best_bounding_box[1]+best_bounding_box[3]/2]
 
     # Comment this if branch out in case kalman filters doesn't work
-    # if kalman_filters and using_tracker:
-    #     prediction[1] += getBulletDropPixels(depth_image,best_bounding_box)
-        # kalman_box = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
-        # prediction = kalman_filter.predict(kalman_box, frame) # figure out where to aim, returns (x_obj_center, y_obj_center)
-        # print("Kalman Filter updated Prediction to:",prediction)
+    if kalman_filters and kalman_filter and using_tracker:
+        # prediction[1] += getBulletDropPixels(depth_image,best_bounding_box)
+        z0 = get_dist_from_array(depth_image,best_bounding_box)
+        kalman_box = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
+        print("PREDICTION OLD", kalman_box)
+
+        prediction = kalman_filter.predict(kalman_box, frame, world_coordinate, pixel_coordinate, profile) # figure out where to aim, returns (x_obj_center, y_obj_center)
+        print("Kalman Filter updated Prediction to:",prediction)
 
     depth_amount = get_dist_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
     print(" best_bounding_box:",best_bounding_box, " prediction:", prediction, " depth_amount: ", depth_amount)
