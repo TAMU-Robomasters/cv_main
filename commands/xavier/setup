@@ -11,7 +11,7 @@ echo 'export NIXPKGS_ALLOW_UNFREE=1' > "$shell_hooks_path/04_00_00_nix_allow_unf
 export NIXPKGS_ALLOW_UNFREE=1
 
 # setup ssh connection
-nix-env iA nixpkgs.openssh
+nix-env -iA nixpkgs.openssh
 sudo systemctl enable ssh
 sudo systemctl start ssh
 
@@ -20,11 +20,11 @@ curl -s https://install.zerotier.com | sudo bash
 sudo zerotier-cli join a84ac5c10a5ef3b8
 
 # install basics
-nix-env iA nixpkgs.fd     # for finding things
-nix-env iA nixpkgs.dua    # for cleaning disk space
-nix-env iA nixpkgs.xplr   # file explorer
-nix-env iA nixpkgs.vscode
-nix-env iA nixpkgs.curl
+nix-env -iA nixpkgs.fd     # for finding things
+nix-env -iA nixpkgs.dua    # for cleaning disk space
+nix-env -iA nixpkgs.xplr   # file explorer
+nix-env -iA nixpkgs.vscode
+nix-env -iA nixpkgs.curl
 
 # vs code extensions
 code --install-extension jeff-hykin.swe-starter-pack
@@ -34,12 +34,12 @@ code --install-extension jeff-hykin.PKief.material-icon-theme
 # 
 # setup python
 # 
-nix-env iA nixpkgs.python38 -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/3f50332bc4913a56ad216ca01f5d0bd24277a6b2.tar.gz
-nix-env iA nixpkgs.python38Packages.setuptools -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/3f50332bc4913a56ad216ca01f5d0bd24277a6b2.tar.gz
-nix-env iA nixpkgs.python38Packages.pip -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/3f50332bc4913a56ad216ca01f5d0bd24277a6b2.tar.gz
-nix-env iA nixpkgs.python38Packages.virtualenv -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/3f50332bc4913a56ad216ca01f5d0bd24277a6b2.tar.gz
-nix-env iA nixpkgs.python38Packages.wheel -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/3f50332bc4913a56ad216ca01f5d0bd24277a6b2.tar.gz
-nix-env iA nixpkgs.python38Packages.scipy -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/3f50332bc4913a56ad216ca01f5d0bd24277a6b2.tar.gz
+nix-env -iA nixpkgs.python38 -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/3f50332bc4913a56ad216ca01f5d0bd24277a6b2.tar.gz
+nix-env -iA nixpkgs.python38Packages.setuptools -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/3f50332bc4913a56ad216ca01f5d0bd24277a6b2.tar.gz
+nix-env -iA nixpkgs.python38Packages.pip -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/3f50332bc4913a56ad216ca01f5d0bd24277a6b2.tar.gz
+nix-env -iA nixpkgs.python38Packages.virtualenv -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/3f50332bc4913a56ad216ca01f5d0bd24277a6b2.tar.gz
+nix-env -iA nixpkgs.python38Packages.wheel -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/3f50332bc4913a56ad216ca01f5d0bd24277a6b2.tar.gz
+nix-env -iA nixpkgs.python38Packages.scipy -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/3f50332bc4913a56ad216ca01f5d0bd24277a6b2.tar.gz
 echo '
 
 # TMPDIR fixes a pip issue
