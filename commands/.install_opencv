@@ -20,7 +20,7 @@ sudo pip3 install protobuf
 sudo pip3 install -U numpy matplotlib
 
 # LOCATION OF OPENCV INSTALLATION, install and unzip opencv and contrib
-cd ~/Documents
+cd ~/Downloads
 wget -O opencv.zip https://github.com/opencv/opencv/archive/4.5.0.zip
 wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/4.5.0.zip
 unzip opencv.zip

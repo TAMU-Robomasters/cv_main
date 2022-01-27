@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+
+# update everything as always
+sudo apt-get update -y
+sudo apt-get upgrade -y
+
+# enable an option
+shell_hooks_path="$HOME/shell_hooks/rc"
+mkdir -p "$shell_hooks_path"
+echo 'export NIXPKGS_ALLOW_UNFREE=1' > "$shell_hooks_path/04_00_00_nix_allow_unfree.bash"
+export NIXPKGS_ALLOW_UNFREE=1
+
+# setup ssh connection
+nix-env iA nixpkgs.openssh
+sudo systemctl enable ssh
+sudo systemctl start ssh
+
+# setup zerotier
+curl -s https://install.zerotier.com | sudo bash
+sudo zerotier-cli join a84ac5c10a5ef3b8
+
+# install basics
+nix-env iA nixpkgs.fd     # for finding things
+nix-env iA nixpkgs.dua    # for cleaning disk space
+nix-env iA nixpkgs.xplr   # file explorer
+nix-env iA nixpkgs.vscode
+nix-env iA nixpkgs.curl
+
+# vs code extensions
+code --install-extension jeff-hykin.swe-starter-pack
+code --install-extension jeff-hykin.xd-theme
+code --install-extension jeff-hykin.PKief.material-icon-theme
+
+# 
+# setup python
+# 
+nix-env iA nixpkgs.python38 -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/3f50332bc4913a56ad216ca01f5d0bd24277a6b2.tar.gz
+nix-env iA nixpkgs.python38Packages.setuptools -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/3f50332bc4913a56ad216ca01f5d0bd24277a6b2.tar.gz
+nix-env iA nixpkgs.python38Packages.pip -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/3f50332bc4913a56ad216ca01f5d0bd24277a6b2.tar.gz
+nix-env iA nixpkgs.python38Packages.virtualenv -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/3f50332bc4913a56ad216ca01f5d0bd24277a6b2.tar.gz
+nix-env iA nixpkgs.python38Packages.wheel -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/3f50332bc4913a56ad216ca01f5d0bd24277a6b2.tar.gz
+nix-env iA nixpkgs.python38Packages.scipy -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/3f50332bc4913a56ad216ca01f5d0bd24277a6b2.tar.gz
+echo '
+
+# TMPDIR fixes a pip issue
+export TMPDIR="/tmp"
+export VIRTUAL_ENV="$HOME/.venv"
+export PATH="$VIRTUAL_ENV/bin:$PATH"
+if ! [ -d "$VIRTUAL_ENV" ]
+then
+    echo "creating virtual env for python"
+    python -m venv "$VIRTUAL_ENV" && echo "virtual env created"
+fi
+
+# fix SSL issues
+export SSL_CERT_FILE="$(python -c '"'"'import ssl; print(ssl.get_default_verify_paths().openssl_cafile)'"'"')"  
+
+' > "$shell_hooks_path/06_00_00_setup_venv.bash"
+source "$shell_hooks_path/06_00_00_setup_venv.bash"
+
+
+# setup build-from-source stuff
+echo '
+#
+# installing opencv
+#'
+./commands/.install_opencv
+echo '
+#
+# installing realsense
+#'
+./commands/.install_realsense
+echo '
+#
+# installing zed
+#'
+./commands/.install_zed
+echo '
+#
+# installing tensorrt
+#'
+./commands/.install_tensorrt
+echo '
+#
+# installing onnx
+#'
+./commands/.install_onnx
+
+
+
+echo 'put this in the ~/.bashrc" if its not already there:
+
+for each in $('"$shell_hooks_path"')
+do
+    . '"$shell_hooks_path"'"/$each"
+end
+'
