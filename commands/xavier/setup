@@ -11,14 +11,31 @@ echo 'export NIXPKGS_ALLOW_UNFREE=1' > "$shell_hooks_path/04_00_00_nix_allow_unf
 export NIXPKGS_ALLOW_UNFREE=1
 
 # setup ssh connection
+echo '
+#
+# setting up ssh
+#'
 nix-env -iA nixpkgs.openssh
 sudo systemctl enable ssh
 sudo systemctl start ssh
 
-# setup zerotier
-curl -s https://install.zerotier.com | sudo bash
-sudo zerotier-cli join a84ac5c10a5ef3b8
 
+echo '
+#
+# checking zerotier
+#'
+# setup zerotier
+# if no zerotier-cli
+if ! [ -n "$(command -v "zerotier-cli")" ]
+then
+    curl -s https://install.zerotier.com | sudo bash
+    sudo zerotier-cli join a84ac5c10a5ef3b8
+fi
+
+echo '
+#
+# installing basic CLI tools if not installed
+#'
 # install basics
 nix-env -iA nixpkgs.fd     # for finding things
 nix-env -iA nixpkgs.dua    # for cleaning disk space
