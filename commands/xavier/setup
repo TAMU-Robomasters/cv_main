@@ -77,11 +77,6 @@ echo '
 ./commands/.install_zed
 echo '
 #
-# installing tensorrt
-#'
-./commands/.install_tensorrt
-echo '
-#
 # installing onnx
 #'
 ./commands/.install_onnx
