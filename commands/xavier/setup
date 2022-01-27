@@ -40,6 +40,7 @@ echo '
 nix-env -iA nixpkgs.fd     # for finding things
 nix-env -iA nixpkgs.dua    # for cleaning disk space
 nix-env -iA nixpkgs.xplr   # file explorer
+nix-env -iA nixpkgs.zellij # detachable sessions
 nix-env -iA nixpkgs.vscode
 nix-env -iA nixpkgs.curl
 
