@@ -1,6 +1,11 @@
-import yaml
+import os
+
 import numpy as np
 from super_map import Map, LazyDict
+from walk_up import walk_up_until
+import ez_yaml
+from dict_recursive_update import recursive_update
+
 # relative imports
 from toolbox.file_system_tools import FS
 
@@ -10,19 +15,18 @@ from toolbox.file_system_tools import FS
 # this file contains (ideally) constants that can be used in many/most of the tools
 # it imports the paths from the info.yaml file so that python knows where everything is
 # exports:
-#     PATHS
-#     PARAMETERS
-#     MACHINE
-#     MODE
 #     INFO
-#     MODEL_LABELS
-#     MODEL_COLORS
+#     PATHS
+#     config
+#     print
 
 
 # 
 # load the info.yaml
 # 
-INFO = yaml.unsafe_load(FS.read(FS.join(FS.dirname(__file__),'..','info.yaml')))
+INFO = ez_yaml.to_object(
+    file_path=walk_up_until("main/info.yaml")
+)
 
 # 
 # load PATHS
@@ -39,44 +43,42 @@ for each_key in PATHS.keys():
         if folders[0] == '.' or folders[0] == './':
             _, *folders = folders
         PATHS[each_key] = FS.absolute_path(PATHS[each_key])
+PATHS = LazyDict(PATHS)
 
 # 
-# MODE and MACHINE
+# configuration
 # 
-import os
-# laptop or tx2 (default laptop), and it to be overridden by the 'PROJECT_ENVIRONMENT' environment variable
-MACHINE = os.environ.get('PROJECT_ENVIRONMENT',"laptop")
-# development or production (default to development), and allow for it to be overridden as well
-MODE = os.environ.get('PROJECT_MODE',"development")
-
-# 
-# PARAMETERS
-# 
-PARAMETERS = INFO["default_parameters"]
-ENVIRONMENT_PARAMETERS = INFO["environment_parameters"][MACHINE]
-from dict_recursive_update import recursive_update
-PARAMETERS = recursive_update(PARAMETERS, ENVIRONMENT_PARAMETERS)
+# create the default options file if it doesnt exist
+if not FS.is_file(PATHS.configuration):
+    FS.write(
+        to=PATHS.configuration,
+        data="""
+            # Things at the top of the list will override things at the bottom
+            - GPU=NONE
+            - BOARD=LAPTOP
+            - CAMERA=NONE
+            - MODE=DEVELOPMENT
+            - TEAM=RED
+        """.replace("\n            ","\n"),
+    )
+selected_options = ez_yaml.to_object(
+    file_path=PATHS.configuration,
+)
+# start off with default
+config = INFO["configuration"]["(default)"]
+# merge in all the other options
+for each_option in reversed(selected_options):
+    config = recursive_update(config, INFO["configuration"][each_option])
+# create a helper for recursive converting to lazy dict (much more useful than a regular dict)
 recursive_lazy_dict = lambda arg: arg if not isinstance(arg, dict) else LazyDict({ key: recursive_lazy_dict(value) for key, value in arg.items() })
-params = recursive_lazy_dict(PARAMETERS)
-
-# 
-# modeling
-# 
-MODEL_LABELS = open(PATHS["model_labels"]).read().strip().split("\n")
-# initialize a list of colors to represent each possible class label
-np.random.seed(42)
-MODEL_COLORS = np.random.randint(0, 255, size=(len(MODEL_LABELS), 3), dtype="uint8")
-# Green in RGB
-COLOR_GREEN = (0, 255, 0)
-COLOR_YELLOW = (255, 255, 00)
+config = recursive_lazy_dict(config)
 
 # 
 # print
 # 
 original_print = print
 def print(*args,**kwargs):
-    global MODE
-    if MODE == "development":
+    if config.mode == "development":
         # bundle up prints
         if print.collect_prints:
             for each in args:
@@ -88,13 +90,10 @@ def print(*args,**kwargs):
             print.collection = []
             return original_print(*args,**kwargs)
     # if not in development (e.g. production) don't print anything
+def _dump_collection(*args, **kwargs):
+    print.collect_prints = False
+    print() # dump any pending prints
+    print(*args, **kwargs)
+print.dump_collection = _dump_collection
 print.collection = []
 print.collect_prints = False
-
-# 
-# dynamic imports
-# 
-if MACHINE == "laptop":
-    realsense = None
-else:
-    import pyrealsense2.pyrealsense2 as realsense
