@@ -93,7 +93,8 @@ After you've finished working and close the terminal, you can always return to p
     * Cuda Arch Bin version - Varies Per GPU - Set the arch bin version in the cmake command listed under `CUDA_ARCH_BIN`. See https://developer.nvidia.com/cuda-gpus and locate the version for your gpu. OpenCV will not compile if the version is incorrect.
     * OpenCV Extra Modules Path - Based on Location of OpenCV Installation - Set the extra modules path in the cmake command listed under `OPENCV_EXTRA_MODULES_PATH`. If you set the OpenCV install location to `~/Documents` then your path will look like `~/Documents/opencv_contrib/modules`.
 * Navigate inside cv_main and run the script using `./commands/setup/opencv`. If you face any errors, try running the commands sequentially and debug.
-* To test some code change the gpu acceleration parameter in the `info.yaml` to  `gpu_acceleration: 1` and run test_main.
+* To test some code, change the `- GPU=` part of the `./main/configuration.ignore.yaml` to `REGULAR` and run test_main.
+    * (if `./main/configuration.ignore.yaml` doesn't exist, just run python ./main/main.py and it'll generate one)
 
 ### Setup TensorRT
 * Make sure you installed OpenCV from source as shown above.
@@ -119,4 +120,5 @@ After you've finished working and close the terminal, you can always return to p
 * Create the yolo model with `./commands/modeling/build`.
 * Create the onnx model with `./commands/modeling/generate_onnx`.
 * Create the TensorRT model with `./commands/modeling/generate_tensor_rt`.
-* To test some code change the gpu acceleration parameter in the `info.yaml` to `gpu_acceleration: 2` and run test_main.
+* To test some code, change the `- GPU=` part of the `./main/configuration.ignore.yaml` to `TENSOR_RT` and run test_main.
+    * (if `./main/configuration.ignore.yaml` doesn't exist, just run python ./main/main.py and it'll generate one)

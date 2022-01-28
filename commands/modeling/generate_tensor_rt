@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [ -z "$FORNIX_FOLDER" ]
+then
+    FORNIX_FOLDER="$PWD"
+fi
+
 echo "creating TensorRT model from onnx"
 cd "$FORNIX_FOLDER/main/subsystems/modeling/model"
 python3 onnx_to_tensorrt.py -m yolov4-tiny-416 --category_num 3
