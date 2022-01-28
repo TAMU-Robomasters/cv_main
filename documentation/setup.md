@@ -92,7 +92,7 @@ After you've finished working and close the terminal, you can always return to p
     * Location of OpenCV Installation - Personal Preference - This is to location where opencv and it's extra modules will be located.
     * Cuda Arch Bin version - Varies Per GPU - Set the arch bin version in the cmake command listed under `CUDA_ARCH_BIN`. See https://developer.nvidia.com/cuda-gpus and locate the version for your gpu. OpenCV will not compile if the version is incorrect.
     * OpenCV Extra Modules Path - Based on Location of OpenCV Installation - Set the extra modules path in the cmake command listed under `OPENCV_EXTRA_MODULES_PATH`. If you set the OpenCV install location to `~/Documents` then your path will look like `~/Documents/opencv_contrib/modules`.
-* Navigate inside cv_main and run the script using `./settings/commands/.install_opencv`. If you face any errors, try running the commands sequentially and debug.
+* Navigate inside cv_main and run the script using `./commands/setup/opencv`. If you face any errors, try running the commands sequentially and debug.
 * To test some code change the gpu acceleration parameter in the `info.yaml` to  `gpu_acceleration: 1` and run test_main.
 
 ### Setup TensorRT
@@ -107,17 +107,16 @@ After you've finished working and close the terminal, you can always return to p
     * If you are on Linux
         * Download TensorRT version 6+ from https://developer.nvidia.com/tensorrt (You may need to make an Nvidia Developer Account).
         * Navigate to the directory where you downloaded TensorRT and delete any old packages you may have of TensorRT from the directory.
-        * Open the script located at `./settings/commands/.install_tensorrt` and modify the `os` and `tag` based on your system and the version you installed. 
-        * Run the script using `./settings/commands/.install_tensorrt`.
+        * Open the script located at `./commands/setup/tensor_rt` and modify the `os` and `tag` based on your system and the version you installed. 
+        * Run the script using `./commands/setup/tensor_rt`.
     * Add your cuda to PATH if you haven't already
         * `nano ~/.bashrc`.
         * Scroll all the way to the bottom and add the following:
             * `export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}`.
             * `export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}`.
-* Install PyCuda by running `sudo pip3 install --global-option=build_ext --global-option="-I/usr/local/cuda/include" --global-option="-L/usr/local/cuda/lib64" pycuda`.
-* Install Onnx by running `./settings/commands/.install_onnx`.
-* Run the Makefile by navigating into `cv_main/source/modeling/plugins` and run `make`.
-* Navigate to `cv_main/source/modeling/model`.
-* Run `python3 yolo_to_onnx.py -m yolov4-tiny-416 --category_num 3` to convert from the current yolo model to an onnx model.
-* Run `python3 onnx_to_tensorrt.py -m yolov4-tiny-416 --category_num 3` to convert from the generated onnx model to a TensorRT model.
+* Install PyCuda by with `./commands/setup/pycuda`.
+* Install Onnx by running `./commands/setup/onnx`.
+* Create the yolo model with `./commands/modeling/build`.
+* Create the onnx model with `./commands/modeling/generate_onnx`.
+* Create the TensorRT model with `./commands/modeling/generate_tensor_rt`.
 * To test some code change the gpu acceleration parameter in the `info.yaml` to `gpu_acceleration: 2` and run test_main.

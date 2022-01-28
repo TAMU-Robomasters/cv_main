@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+echo "creating onnx model from yolov4-tiny-416"
+cd "$FORNIX_FOLDER/main/subsystems/modeling/model"
+python3 yolo_to_onnx.py -m yolov4-tiny-416 --category_num 3

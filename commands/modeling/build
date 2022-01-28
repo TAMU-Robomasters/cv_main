@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+cd "$FORNIX_FOLDER/main/subsystems/modeling/plugins"
+make 
