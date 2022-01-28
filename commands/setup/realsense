@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 
+echo '
+#
+# installing realsense
+#'
+
 # upgrade to cmake 3.12+ otherwise it won't work on jetson xaiver nx
 sudo apt-get install -y curl
 sudo apt-get install -y libssl-dev libcurl4-openssl-dev
 cd ~/Downloads
+rm -f cmake-3.13.0.tar.gz
 wget http://www.cmake.org/files/v3.13/cmake-3.13.0.tar.gz
 tar xpvf cmake-3.13.0.tar.gz cmake-3.13.0/
 cd cmake-3.13.0/

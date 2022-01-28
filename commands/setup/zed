@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 
-# ASSUMES Python 3.6+ and Python OpenCV Installed
+
+echo '
+#
+# installing zed
+#
+    - assuming Python 3.6+ and Python OpenCV Installed!
+'
 
 # Instructions for Jetson: https://www.stereolabs.com/docs/installation/jetson/
 # Installation Versions: https://www.stereolabs.com/developers/release/

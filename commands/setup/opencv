@@ -3,6 +3,12 @@
 # ASSUMES CUDA and CUDNN IS ENABLED
 # NO NEED TO MODIFY IF ON TX2 WITH SD CARD
 # Modify: location of zip file installation, location for build folder, arch bin, extra modules path
+echo '
+#
+# installing opencv
+#
+    - assuming CUDA and CUDNN is installed+enabled!
+'
 
 # make sure required libraries are up to date
 sudo apt-get update -y
@@ -21,6 +27,8 @@ sudo pip3 install -U numpy matplotlib
 
 # LOCATION OF OPENCV INSTALLATION, install and unzip opencv and contrib
 cd ~/Downloads
+rm -f opencv.zip
+rm -f opencv_contrib.zip
 wget -O opencv.zip https://github.com/opencv/opencv/archive/4.5.0.zip
 wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/4.5.0.zip
 unzip opencv.zip
