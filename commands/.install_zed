@@ -18,6 +18,7 @@ pip3 install PyOpenGL PyOpenGL_accelerate
 # python3 jetsonInfo.py
 
 cd ~/Downloads
+rm -f jetsons
 wget https://download.stereolabs.com/zedsdk/3.6/jp45/jetsons
 chmod +x jetsons
 ./jetsons
