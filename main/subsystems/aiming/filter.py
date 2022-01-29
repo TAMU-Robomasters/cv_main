@@ -7,28 +7,28 @@ from filterpy.common import Q_discrete_white_noise
 
 class Filter():
     def __init__(self, FPS):  # t = time interval
-        t = 1/FPS
+        self.t = 1/FPS
         self.f = KalmanFilter(dim_x=6, dim_z=3)
   
         self.f.x = np.array([0., 0., 0., 0., 0., 0.])    # x_pos, x_vel, y_pos, y_vel, z_pos, z_vel
-        self.f.F = np.array([[1, t, 0, 0, 0, 0],
+        self.f.F = np.array([[1, self.t, 0, 0, 0, 0],
                              [0, 1, 0, 0, 0, 0],
-                             [0, 0, 1, t, 0, 0],
+                             [0, 0, 1, self.t, 0, 0],
                              [0, 0, 0, 1, 0, 0],
-                             [0, 0, 0, 0, 1, t],
+                             [0, 0, 0, 0, 1, self.t],
                              [0, 0, 0, 0, 0, 1]])     # prediction matrix
         self.f.H = np.array([[1, 0, 0, 0, 0, 0],
                              [0, 0, 1, 0, 0, 0],
                              [0, 0, 0, 0, 1, 0]])     # models to sensor data
 
         
-        # self.f.u = np.array([0., 0., 0.])             # x_acc, y_acc, z_acc
-        # self.f.B = np.array([[0.5 * t**2, 0, 0],
-        #                      [t, 0, 0],
-        #                      [0, 0.5 * t**2, 0],
-        #                      [0, t, 0],
-        #                      [0, 0, 0.5 * t**2],
-        #                      [0, 0, t]])
+        self.f.u = np.array([0., 0., 0.])             # x_acc, y_acc, z_acc
+        self.f.B = np.array([[0.5 * self.t**2, 0, 0],
+                             [self.t, 0, 0],
+                             [0, 0.5 * self.t**2, 0],
+                             [0, self.t, 0],
+                             [0, 0, 0.5 * self.t**2],
+                             [0, 0, self.t]])
 
         self.f.P *= 0.5                         # covariance matrix
         self.f.R = np.full((3, 3), 0.125)       # sensor noise
@@ -134,32 +134,41 @@ class Filter():
 
     def predict(self, data, frame, world_coordinate, pixel_coordinate, profile):
         # center of bounding box given by (x, y, z) (x,y) in pixels z in meters
-        pos_x = int(data[0])
-        pos_y = int(data[1])
-        pos_z = data[2]
+        pos_x = int(data[0]) # pixel
+        pos_y = int(data[1]) # pixel
+        pos_z = data[2] # meters
         
         # vel_data = self.process_imu(data, frame)
         # if vel_data is None:
         #     vel_data = [0, 0, 0, 0, 0, 0]
         
         # convert to v from w (v = r*w)
+        X = self.f.x
+
+        print("X before" ,X )
         self.f.update(np.array([[pos_x], 
                                 [pos_y],
                                 [pos_z]]))
+        # self.time_predict(pos_z)
         self.f.predict()
-        
         X = self.f.x
-        # U = self.f.u
-    
-        time = self.time_predict(pos_z)
-        depth_frame = frame.get_depth_frame()
-        x_in_meters = world_coordinate(depth_frame,[X[0], X[2]], profile)
 
-        X = [X[0] + time * X[1], X[2] + time * X[3], X[4] + time * X[5]]
+        # U = self.f.u
+        print(X)
+        time = self.time_predict(pos_z)
+        print("time", time)
+        # depth_frame = frame.get_depth_frame()
+        # x_in_meters = world_coordinate(depth_frame,[X[0], X[2]], profile)
+        # print("x in meter", x_in_meters)
+
+        # positions = [X[0], X[2], X[4]]
+
+        positions = [X[0] + time * X[1], X[2] + time * X[3], X[4] + time * X[5]]
+        print("positions", positions )
         # X = [x_in_meters[0] + time * (x_in_meters[1] + vel_data[0] + vel_data[3]), x_in_meters[2] + time * (x_in_meters[3] + vel_data[1] + vel_data[4]), x_in_meters[4] + time * (x_in_meters[5] + vel_data[2] + vel_data[5])]
         # X = [X[0] + time * X[1] + 0.5 * U[0] * time**2, X[2] + time * X[3] + 0.5 * U[1] * time**2, X[4] + time * X[5] + 0.5 * U[2] * time**2]
-        X = pixel_coordinate(depth_frame, X)
-        location = [X[0], X[1]]
+        # positions = pixel_coordinate(depth_frame, positions)
+        location = [positions[0], positions[1]]
         return location
 
     
