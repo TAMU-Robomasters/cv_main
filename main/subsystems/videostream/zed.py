@@ -31,9 +31,9 @@ class VideoStream:
             print('VideoStream: Failed to open ZED camera! Retrying...')
             err = self.camera.open(init_params)
         
-        # Create an RGBA sl.Mat object with int8
+        # Create an RGB sl.Mat object with int8
         self.image_zed = zed.Mat(self.camera.get_camera_information().camera_resolution.width, 
-            self.camera.get_camera_information().camera_resolution.height, zed.MAT_TYPE.U8_C4)
+            self.camera.get_camera_information().camera_resolution.height, zed.MAT_TYPE.U8_C3)
         # Create a sl.Mat with float type (32-bit)
         self.depth_zed = zed.Mat(self.camera.get_camera_information().camera_resolution.width, 
             self.camera.get_camera_information().camera_resolution.height, zed.MAT_TYPE.F32_C1)
@@ -50,15 +50,18 @@ class VideoStream:
         while True:
             while self.camera.grab(self.runtime_parameters) == zed.ERROR_CODE.SUCCESS:
                 frame_number += 1
+                # TODO - if using depth and left camera view, have to reconcile them with an additional transformation
                 self.camera.retrieve_image(self.image_zed, zed.VIEW.LEFT)
                 self.camera.retrieve_measure(self.depth_zed, zed.MEASURE.DEPTH)
-                # Convert images to ocv format
-                color_image = self.image_zed.get_data()
+                # Convert images to ocv format, remove alpha channel
+                color_image = self.image_zed.get_data()[:,:,:3]
                 depth_image = self.depth_zed.get_data()
                 # Add frame to video recording based on recording frequency
                 if self.video_output and (frame_number % videostream.testing.record_interval == 0):
                     print(" saving_frame:",frame_number)
                     self.video_output.write(color_image)
+                cv2.imshow('img', depth_image)
+                cv2.waitKey(100)
                 yield color_image, depth_image
             if config.mode == 'development':
                 print("VideoStream: unable to retrieve frame.")

@@ -138,9 +138,9 @@ def setup(
 if __name__ == '__main__':
     # Relative imports here since pyrealsense requires camera to be plugged in or code will crash
     if config.hardware.camera == 'zed':
-        from videostream.zed import VideoStream
+        from subsystems.videostream.zed import VideoStream
     else:
-        from videostream.realsense import VideoStream
+        from subsystems.videostream.realsense import VideoStream
     
     video_stream = VideoStream()
     simple_synchronous, synchronous_with_tracker = setup(

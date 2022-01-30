@@ -56,7 +56,7 @@ if not FS.is_file(PATHS.configuration):
             # Things at the top of the list will override things at the bottom
             - GPU=NONE
             - BOARD=LAPTOP
-            - CAMERA=NONE
+            - CAMERA=ZED
             - MODE=DEVELOPMENT
             - TEAM=RED
         """.replace("\n            ","\n"),
