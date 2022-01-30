@@ -60,8 +60,8 @@ class VideoStream:
                 if self.video_output and (frame_number % videostream.testing.record_interval == 0):
                     print(" saving_frame:",frame_number)
                     self.video_output.write(color_image)
-                cv2.imshow('img', depth_image)
-                cv2.waitKey(100)
+#                 cv2.imshow('img', depth_image)
+#                 cv2.waitKey(100)
                 yield color_image, depth_image
             if config.mode == 'development':
                 print("VideoStream: unable to retrieve frame.")
