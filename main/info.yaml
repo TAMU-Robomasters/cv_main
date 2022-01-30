@@ -41,13 +41,7 @@ configuration:
         aiming:
             prediction_time: 2 # time interval in seconds to predict using kalman filters
             
-            # depth camera
-            stream_width: 848
-            stream_height: 480
-            stream_framerate: 30
             grid_size: 4
-            horizontal_fov: 86
-            vertical_fov: 57
             model_fps: 30
             bullet_velocity: 26
             length_barrel: .22
@@ -120,9 +114,22 @@ configuration:
     CAMERA=ZED:
         hardware:
             camera: zed
+        aiming:
+            stream_width: 1280
+            stream_height: 720
+            stream_framerate: 30
+            horizontal_fov: 104
+            vertical_fov: 72
+            
     CAMERA=REALSENSE:
         hardware:
             camera: realsense
+        aiming:
+            stream_width: 848
+            stream_height: 480
+            stream_framerate: 30
+            horizontal_fov: 86
+            vertical_fov: 57
     CAMERA=NONE:
         hardware:
             camera: null
