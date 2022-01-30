@@ -1,12 +1,12 @@
 import time
 # relative imports
 from toolbox.video_tools import Video
-from toolbox.globals import MACHINE, PATHS, params, print
-from toolbox.globals import realsense as rs
+from toolbox.globals import PATHS, config, print
+from toolbox.globals import PATHS, config, print
 import numpy as np
 
-videostream = params.videostream
-aiming      = params.aiming
+videostream = config.videostream
+aiming      = config.aiming
 
 class VideoStream:
     def __init__(self):
@@ -62,7 +62,7 @@ class VideoStream:
         Output: Video object to add frames too.
         """
 
-        color_video_location = PATHS['record_video_output_color']
+        color_video_location = PATHS.record_video_output_color
         
         # Setup video output path based on date and counter
         c = 1

@@ -1,32 +1,39 @@
 #!/usr/bin/env bash
+cmake_library_location="$HOME/cv_libs/cmake"
+cmake_download_location="$HOME/Downloads"
 
 echo '
 #
 # installing realsense
 #'
-
 # upgrade to cmake 3.12+ otherwise it won't work on jetson xaiver nx
 sudo apt-get install -y curl
 sudo apt-get install -y libssl-dev libcurl4-openssl-dev
-cd ~/Downloads
+cd "$cmake_download_location"
+cmake_folder_name="cmake-3.13.0"
 rm -f cmake-3.13.0.tar.gz
+rm -rf "$cmake_folder_name"
 wget http://www.cmake.org/files/v3.13/cmake-3.13.0.tar.gz
 tar xpvf cmake-3.13.0.tar.gz cmake-3.13.0/
-cd cmake-3.13.0/
+cd "$cmake_folder_name"
 ./bootstrap --system-curl
-make -j$(nproc)
-echo 'export PATH=~/Downloads/cmake-3.13.0/bin/:$PATH' >> ~/.bashrc
+make -j"$(nproc)"
+cd ..
+mkdir -p "$(dirname "$cmake_library_location")"
+rm -rf "$(dirname "$cmake_library_location")/$cmake_folder_name"
+mv "$cmake_folder_name" "$cmake_download_location"
+echo 'export PATH="'"$cmake_download_location/$cmake_folder_name"'/bin/:$PATH"' >> ~/.bashrc
 source ~/.bashrc
 
 # https://github.com/IntelRealSense/librealsense/blob/master/doc/installation_jetson.md
-cd ~/Downloads
+cd "$cmake_download_location"
 sudo apt-key adv --keyserver keys.gnupg.net --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE || sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE
 sudo add-apt-repository "deb https://librealsense.intel.com/Debian/apt-repo bionic main" -u
 sudo apt-get install -y librealsense2-utils
 sudo apt-get install -y librealsense2-dev
 
 # https://github.com/IntelRealSense/librealsense/tree/master/wrappers/python
-cd ~/Downloads
+cd "$cmake_download_location"
 sudo apt-get update && sudo apt-get upgrade
 sudo apt-get install -y python3 python3-dev
 git clone https://github.com/IntelRealSense/librealsense.git
@@ -35,5 +42,5 @@ mkdir build && cd build
 cmake ../ -DBUILD_PYTHON_BINDINGS:bool=true -DPYTHON_EXECUTABLE=/usr/bin/python3
 make -j$(nproc)
 sudo make install
-echo 'export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.6/pyrealsense2' >> ~/.bashrc
+echo 'export PYTHONPATH="$PYTHONPATH:/usr/local/lib/python3.6/pyrealsense2"' >> ~/.bashrc
 source ~/.bashrc

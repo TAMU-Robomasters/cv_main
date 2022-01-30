@@ -6,13 +6,13 @@ import datetime
 import os
 
 # relative imports
-from toolbox.globals import MACHINE, PATHS, PARAMETERS, print
+from toolbox.globals import PATHS, config, print
 
-stream_width = PARAMETERS['aiming']['stream_width']
-stream_height = PARAMETERS['aiming']['stream_height']
-framerate = PARAMETERS['aiming']['stream_framerate']
-time_record = PARAMETERS['videostream']['testing']['record_time']
-color_video_location = PATHS['record_video_output_color']
+stream_width = config.aiming.stream_width
+stream_height = config.aiming.stream_height
+framerate = config.aiming.stream_framerate
+time_record = config.videostream.testing.record_time
+color_video_location = PATHS.record_video_output_color
 
 pipeline = rs.pipeline()                                            
 config = rs.config()                                                

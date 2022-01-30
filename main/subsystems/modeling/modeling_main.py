@@ -6,11 +6,12 @@ import time
 import argparse
 
 # relative imports
-from toolbox.globals import MACHINE, PATHS, params, MODE, MODEL_COLORS, MODEL_LABELS, print
+from toolbox.globals import PATHS, config, print
+from subsystems.modeling.static_info import MODEL_LABELS, MODEL_COLORS, COLOR_GREEN, COLOR_YELLOW
 
-# import parameters from the info.yaml file
-should_use_tensor_rt = params.model.hardware_acceleration == 'tensor_rt'
-should_use_gpu       = params.model.hardware_acceleration == 'gpu'
+# import config from the info.yaml file
+should_use_tensor_rt = config.model.hardware_acceleration == 'tensor_rt'
+should_use_gpu       = config.model.hardware_acceleration == 'gpu'
 
 # enable certain imports if tensorRT is enabled to prevent crashes in case it is not enabled
 if should_use_tensor_rt:
@@ -19,14 +20,14 @@ if should_use_tensor_rt:
 
 class ModelingClass:
     def __init__(self):
-        self.input_dimension = params.model.input_dimension
+        self.input_dimension = config.model.input_dimension
         print("[INFO] loading YOLO from disk...")
         # Setup modeling system based on forms of gpu acceleration
         if should_use_tensor_rt: # tensorRT enabled
             print("RUNNING WITH TENSORRT")
             self.trtYolo = TrtYOLO((self.input_dimension, self.input_dimension), 3, False)
         else:
-            self.net = cv2.dnn.readNetFromDarknet(PATHS["model_config"], PATHS["model_weights"])  # init the model
+            self.net = cv2.dnn.readNetFromDarknet(PATHS.model_config, PATHS.model_weights)  # init the model
             if should_use_gpu:
                 print("RUNNING WITH GPU ACCELERATION")
                 self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
@@ -49,7 +50,7 @@ class ModelingClass:
         enemy_class_ids = []
 
         for index in range(len(boxes)):
-            if class_ids[index] != params.team_color:
+            if class_ids[index] != config.team_color:
                 enemy_boxes.append(boxes[index])
                 enemy_confidences.append(confidences[index])
                 enemy_class_ids.append(class_ids[index])
@@ -101,7 +102,7 @@ class ModelingClass:
             - a list of class_ids
         NOTE: this code is derived from https://www.pyimagesearch.com/2018/11/12/yolo-object-detection-with-opencv/
         """
-        iconfidence = params.model.confidence
+        iconfidence = config.model.confidence
         
         # initialize our lists of detected bounding boxes, confidences, and class IDs, respectively
         boxes = []
