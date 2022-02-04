@@ -1,3 +1,17 @@
+# if on a board
+if [[ "$(whoami)" = "xavier"* ]] || [[ "$(whoami)" = "nvidia"* ]]
+then
+    # link the home venv
+    expected_venv_path="/home/$(whoami)/.venv"
+    if [ -d "$expected_venv_path" ]
+    then
+        rm -rf "$FORNIX_FOLDER/.venv"
+        rm -f "$FORNIX_FOLDER/.venv"
+        ln -s "$expected_venv_path" "$FORNIX_FOLDER/.venv"
+    fi
+fi
+
+
 # TMPDIR fixes a pip issue
 export TMPDIR="$FORNIX_HOME/tmp.cleanable"
 mkdir -p "$TMPDIR"
