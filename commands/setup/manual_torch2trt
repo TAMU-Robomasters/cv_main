@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+
+sudo apt-get install -y python3-packaging
+
+rm -rf ./repos/torch2trt-fixed
+cd 
+cd repos && git https://github.com/jeff-hykin/torch2trt-fixed
+cd 
+pip install -e ./repos/torch2trt-fixed
