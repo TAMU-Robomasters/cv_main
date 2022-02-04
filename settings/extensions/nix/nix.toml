@@ -86,6 +86,10 @@ from = "860b56be91fb874d48e23a950815969a7b832fbc"
 load = [ "poetry",]
 from = "3f50332bc4913a56ad216ca01f5d0bd24277a6b2"
 
+[[packages]]
+load = [ "zlib",] # a tensor_rt related dependency
+from = "3f50332bc4913a56ad216ca01f5d0bd24277a6b2"
+
 
 # 
 # for .so errors on linux with opencv+ffmpeg
@@ -121,6 +125,11 @@ from = "559cf76fa3642106d9f23c9e845baf4d354be682"
 load = [ "pkgconfig",]
 asNativeBuildInput = true
 onlyIf = [ [ "stdenv", "isLinux",],]
+
+# [[packages]]
+# load = [ "pkg-config",]
+# asNativeBuildInput = true
+# onlyIf = [ [ "stdenv", "isLinux",],]
 
 [[packages]]
 load = [ "libconfig",]
@@ -297,6 +306,9 @@ load = [ "findutils",]
 
 [[packages]]
 load = [ "curl",]
+
+[[packages]]
+load = [ "wget",]
 
 [[packages]]
 load = [ "unixtools", "arp",]
