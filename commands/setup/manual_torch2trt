@@ -8,3 +8,13 @@ cd
 cd repos && git https://github.com/jeff-hykin/torch2trt-fixed
 cd 
 pip install -e ./repos/torch2trt-fixed
+
+# test to make sure it works
+python -c '
+from torch2trt import torch2trt
+import torch
+from torchvision.models.alexnet import alexnet
+model = alexnet(pretrained=True).eval().cuda()
+x = torch.ones((1, 3, 224, 224)).cuda()
+model_trt = torch2trt(model, [x])
+'
