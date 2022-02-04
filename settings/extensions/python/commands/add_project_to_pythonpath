@@ -7,5 +7,5 @@ export PYTHONPATH="$PYTHONPATH:$FORNIX_FOLDER:$FORNIX_FOLDER/main"
 if [[ "$(whoami)" = "xavier"* ]] || [[ "$(whoami)" = "nvidia"* ]]
 then
     # add all the local stuff
-    export PYTHONPATH="$HOME/cv_main/main:/usr/lib/python36.zip:/usr/lib/python3.6:/usr/lib/python3.6/lib-dynload:$HOME/.local/lib/python3.6/site-packages:/usr/lib/python3.6/site-packages:/usr/local/lib/python3.6/dist-packages:/usr/lib/python3/dist-packages:/usr/lib/python3.6/dist-packages:$PYTHONPATH"
+    export PYTHONPATH="/home/$(whoami)/cv_main/main:/usr/lib/python36.zip:/usr/lib/python3.6:/usr/lib/python3.6/lib-dynload:/home/$(whoami)/.local/lib/python3.6/site-packages:/usr/lib/python3.6/site-packages:/usr/local/lib/python3.6/dist-packages:/usr/lib/python3/dist-packages:/usr/lib/python3.6/dist-packages:$PYTHONPATH"
 fi
