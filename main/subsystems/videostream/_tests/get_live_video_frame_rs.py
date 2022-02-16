@@ -19,7 +19,7 @@ class LiveFeed:
         # config.enable_stream(rs.stream.accel,rs.format.motion_xyz32f,250)
         # config.enable_stream(rs.stream.gyro,rs.format.motion_xyz32f,200)
         # config.enable_stream(rs.stream.pose,rs.format.motion_xyz32f,200)
-        self.pipeline.start(config)
+        self.profile = self.pipeline.start(config)
         
     def get_live_video_frame(self):
         try:
@@ -31,6 +31,12 @@ class LiveFeed:
         except:
             print("Unexpected error:", sys.exc_info()[0])
             return None
+    
+    def get_profile(self):
+        return self.profile;
+
+    
     def __del__(self):
         print("Closing Realsense Pipeline")
         self.pipeline.stop()
+    

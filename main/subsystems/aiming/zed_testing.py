@@ -106,20 +106,25 @@ def main() :
         err = zed.grab(runtime)
         if err == sl.ERROR_CODE.SUCCESS :
             # Retrieve the left image, depth image in the half-resolution
-            zed.retrieve_image(image_zed, sl.VIEW.LEFT, sl.MEM.CPU, image_size)
+            color_frame = zed.retrieve_image(image_zed, sl.VIEW.LEFT, sl.MEM.CPU, image_size)
             zed.retrieve_image(depth_image_zed, sl.VIEW.DEPTH, sl.MEM.CPU, image_size)
             # Retrieve the RGBA point cloud in half resolution
 
             # To recover data from sl.Mat to use it with opencv, use the get_data() method
             # It returns a numpy array that can be used as a matrix with opencv
             image_ocv = image_zed.get_data()
-            # depth_image_ocv = depth_image_zed.get_data()
+            depth_image_ocv = depth_image_zed.get_data()
+        
+            # color_frame = frame.retrieve_image(sl.VIEW.LEFT, sl.MEM.CPU)
+            # color_image = color_frame.get_data()
+            # depth_frame = frame.retrieve_image(sl.VIEW.DEPTH, sl.MEM.CPU)
+            # depth_image = depth_frame.get_data()
 
-            print(image_ocv)
-            # cv2.imshow("Image", image_ocv)
-            # cv2.imshow("Depth", depth_image_ocv)
+            # print(image_ocv)
+            cv2.imshow("Image", image_ocv)
+            cv2.imshow("Depth", depth_image_ocv)
 
-            # key = cv2.waitKey(10)
+            key = cv2.waitKey(10)
 
 
     cv2.destroyAllWindows()

@@ -39,7 +39,8 @@ def setup(
         kalman_filters = False,
         with_gui = False,
         filter_team_color = False,
-        video_output = None
+        video_output = None,
+        profile = None
     ):
     """
     This function is used to connect main with other modules.
@@ -90,7 +91,7 @@ def setup(
             if len(boxes)!=0:
                 found_robot = True
                 best_bounding_box, cf = model.get_optimal_bounding_box(boxes, confidences, screen_center, aiming_methods.distance)
-                prediction, depth_amount, x_std, y_std = aiming_methods.decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, False, integration_methods.update_circular_buffers)
+                prediction, depth_amount, x_std, y_std = aiming_methods.decide_shooting_location(profile, best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, False, integration_methods.update_circular_buffers)
                 horizontal_angle, vertical_angle = aiming_methods.angle_from_center(prediction, screen_center)
             else: 
                 found_robot = False
@@ -126,7 +127,8 @@ def setup(
         while True:
             # Grab frame and record initial time
             initial_time = time.time()
-            color_image, depth_image = integration_methods.parse_frame(get_frame(), frame_number, live_camera)
+            frame = get_frame()
+            color_image, depth_image = integration_methods.parse_frame(frame, frame_number, live_camera)
 
             # Stop if we run out of frames or continue if we grabbed a faulty frame
             if not live_camera:
@@ -154,7 +156,7 @@ def setup(
             if best_bounding_box is not None:
                 # Find bounding box closest to center of screen and determine angles to turn by
                 found_robot = True
-                prediction, depth_amount, x_std, y_std = aiming_methods.decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, True, integration_methods.update_circular_buffers)
+                prediction, depth_amount, x_std, y_std = aiming_methods.decide_shooting_location(profile, kalman_filter, frame, best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, kalman_filters, True, integration_methods.update_circular_buffers)
                 horizontal_angle, vertical_angle = aiming_methods.angle_from_center(prediction, screen_center)
             else:
                 found_robot = False
@@ -173,32 +175,36 @@ def setup(
 
 if __name__ == '__main__':
     # Relative imports here since pyrealsense requires camera to be plugged in or code will crash
-    import videostream._tests.get_live_video_frame as live_video
-    import aiming.filter as test_aiming
+    import subsystems.videostream._tests.get_live_video_frame as live_video
+    import subsystems.aiming.filter as test_aiming
 
     camera = live_video.LiveFeed()
     video_output = None
-
+    profile = camera.get_profile()
     try:
         # Setup video recording configuration if enabled
         if record_interval>0:
             video_output = integration_methods.begin_video_recording()
 
+        print("Video Output",video_output)
         # Must send classes so multiprocessing is possible
-        simple_synchronous, synchronous_with_tracker,multiprocessing_with_tracker = setup(
+        simple_synchronous, synchronous_with_tracker= setup(
             team_color,
             get_frame = camera.get_live_video_frame, 
+            on_next_frame = None,
             modeling = test_modeling,
             tracker = test_tracking,
             aiming = test_aiming,
+            embedded_communication = embedded_communication,
             live_camera = True,
-            kalman_filters = False,
+            kalman_filters = True,
             with_gui = False,
-            filter_team_color = True,
-            video_output = video_output
+            filter_team_color = False,
+            video_output = video_output,
+            profile = profile
         )
 
-        simple_synchronous() # CHANGE THIS LINE FOR DIFFERENT MAIN METHODS
+        synchronous_with_tracker() # CHANGE THIS LINE FOR DIFFERENT MAIN METHODS
 
     finally:
         # Save video output

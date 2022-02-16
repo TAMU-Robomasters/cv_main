@@ -1,11 +1,13 @@
 import numpy as np
 import time
+import pyzed.sl as sl
 
 from toolbox.globals import MACHINE, PATHS, PARAMETERS, print
+from toolbox.globals import realsense as rs
 from subsystems.integration.import_parameters import *
 
 
-def update_live_recorded_video(color_image, frame_number):
+def update_live_recorded_video(color_image, frame_number, video_output):
     """
     Update the recorded video (live camera) by adding the latest frame.
 
@@ -43,7 +45,7 @@ def send_shoot(xstd,ystd):
 
     return 1 if ((xstd+ystd)/2 < std_error_bound) else 0
 
-def parse_frame(frame, frame_number, live_camera):
+def parse_frame_rs(frame, frame_number, live_camera):
     """
     Convert the frame into a color image and depth image.
 
@@ -60,7 +62,7 @@ def parse_frame(frame, frame_number, live_camera):
         depth_frame = frame.get_depth_frame() 
         depth_image = np.asanyarray(depth_frame.get_data()) 
 
-        update_live_recorded_video(color_image, frame_number)
+        update_live_recorded_video(color_image, frame_number, None)
     else:
         if frame is None: # If there is no more frames then end method
             # flush the print
@@ -71,6 +73,49 @@ def parse_frame(frame, frame_number, live_camera):
         if isinstance(frame,int): # If an int was returned we simply had a faulty frame
             color_image = 0
         color_image = frame
+
+    return color_image, depth_image
+
+
+def parse_frame_zed(frame_number, live_camera):
+    """
+    Convert the frame into a color image and depth image.
+
+    Input: Frame and frame number.
+    Output: Color image and depth image.
+    """
+    # Prepare new image size to retrieve half-resolution images
+    image_size = live_camera.get_camera_information().camera_resolution
+    image_size.width = image_size.width /2
+    image_size.height = image_size.height /2
+
+    # Declare your sl.Mat matrices
+    color_frame = sl.Mat(image_size.width, image_size.height, sl.MAT_TYPE.U8_C4)
+    depth_frame = sl.Mat(image_size.width, image_size.height, sl.MAT_TYPE.U8_C4)
+
+    if live_camera:
+        live_camera.retrieve_image(color_frame, sl.VIEW.LEFT, sl.MEM.CPU, image_size)
+        live_camera.retrieve_image(depth_frame, sl.VIEW.DEPTH, sl.MEM.CPU, image_size)
+        # Retrieve the RGBA point cloud in half resolution
+
+        color_image = color_frame.get_data()
+        depth_image = depth_frame.get_data()
+
+        update_live_recorded_video(color_image, frame_number, None)
+
+    # I ENDED OFF HERE BECAUSE WE NEED TO HANDLE THE LOGIC FOR GRABBING THE FRAMES OUTSIDE.
+
+
+    # else:
+    #     if frame is None: # If there is no more frames then end method
+    #         # flush the print
+    #         print(" "*100)
+    #         print.collect_prints = False
+    #         print("")
+    #         color_image = None
+    #     if isinstance(frame,int): # If an int was returned we simply had a faulty frame
+    #         color_image = 0
+    #     color_image = frame
 
     return color_image, depth_image
 
