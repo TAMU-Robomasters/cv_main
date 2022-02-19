@@ -1,8 +1,10 @@
 import time
+import sys
+
 # relative imports
 from toolbox.video_tools import Video
 from toolbox.globals import PATHS, config, print
-import pyrealsense2.pyrealsense2 as rs
+import pyrealsense2 as rs
 import numpy as np
 
 videostream = config.videostream
@@ -32,19 +34,18 @@ class VideoStream:
         # retry after failure
         while True:
             try:
-                frames = self.pipeline.wait_for_frames()
-                for frame in frames:
-                    frame_number += 1
-                    # create the frames
-                    color_frame = np.asanyarray(frame.get_color_frame().get_data()) 
-                    depth_frame = np.asanyarray(frame.get_depth_frame() .get_data()) 
-                    
-                    # Add frame to video recording based on recording frequency
-                    if self.video_output and (frame_number % videostream.testing.record_interval == 0):
-                        print(" saving_frame:",frame_number)
-                        self.video_output.write(color_frame)
-                    
-                    yield color_image, depth_image
+                frame = self.pipeline.wait_for_frames()
+                frame_number += 1
+                # create the frames
+                color_image = np.asanyarray(frame.get_color_frame().get_data()) 
+                depth_image = np.asanyarray(frame.get_depth_frame() .get_data()) 
+                
+                # Add frame to video recording based on recording frequency
+                if self.video_output and (frame_number % videostream.testing.record_interval == 0):
+                    print(" saving_frame:",frame_number)
+                    self.video_output.write(color_frame)
+                
+                yield color_image, depth_image
                 
             except Exception as error:
                 print("VideoStream: error while getting frames:", error, sys.exc_info()[0])

@@ -13,10 +13,10 @@ paths:
     kalman_video: ./kalman_video.do_not_sync.mp4
     npy_frames: ./scripts/data1 # replace with whichever frame set you want to use in the source/scripts/data<num> directory
     # model
-    model_weights: ./subsystems/modeling/model/yolov4-tiny-416.weights
-    model_config: ./subsystems/modeling/model/yolov4-tiny-416.cfg
-    model_labels: ./subsystems/modeling/model/yolov4-tiny-416.names
-    model_trt: ./subsystems/modeling/model/yolov4-tiny-416.do_not_sync.trt
+    model_weights: ./main/subsystems/modeling/model/yolov4-tiny-416.weights
+    model_config: ./main/subsystems/modeling/model/yolov4-tiny-416.cfg
+    model_labels: ./main/subsystems/modeling/model/yolov4-tiny-416.names
+    model_trt: ./main/subsystems/modeling/model/yolov4-tiny-416.do_not_sync.trt
     frame_save_location: ./subsystems/modeling/_tests/test.do_not_sync.png
     #aiming
     R_test_image: ./_tests/data/mask_r_blur.png

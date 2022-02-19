@@ -10,13 +10,16 @@ from toolbox.globals import PATHS, config, print
 from subsystems.modeling.static_info import MODEL_LABELS, MODEL_COLORS, COLOR_GREEN, COLOR_YELLOW
 
 # import config from the info.yaml file
-should_use_tensor_rt = config.model.hardware_acceleration == 'tensor_rt'
-should_use_gpu       = config.model.hardware_acceleration == 'gpu'
+# should_use_tensor_rt = config.model.hardware_acceleration == 'tensor_rt'
+# should_use_gpu       = config.model.hardware_acceleration == 'gpu'
+should_use_tensor_rt = True
+should_use_gpu = True
+
 
 # enable certain imports if tensorRT is enabled to prevent crashes in case it is not enabled
 if should_use_tensor_rt:
     import pycuda.autoinit  # This is needed for initializing CUDA driver
-    from modeling.yolo_with_plugins import TrtYOLO
+    from subsystems.modeling.yolo_with_plugins import TrtYOLO
 
 class ModelingClass:
     def __init__(self):
