@@ -3,7 +3,7 @@ import time
 
 from toolbox.globals import PATHS, config, print
 
-def display_information(found_robot, initial_time, frame_number, color_image, depth_image, horizontal_angle, vertical_angle, depth_amount, pixel_diff, x_std, y_std, cf, shoot, phi):  
+def display_information(found_robot, initial_time, frame_number, color_image, depth_image, horizontal_angle, vertical_angle, depth_amount, pixel_diff, x_std, y_std, cf, shoot, phi, best_bounding_box, prediction):  
     """
     Display text on the screen and draw bounding box on robot.
 
@@ -14,7 +14,8 @@ def display_information(found_robot, initial_time, frame_number, color_image, de
 
     # If gui is enabled then draw bounding boxes around the selected robot
     if with_gui and found_robot:
-        cv2.rectangle(found_robot, color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (255,0,0), 2)  
+        cv2.rectangle(found_robot, color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (255,0,0), 2) 
+        cv2.rectangle(found_robot, color_image, (prediction[0], prediction[1]), (prediction[0] + prediction[2], prediction[1] + prediction[3]), (0,255,0), 2) 
 
     # Display time taken for single iteration of loop
     iteration_time = time.time()-initial_time

@@ -255,7 +255,7 @@ def angle_from_center(prediction, screen_center):
 
     return math.radians(horizontal_angle),math.radians(vertical_angle)
 
-def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, using_tracker):
+def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, using_tracker, kalman_filter):
     """
     Decide the shooting location based on the best bounding box. Find depth of detected robot. Update the circular buffers.
 
@@ -264,17 +264,23 @@ def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_ci
     """
 
     # Location to shoot [x_obj_center, y_obj_center]
-    prediction = [best_bounding_box[0]+best_bounding_box[2]/2, best_bounding_box[1]+best_bounding_box[3]/2]
+    depth_amount = get_dist_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
+    measured = [best_bounding_box[0]+best_bounding_box[2]/2, best_bounding_box[1]+best_bounding_box[3]/2, depth_amount]
 
     # Comment this if branch out in case kalman filters doesn't work
     # if kalman_filters and using_tracker:
     #     prediction[1] += getBulletDropPixels(depth_image,best_bounding_box)
-        # kalman_box = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
-        # prediction = kalman_filter.predict(kalman_box, frame) # figure out where to aim, returns (x_obj_center, y_obj_center)
-        # print("Kalman Filter updated Prediction to:",prediction)
+    #     kalman_box = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
+    #     prediction = kalman_filter.predict(kalman_box, frame) # figure out where to aim, returns (x_obj_center, y_obj_center)
+    #     print("Kalman Filter updated Prediction to:",prediction)
+    kalman_prediction = [0,0,0]
+    if kalman_filter and using_tracker:
+        kalman_prediction = kalman_filter.predict()
+        kalman_filter.update(measured)
 
-    depth_amount = get_dist_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
-    print(" best_bounding_box:",best_bounding_box, " prediction:", prediction, " depth_amount: ", depth_amount)
+
+    # depth_amount = get_dist_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
+    # print(" best_bounding_box:",best_bounding_box, " prediction:", prediction, " depth_amount: ", depth_amount)
 
     # phi = embedded_communication.get_phi()
     # print("PHI:",phi)
@@ -283,16 +289,17 @@ def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_ci
     #     pixel_diff = 0 # Just here in case we comment out the next line
     #     pixel_diff = bullet_drop_compensation(depth_image,best_bounding_box,depth_amount,screen_center,phi)
 
-    pixel_diff = bullet_offset_compensation(depth_amount)
-    if pixel_diff is None:
-        x_circular_buffer.clear()
-        y_circular_buffer.clear()
-        pixel_diff = 0
+    # pixel_diff = bullet_offset_compensation(depth_amount)
+    # if pixel_diff is None:
+    #     x_circular_buffer.clear()
+    #     y_circular_buffer.clear()
+    #     pixel_diff = 0
 
-    prediction[1] -= pixel_diff
-    x_std, y_std = update_circular_buffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
+    # prediction[1] -= pixel_diff
+    pixel_diff = kalman_prediction[1] - measured[1]
+    x_std, y_std = update_circular_buffers(x_circular_buffer,y_circular_buffer,measured[0:2]) # Update buffers and measures of accuracy
 
-    return prediction, depth_amount, x_std, y_std, pixel_diff
+    return kalman_prediction[0:2], depth_amount, x_std, y_std, pixel_diff
 
 def initialize_tracker_and_kalman(best_bounding_box, track, color_image, kalman_filters):
     """
@@ -308,7 +315,7 @@ def initialize_tracker_and_kalman(best_bounding_box, track, color_image, kalman_
 
     # Reinitialize kalman filters
     if kalman_filters:
-        kalman_filter = aiming.Filter(model_fps)
+        kalman_filter = aiming.KalmanFilter(model_fps)
         print("Reinitialized Kalman Filter.")
 
     return best_bounding_box, kalman_filter
