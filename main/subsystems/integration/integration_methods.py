@@ -1,7 +1,7 @@
 import numpy as np
 import time
 
-from toolbox.globals import PATHS, config, print
+from toolbox.globals import path_to, config, print
 
 def display_information(found_robot, initial_time, frame_number, color_image, depth_image, horizontal_angle, vertical_angle, depth_amount, pixel_diff, x_std, y_std, cf, shoot, phi):  
     """

@@ -3,7 +3,7 @@ import cv2
 import math
 import collections
 
-from toolbox.globals import PATHS, config, print
+from toolbox.globals import path_to, config, print
 from toolbox.config import aiming
 
 prediction_time     = aiming.prediction_time

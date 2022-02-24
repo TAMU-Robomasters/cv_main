@@ -17,6 +17,7 @@ super-map = "^1.1.1"
 walk-up = "^0.1.0"
 ez-yaml = "^1.1.0"
 torch = "^1.10.2"
+quik-config = "^0.0.2"
 
 [tool.poetry.dev-dependencies]
 

@@ -2,9 +2,9 @@ import time
 import itertools
 # relative imports
 from toolbox.video_tools import Video
-from toolbox.globals import PATHS, config, print
+from toolbox.globals import path_to, config, print
 from toolbox.video_tools import Video
-from toolbox.globals import PATHS, config, print
+from toolbox.globals import path_to, config, print
 import numpy as np
 
 simulation = config.videostream.simulation

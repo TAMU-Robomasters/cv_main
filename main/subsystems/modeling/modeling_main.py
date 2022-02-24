@@ -6,7 +6,7 @@ import time
 import argparse
 
 # relative imports
-from toolbox.globals import PATHS, config, print
+from toolbox.globals import path_to, config, print
 from subsystems.modeling.static_info import MODEL_LABELS, MODEL_COLORS, COLOR_GREEN, COLOR_YELLOW
 
 # import config from the info.yaml file
@@ -27,7 +27,7 @@ class ModelingClass:
             print("RUNNING WITH TENSORRT")
             self.trtYolo = TrtYOLO((self.input_dimension, self.input_dimension), 3, False)
         else:
-            self.net = cv2.dnn.readNetFromDarknet(PATHS.model_config, PATHS.model_weights)  # init the model
+            self.net = cv2.dnn.readNetFromDarknet(path_to.model_config, path_to.model_weights)  # init the model
             if should_use_gpu:
                 print("RUNNING WITH GPU ACCELERATION")
                 self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)

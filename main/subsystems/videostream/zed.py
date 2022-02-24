@@ -1,8 +1,8 @@
 import time
 # relative imports
 from toolbox.video_tools import Video
-from toolbox.globals import PATHS, config, print
-from toolbox.globals import PATHS, config, print
+from toolbox.globals import path_to, config, print
+from toolbox.globals import path_to, config, print
 import numpy as np
 
 videostream = config.videostream
@@ -62,7 +62,7 @@ class VideoStream:
         Output: Video object to add frames too.
         """
 
-        color_video_location = PATHS.record_video_output_color
+        color_video_location = path_to.record_video_output_color
         
         # Setup video output path based on date and counter
         c = 1
