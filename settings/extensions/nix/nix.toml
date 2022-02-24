@@ -248,6 +248,9 @@ load = [ "nnn",]
 load = [ "jq",]
 
 [[packages]]
+load = [ "yq",]
+
+[[packages]]
 load = [ "git-subrepo",]
 
 #

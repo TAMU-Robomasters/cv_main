@@ -15,7 +15,7 @@ import datetime
 import collections
 
 # relative imports
-from toolbox.globals import params, print
+from toolbox.globals import PATHS, config, print
 from subsystems.embedded_communication.embedded_main import embedded_communication
 import subsystems.modeling.modeling_main as modeling
 import subsystems.tracking.tracking_main as tracking
@@ -64,7 +64,7 @@ def setup(
             initial_time = time.time()
             
             # modeling
-            boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, params.model.threshold, filter_team_color)
+            boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, config.model.threshold, filter_team_color)
             screen_center = (color_image.shape[1] / 2, color_image.shape[0] / 2)
             best_bounding_box, cf = model.get_optimal_bounding_box(boxes, confidences, screen_center, aiming_methods.distance)
             # aiming
@@ -91,7 +91,7 @@ def setup(
         counter = 1
         best_bounding_box = kalman_filter = None
         horizontal_angle = vertical_angle = x_std = y_std = depth_amount = pixel_diff = phi = cf = shoot = 0
-        x_circular_buffer, y_circular_buffer = collections.deque(maxlen=params.aiming.std_buffer_size), collections.deque(maxlen=params.aiming.std_buffer_size) # Used to ensure we are locked on a target
+        x_circular_buffer, y_circular_buffer = collections.deque(maxlen=config.aiming.std_buffer_size), collections.deque(maxlen=config.aiming.std_buffer_size) # Used to ensure we are locked on a target
         track = tracker.TrackingClass()
         model = modeling.ModelingClass()
 
@@ -104,10 +104,10 @@ def setup(
             screen_center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # Finds the coordinate for the screen_center of the screen
             
             # Run model, find best bbox, and re-initialize tracker/kalman filters every model.frequency frames or whenever the tracker fails
-            if counter % params.model.frequency == 0 or (best_bounding_box is None):
+            if counter % config.model.frequency == 0 or (best_bounding_box is None):
                 counter=1
                 best_bounding_box = None
-                boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, params.model.threshold, filter_team_color) # Call model
+                boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, config.model.threshold, filter_team_color) # Call model
                 if len(boxes)!=0:
                     best_bounding_box, cf = model.get_optimal_bounding_box(boxes, confidences, screen_center, aiming_methods.distance)
                     best_bounding_box, kalman_filter = aiming_methods.initialize_tracker_and_kalman(best_bounding_box, track, color_image, kalman_filters)
@@ -118,14 +118,14 @@ def setup(
             if best_bounding_box is not None:
                 # Find bounding box closest to center of screen and determine angles to turn by
                 found_robot = True
-                prediction, depth_amount, x_std, y_std = aiming_methods.decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, True, integration_methods.update_circular_buffers)
+                prediction, depth_amount, x_std, y_std = aiming_methods.decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, True, kalman_filter, integration_methods.update_circular_buffers)
                 horizontal_angle, vertical_angle = aiming_methods.angle_from_center(prediction, screen_center)
             else:
                 found_robot = False
 
             # Actually move the robot to aim
             embedded_communication.send_embedded_command(found_robot, horizontal_angle, vertical_angle, depth_amount, x_circular_buffer, y_circular_buffer, x_std, y_std)
-            integration_methods.display_information(found_robot, initial_time, frame_number, color_image, depth_image, horizontal_angle, vertical_angle, depth_amount, pixel_diff, x_std, y_std, cf, shoot, phi)
+            integration_methods.display_information(found_robot, initial_time, frame_number, color_image, depth_image, horizontal_angle, vertical_angle, depth_amount, pixel_diff, x_std, y_std, cf, shoot, phi, best_bounding_box, prediction)
 
             # Save modeled frame for recorded video feed
             if not (on_next_frame is None):
@@ -137,8 +137,10 @@ def setup(
 
 if __name__ == '__main__':
     # Relative imports here since pyrealsense requires camera to be plugged in or code will crash
-    import videostream._tests.get_live_video_frame as live_video
-    from videostream.realsense import VideoStream
+    if config.hardware.camera == 'zed':
+        from subsystems.videostream.zed import VideoStream
+    else:
+        from subsystems.videostream.realsense import VideoStream
     
     video_stream = VideoStream()
     simple_synchronous, synchronous_with_tracker = setup(

@@ -1,4 +1,4 @@
-from toolbox.globals import MACHINE, PATHS, PARAMETERS, print
+from toolbox.globals import PATHS, config, print
 
 def aim(bounding_boxes):
     # this should be nearly the same as aiming_main

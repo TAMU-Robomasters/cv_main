@@ -3,37 +3,38 @@ import cv2
 import math
 import collections
 
-from toolbox.globals import PARAMETERS, params, print
+from toolbox.globals import PATHS, config, print
+from toolbox.config import aiming
 
-prediction_time     = params.aiming.prediction_time
-stream_width        = params.aiming.stream_width
-stream_height       = params.aiming.stream_height
-stream_framerate    = params.aiming.stream_framerate
-grid_size           = params.aiming.grid_size
-horizontal_fov      = params.aiming.horizontal_fov
-vertical_fov        = params.aiming.vertical_fov
-model_fps           = params.aiming.model_fps
-bullet_velocity     = params.aiming.bullet_velocity
-length_barrel       = params.aiming.length_barrel
-camera_gap          = params.aiming.camera_gap
-std_buffer_size     = params.aiming.std_buffer_size
-heat_buffer_size    = params.aiming.heat_buffer_size
-rate_of_fire        = params.aiming.rate_of_fire
-idle_counter        = params.aiming.idle_counter
-std_error_bound     = params.aiming.std_error_bound
-min_range           = params.aiming.min_range
-max_range           = params.aiming.max_range
-blue_light          = params.aiming.blue_light
-blue_dark           = params.aiming.blue_dark
-area_arrow_bound    = params.aiming.area_arrow_bound
-center_image_offset = params.aiming.center_image_offset
-min_area            = params.aiming.min_area
-r_timer             = params.aiming.r_timer
-barrel_camera_gap   = params.aiming.barrel_camera_gap
+prediction_time     = aiming.prediction_time
+stream_width        = aiming.stream_width
+stream_height       = aiming.stream_height
+stream_framerate    = aiming.stream_framerate
+grid_size           = aiming.grid_size
+horizontal_fov      = aiming.horizontal_fov
+vertical_fov        = aiming.vertical_fov
+model_fps           = aiming.model_fps
+bullet_velocity     = aiming.bullet_velocity
+length_barrel       = aiming.length_barrel
+camera_gap          = aiming.camera_gap
+std_buffer_size     = aiming.std_buffer_size
+heat_buffer_size    = aiming.heat_buffer_size
+rate_of_fire        = aiming.rate_of_fire
+idle_counter        = aiming.idle_counter
+std_error_bound     = aiming.std_error_bound
+min_range           = aiming.min_range
+max_range           = aiming.max_range
+blue_light          = aiming.blue_light
+blue_dark           = aiming.blue_dark
+area_arrow_bound    = aiming.area_arrow_bound
+center_image_offset = aiming.center_image_offset
+min_area            = aiming.min_area
+r_timer             = aiming.r_timer
+barrel_camera_gap   = aiming.barrel_camera_gap
 
 # these are used to ensure we are locked on a target
-x_circular_buffer = collections.deque(maxlen=params.aiming.std_buffer_size)
-y_circular_buffer = collections.deque(maxlen=params.aiming.std_buffer_size)
+x_circular_buffer = collections.deque(maxlen=aiming.std_buffer_size)
+y_circular_buffer = collections.deque(maxlen=aiming.std_buffer_size)
 
 def visualize_depth_frame(depth_frame_array):
     """
@@ -60,7 +61,7 @@ def get_dist_from_array(depth_frame_array, bbox):
     Input: Depth frame and bounding box.
     Output: Single depth value.
     """
-    grid_size = PARAMETERS['aiming']['grid_size']
+    grid_size = aiming.grid_size
 
     try:
         x_top_left = bbox[0] 
@@ -186,7 +187,7 @@ def bullet_drop_compensation2(depth_amount, gimbal_pitch, v_angle, proj_velocity
     Input: Depth Amount of Bounding Box.
     Output: Offset in Pixels.
     """
-    barrel_camera_gap = PARAMETERS["aiming"]["barrel_camera_gap"]
+    barrel_camera_gap = aiming.barrel_camera_gap
     radius = math.sqrt(depth_amount ** 2 + (depth_amount * math.tan(v_angle) + barrel_camera_gap) ** 2)
     total_angle = gimbal_pitch + math.atan2(depth_amount * math.tan(v_angle) + barrel_camera_gap, depth_amount)
     time_interval = (radius * math.cos(total_angle)) / (proj_velocity * math.cos(gimbal_pitch))
@@ -254,7 +255,7 @@ def angle_from_center(prediction, screen_center):
 
     return math.radians(horizontal_angle),math.radians(vertical_angle)
 
-def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, using_tracker):
+def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, using_tracker, kalman_filter):
     """
     Decide the shooting location based on the best bounding box. Find depth of detected robot. Update the circular buffers.
 
@@ -263,17 +264,23 @@ def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_ci
     """
 
     # Location to shoot [x_obj_center, y_obj_center]
-    prediction = [best_bounding_box[0]+best_bounding_box[2]/2, best_bounding_box[1]+best_bounding_box[3]/2]
+    depth_amount = get_dist_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
+    measured = [best_bounding_box[0]+best_bounding_box[2]/2, best_bounding_box[1]+best_bounding_box[3]/2, depth_amount]
 
     # Comment this if branch out in case kalman filters doesn't work
     # if kalman_filters and using_tracker:
     #     prediction[1] += getBulletDropPixels(depth_image,best_bounding_box)
-        # kalman_box = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
-        # prediction = kalman_filter.predict(kalman_box, frame) # figure out where to aim, returns (x_obj_center, y_obj_center)
-        # print("Kalman Filter updated Prediction to:",prediction)
+    #     kalman_box = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
+    #     prediction = kalman_filter.predict(kalman_box, frame) # figure out where to aim, returns (x_obj_center, y_obj_center)
+    #     print("Kalman Filter updated Prediction to:",prediction)
+    kalman_prediction = [0,0,0]
+    if kalman_filter and using_tracker:
+        kalman_prediction = kalman_filter.predict()
+        kalman_filter.update(measured)
 
-    depth_amount = get_dist_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
-    print(" best_bounding_box:",best_bounding_box, " prediction:", prediction, " depth_amount: ", depth_amount)
+
+    # depth_amount = get_dist_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
+    # print(" best_bounding_box:",best_bounding_box, " prediction:", prediction, " depth_amount: ", depth_amount)
 
     # phi = embedded_communication.get_phi()
     # print("PHI:",phi)
@@ -282,16 +289,17 @@ def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_ci
     #     pixel_diff = 0 # Just here in case we comment out the next line
     #     pixel_diff = bullet_drop_compensation(depth_image,best_bounding_box,depth_amount,screen_center,phi)
 
-    pixel_diff = bullet_offset_compensation(depth_amount)
-    if pixel_diff is None:
-        x_circular_buffer.clear()
-        y_circular_buffer.clear()
-        pixel_diff = 0
+    # pixel_diff = bullet_offset_compensation(depth_amount)
+    # if pixel_diff is None:
+    #     x_circular_buffer.clear()
+    #     y_circular_buffer.clear()
+    #     pixel_diff = 0
 
-    prediction[1] -= pixel_diff
-    x_std, y_std = update_circular_buffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
+    # prediction[1] -= pixel_diff
+    pixel_diff = kalman_prediction[1] - measured[1]
+    x_std, y_std = update_circular_buffers(x_circular_buffer,y_circular_buffer,measured[0:2]) # Update buffers and measures of accuracy
 
-    return prediction, depth_amount, x_std, y_std, pixel_diff
+    return kalman_prediction[0:2], depth_amount, x_std, y_std, pixel_diff
 
 def initialize_tracker_and_kalman(best_bounding_box, track, color_image, kalman_filters):
     """
@@ -307,7 +315,7 @@ def initialize_tracker_and_kalman(best_bounding_box, track, color_image, kalman_
 
     # Reinitialize kalman filters
     if kalman_filters:
-        kalman_filter = aiming.Filter(model_fps)
+        kalman_filter = aiming.KalmanFilter(model_fps)
         print("Reinitialized Kalman Filter.")
 
     return best_bounding_box, kalman_filter

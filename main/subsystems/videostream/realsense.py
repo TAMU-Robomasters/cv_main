@@ -1,12 +1,12 @@
 import time
 # relative imports
 from toolbox.video_tools import Video
-from toolbox.globals import MACHINE, PATHS, params, print
-from toolbox.globals import realsense as rs
+from toolbox.globals import PATHS, config, print
+import pyrealsense2.pyrealsense2 as rs
 import numpy as np
 
-videostream = params.videostream
-aiming      = params.aiming
+videostream = config.videostream
+aiming      = config.aiming
 
 class VideoStream:
     def __init__(self):
@@ -19,13 +19,13 @@ class VideoStream:
             self.video_output = self.begin_video_recording()
 
         self.pipeline = rs.pipeline()                                                               # declares and initializes the pipeline variable
-        config = rs.config()                                                                        # declares and initializes the config variable for the pipeline
-        config.enable_stream(rs.stream.depth, stream_width, stream_height, rs.format.z16, framerate)  # this starts the depth stream and sets the size and format
-        config.enable_stream(rs.stream.color, stream_width, stream_height, rs.format.bgr8, framerate) # this starts the color stream and set the size and format
+        rs_config = rs.config()                                                                        # declares and initializes the config variable for the pipeline
+        rs_config.enable_stream(rs.stream.depth, stream_width, stream_height, rs.format.z16, framerate)  # this starts the depth stream and sets the size and format
+        rs_config.enable_stream(rs.stream.color, stream_width, stream_height, rs.format.bgr8, framerate) # this starts the color stream and set the size and format
         # config.enable_stream(rs.stream.accel,rs.format.motion_xyz32f,250)
         # config.enable_stream(rs.stream.gyro,rs.format.motion_xyz32f,200)
         # config.enable_stream(rs.stream.pose,rs.format.motion_xyz32f,200)
-        self.pipeline.start(config)
+        self.pipeline.start(rs_config)
     
     def frames(self):
         frame_number = 0
@@ -62,7 +62,7 @@ class VideoStream:
         Output: Video object to add frames too.
         """
 
-        color_video_location = PATHS['record_video_output_color']
+        color_video_location = PATHS.record_video_output_color
         
         # Setup video output path based on date and counter
         c = 1
