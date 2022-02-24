@@ -79,21 +79,4 @@ config = recursive_lazy_dict(config)
 original_print = print
 def print(*args,**kwargs):
     if config.mode == "development":
-        # bundle up prints
-        if print.collect_prints:
-            for each in args:
-                print.collection.append(each)
-        # release bundle
-        else:
-            args = list(args)
-            args += print.collection
-            print.collection = []
-            return original_print(*args,**kwargs)
-    # if not in development (e.g. production) don't print anything
-def _dump_collection(*args, **kwargs):
-    print.collect_prints = False
-    print() # dump any pending prints
-    print(*args, **kwargs)
-print.dump_collection = _dump_collection
-print.collection = []
-print.collect_prints = False
+        original_print(*args,**kwargs)
