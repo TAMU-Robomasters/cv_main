@@ -1,5 +1,6 @@
 import numpy as np
 import time
+import cv2
 
 from toolbox.globals import PATHS, config, print
 

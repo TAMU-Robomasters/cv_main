@@ -32,19 +32,18 @@ class VideoStream:
         # retry after failure
         while True:
             try:
-                frames = self.pipeline.wait_for_frames()
-                for frame in frames:
-                    frame_number += 1
-                    # create the frames
-                    color_frame = np.asanyarray(frame.get_color_frame().get_data()) 
-                    depth_frame = np.asanyarray(frame.get_depth_frame() .get_data()) 
+                frame = self.pipeline.wait_for_frames()
+                frame_number += 1
+                # create the frames
+                color_frame = np.asanyarray(frame.get_color_frame().get_data()) 
+                depth_frame = np.asanyarray(frame.get_depth_frame() .get_data()) 
+                
+                # Add frame to video recording based on recording frequency
+                if self.video_output and (frame_number % videostream.testing.record_interval == 0):
+                    print(" saving_frame:",frame_number)
+                    self.video_output.write(color_frame)
                     
-                    # Add frame to video recording based on recording frequency
-                    if self.video_output and (frame_number % videostream.testing.record_interval == 0):
-                        print(" saving_frame:",frame_number)
-                        self.video_output.write(color_frame)
-                    
-                    yield color_image, depth_image
+                yield color_frame, depth_frame
                 
             except Exception as error:
                 print("VideoStream: error while getting frames:", error, sys.exc_info()[0])

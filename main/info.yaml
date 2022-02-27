@@ -13,11 +13,11 @@ paths:
     kalman_video: ./kalman_video.do_not_sync.mp4
     npy_frames: ./scripts/data1 # replace with whichever frame set you want to use in the source/scripts/data<num> directory
     # model
-    model_weights: ./subsystems/modeling/model/yolov4-tiny-416.weights
-    model_config: ./subsystems/modeling/model/yolov4-tiny-416.cfg
-    model_labels: ./subsystems/modeling/model/yolov4-tiny-416.names
-    model_trt: ./subsystems/modeling/model/yolov4-tiny-416.do_not_sync.trt
-    frame_save_location: ./subsystems/modeling/_tests/test.do_not_sync.png
+    model_weights: ./main/subsystems/modeling/model/yolov4-tiny-416.weights
+    model_config: ./main/subsystems/modeling/model/yolov4-tiny-416.cfg
+    model_labels: ./main/subsystems/modeling/model/yolov4-tiny-416.names
+    model_trt: ./main/subsystems/modeling/model/yolov4-tiny-416.do_not_sync.trt
+    frame_save_location: ./main/subsystems/modeling/_tests/test.do_not_sync.png
     #aiming
     R_test_image: ./_tests/data/mask_r_blur.png
     rune_test_video: ./_tests/data/rune3.mp4
@@ -85,7 +85,7 @@ configuration:
         testing:
             save_frame_to_file: true
             open_each_frame: false
-            main_function: 'simple_synchronous' # 'simple_synchronous' or 'synchronous_with_tracker'
+            main_function: 'synchronous_with_tracker' # 'simple_synchronous' or 'synchronous_with_tracker'
             filter_team_color: False
         embedded_communication:
             serial_baudrate: 115200

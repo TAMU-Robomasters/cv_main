@@ -73,7 +73,7 @@ def setup(
             embedded_communication.send_output(horizontal_angle, vertical_angle, should_shoot)
             # logging
             found_robot = best_bounding_box is not None
-            integration_methods.display_information(found_robot, initial_time, frame_number, color_image, depth_image, horizontal_angle, vertical_angle, depth_amount, pixel_diff, x_std, y_std, cf, should_shoot, 0)
+            integration_methods.display_information(found_robot, initial_time, frame_number, color_image, depth_image, horizontal_angle, vertical_angle, depth_amount, pixel_diff, x_std, y_std, cf, should_shoot, 0, best_bounding_box, best_bounding_box)
             # testing/debugging
             if not (on_next_frame is None): on_next_frame(frame_number, color_image, (boxes, confidences), (horizontal_angle,vertical_angle))
 
