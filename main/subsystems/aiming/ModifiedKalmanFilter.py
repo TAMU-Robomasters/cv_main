@@ -36,7 +36,7 @@ class KalmanFilter(object):
         # Define the State Transition Matrix A
         self.A = np.matrix([[1, 0, 0, self.dt, 0, 0],
                             [0, 1, 0, 0, self.dt, 0],
-                            [0, 0, 1, 0, 0, self.dt]
+                            [0, 0, 1, 0, 0, self.dt],
                             [0, 0, 0, 1, 0, 0],
                             [0, 0, 0, 0, 1, 0],
                             [0, 0, 0, 0, 0, 1]])
@@ -60,12 +60,12 @@ class KalmanFilter(object):
                             [0, 0, (self.dt**4)/4, 0, 0, (self.dt**3)/2],
                             [(self.dt**3)/2, 0, 0, self.dt**2, 0, 0],
                             [0, (self.dt**3)/2, 0, 0, self.dt**2, 0],
-                            [0, 0, (self.dt**3)/2, 0, 0, self.dt**2]]) * std_acc**2
+                            [0, 0, (self.dt**3)/2, 0, 0, self.dt**2]]) * self.std_acc**2
 
         #Initial Measurement Noise Covariance
-        self.R = np.matrix([[x_std_meas**2,0, 0],
-                           [0, y_std_meas**2, 0],
-                           [0, 0, z_std_meas**2]])
+        self.R = np.matrix([[self.x_std_meas**2,0, 0],
+                           [0, self.y_std_meas**2, 0],
+                           [0, 0, self.z_std_meas**2]])
 
         #Initial Covariance Matrix
         self.P = np.eye(self.A.shape[1])
