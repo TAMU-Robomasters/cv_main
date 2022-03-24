@@ -6,18 +6,6 @@ from shutil import move
 from pathlib import Path
 import glob
 import regex as re
-import numpy as np
-import numpy
-import pickle
-import random
-import itertools
-import time
-import subprocess
-from subprocess import call
-import json
-import cv2 as cv
-import cv2
-import yaml
 import shutil
 
 

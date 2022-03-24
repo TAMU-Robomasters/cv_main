@@ -2,7 +2,7 @@ import cv2
 import time
 import numpy as np
 # import local
-from toolbox.globals import PATHS, config, print
+from toolbox.globals import path_to, config, print
 from toolbox.image_tools import Image
 from toolbox.video_tools import Video
 from main import setup
@@ -75,6 +75,6 @@ simple_synchronous, synchronous_with_tracker = setup(
 exec(config.testing.main_function+"()") # runs simple_synchronous
 
 # save all the frames as a video
-print.dump_collection("\nStarting process of saving frames to a video file")
-Video.create_from_frames(frames, save_to=PATHS.video_output)
-print(f"video output has been saved to {PATHS.video_output}")
+print("\nStarting process of saving frames to a video file")
+Video.create_from_frames(frames, save_to=path_to.video_output)
+print(f"video output has been saved to {path_to.video_output}")

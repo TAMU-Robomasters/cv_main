@@ -17,7 +17,7 @@ color_reset="\e[0m";color_reset=""
 # if trap exists
 if [ -n "$(command -v "trap")" ]
 then
-    trap 'unset repo; unset branch; unset setup_or_copy; unset mixin_remote_name; return 0' INT TERM
+    trap 'unset repo; unset branch; unset setup_or_copy; unset mixin_remote_name; exit 0' INT TERM
 fi
         
 # if nix doesnt exist
@@ -39,12 +39,13 @@ then
         echo "please use a regular user, then re-run this script"
         echo "$color_reset"
         # if users exists
-        if [ -n "$(command -v "users")" ]
+        if [ -n "$(command -v "getent")" ] && [ -n "$(command -v "cut")" ]
         then
-            if [ -n "$(users)" ] && [ "$(users)" != "root" ]
+            users="$(getent passwd {1000..6000} | cut -d: -f1)"
+            if [ -n "$users" ] && [ "$users" != "root" ]
             then
                 echo "the available users are:"
-                users
+                echo "$users"
                 echo 
                 echo "you should be able to run ${cyan}su ${light_yellow}USER_NAME${color_reset}"
                 echo "to login as one of those users"
@@ -99,13 +100,18 @@ then
     then
         debugging_info="$debugging_info$newline""I think you have a Mac because "'"$OSTYPE" = "darwin"*'" came back true"
         full_version="$(sw_vers -productVersion)"
-        major_version="$(echo "$full_version" | sed -E 's/([0-9]+)\.[0-9]+\.[0-9]+/\1/g')"
-        minor_version="$(echo "$full_version" | sed -E 's/[0-9]+\.([0-9]+)\.[0-9]+/\1/g')"
+        major_version="$(echo "$full_version" | sed -E 's/([0-9]+)\.[0-9]+(\.[0-9]+)?/\1/g')"
+        minor_version="$(echo "$full_version" | sed -E 's/[0-9]+\.([0-9]+)(\.[0-9]+)?/\1/g')"
         #                  
         # Big Sur or Newer
         #                 
-        if [ "$major_version" = "11" ]; then
-            sh <(curl -Lk https://releases.nixos.org/nix/nix-2.3.7/install) --darwin-use-unencrypted-nix-store-volume
+        if [ "$major_version" = "11" ] || \
+            [ "$major_version" = "12" ] || \
+            [ "$major_version" = "13" ] || \
+            [ "$major_version" = "14" ] || \
+            [ "$major_version" = "15" ]
+        then
+            bash <(curl -Lk https://releases.nixos.org/nix/nix-2.3.7/install) --darwin-use-unencrypted-nix-store-volume
         #                  
         # Older than Big Sur (Catalina, Mojave, High Siera, Siera, etc)
         #                 
@@ -208,6 +214,32 @@ else
         if [ -z "$(command -v "git")" ]
         then
             nix-env -i git
+        fi
+        # git email
+        if ! git config --global user.email
+        then
+            echo "git needs an email (doesnt have to be valid), what email should I tell git?"
+            read answer
+            # if no answer
+            if [ -z "$answer" ]
+            then
+                git config --global user.email "change@this.com"
+            else
+                git config --global user.email "$answer"
+            fi
+        fi
+        # git name
+        if ! git config --global user.name
+        then
+            echo "git needs an name (doesnt have to be a real name), what name should I tell git?"
+            read answer
+            # if no answer
+            if [ -z "$answer" ]
+            then
+                git config --global user.name "MrCHANGE ME"
+            else
+                git config --global user.name "$answer"
+            fi
         fi
         
         # 
@@ -448,7 +480,7 @@ else
                 echo ""
             else
                 # if setup
-                if [ "$answer" = "setup" ]
+                if [ "$setup_or_copy" = "setup" ]
                 then
                     echo "$light_green"
                     echo "# "

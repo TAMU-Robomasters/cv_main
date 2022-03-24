@@ -21,6 +21,11 @@ let
         )
     );
     
+    salt = (builtins.import
+        (./nixpkgs/salt.nix)
+        main
+    );
+    
     # just a helper
     emptyOptions = ({
         buildInputs = [];
@@ -126,7 +131,7 @@ in
     # 
     main.packages.mkShell {
         # inside that shell, make sure to use these packages
-        buildInputs =  main.project.buildInputs ++ macOnly.buildInputs ++ linuxOnly.buildInputs;
+        buildInputs =  main.project.buildInputs ++ macOnly.buildInputs ++ linuxOnly.buildInputs ++ [ salt ];
         
         nativeBuildInputs =  main.project.nativeBuildInputs ++ macOnly.nativeBuildInputs ++ linuxOnly.nativeBuildInputs;
         
@@ -140,7 +145,7 @@ in
             ${macOnly.shellCode}
             
             # provide access to ncurses for nice terminal interactions
-            export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${main.packages.ncurses}/lib"
+            export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${main.packages.ncurses5}/lib"
             export LD_LIBRARY_PATH="${main.makeLibraryPath [ main.packages.glib ] }:$LD_LIBRARY_PATH"
             
             if [ "$FORNIX_DEBUG" = "true" ]; then

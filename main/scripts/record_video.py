@@ -7,7 +7,7 @@ import os
 # relative imports
 from toolbox.video_tools import Video
 from toolbox.image_tools import Image
-from toolbox.globals import PATHS, config, print
+from toolbox.globals import path_to, config, print
 import subsystems.modeling.modeling_main as modeling
 import subsystems.tracking.tracking_main as tracking
 import subsystems.videostream._tests.get_next_video_frame as next_video_frame
@@ -22,8 +22,8 @@ time_record          = config.videostream.testing.record_time
 confidence           = config.model.confidence
 threshold            = config.model.threshold
 model_frequency      = config.model.frequency
-color_video_location = PATHS.record_video_output_color
-npy_frames_location  = PATHS.npy_frames
+color_video_location = path_to.record_video_output_color
+npy_frames_location  = path_to.npy_frames
 
 os.system("mkdir -p "+npy_frames_location)
 os.system("rm "+npy_frames_location+"/*")

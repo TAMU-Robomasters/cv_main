@@ -6,7 +6,7 @@ import cv2
 # relative imports
 from toolbox.video_tools import Video
 from toolbox.image_tools import Image
-from toolbox.globals import PATHS, config, print
+from toolbox.globals import path_to, config, print
 
 stream_width = config.aiming.stream_width
 stream_height = config.aiming.stream_height
@@ -20,7 +20,7 @@ config.enable_stream(rs.stream.color, stream_width, stream_height, rs.format.bgr
 pipeline.start(config)
 
 frame_dimensions = (stream_width, stream_height)
-colorwriter = cv2.VideoWriter(PATHS.record_video_output_color, cv2.VideoWriter_fourcc(*'mp4v'), framerate, frame_dimensions)
+colorwriter = cv2.VideoWriter(path_to.record_video_output_color, cv2.VideoWriter_fourcc(*'mp4v'), framerate, frame_dimensions)
 t0 = time.time()
 counter = 0
 
