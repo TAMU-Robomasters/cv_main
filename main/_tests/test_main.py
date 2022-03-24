@@ -2,7 +2,7 @@ import cv2
 import time
 import numpy as np
 # import local
-from toolbox.globals import MACHINE, PATHS, PARAMETERS, params, print
+from toolbox.globals import path_to, config, print
 from toolbox.image_tools import Image
 from toolbox.video_tools import Video
 from main import setup
@@ -45,7 +45,7 @@ def debug_each_frame(frame_index, frame, model_ouput, aiming_output):
     for each in boxes:
         image.add_bounding_box(each)
     
-    if params.testing.save_frame_to_file:
+    if config.testing.save_frame_to_file:
         frames.append(image.img)
 
     # allow user to quit by pressing q (at least I think thats what this checks)
@@ -64,19 +64,17 @@ simple_synchronous, synchronous_with_tracker = setup(
     tracker=test_tracking,
     live_camera=False,
     kalman_filters=False,
-    with_gui=PARAMETERS["testing"]["open_each_frame"],
-    filter_team_color=PARAMETERS['testing']['filter_team_color']
+    with_gui=config.testing.open_each_frame,
+    filter_team_color=config.testing.filter_team_color,
     # send_output=simulated_send_output, # this should be commented in once we actually add aiming 
 )
 
 # 
 # run mains (with simulated values)
 # 
-exec(params.testing.main_function+"()") # runs simple_synchronous
+exec(config.testing.main_function+"()") # runs simple_synchronous
 
 # save all the frames as a video
-print.collect_prints = False
-print() # dump any pending prints
 print("\nStarting process of saving frames to a video file")
-Video.create_from_frames(frames, save_to=PATHS["video_output"])
-print(f"video output has been saved to {PATHS['video_output']}")
+Video.create_from_frames(frames, save_to=path_to.video_output)
+print(f"video output has been saved to {path_to.video_output}")

@@ -15,7 +15,7 @@ import datetime
 import collections
 
 # relative imports
-from toolbox.globals import params, print
+from toolbox.globals import path_to, config, print
 from subsystems.embedded_communication.embedded_main import embedded_communication
 import subsystems.modeling.modeling_main as modeling
 import subsystems.tracking.tracking_main as tracking
@@ -60,11 +60,10 @@ def setup(
         # Run detection infinitely
         for frame_number, (color_image, depth_image) in enumerate(video_stream.frames()):
             # Grab frame and record initial time
-            print.collect_prints = True
             initial_time = time.time()
             
             # modeling
-            boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, params.model.threshold, filter_team_color)
+            boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, config.model.threshold, filter_team_color)
             screen_center = (color_image.shape[1] / 2, color_image.shape[0] / 2)
             best_bounding_box, cf = model.get_optimal_bounding_box(boxes, confidences, screen_center, aiming_methods.distance)
             # aiming
@@ -91,7 +90,7 @@ def setup(
         counter = 1
         best_bounding_box = kalman_filter = None
         horizontal_angle = vertical_angle = x_std = y_std = depth_amount = pixel_diff = phi = cf = shoot = 0
-        x_circular_buffer, y_circular_buffer = collections.deque(maxlen=params.aiming.std_buffer_size), collections.deque(maxlen=params.aiming.std_buffer_size) # Used to ensure we are locked on a target
+        x_circular_buffer, y_circular_buffer = collections.deque(maxlen=config.aiming.std_buffer_size), collections.deque(maxlen=config.aiming.std_buffer_size) # Used to ensure we are locked on a target
         track = tracker.TrackingClass()
         model = modeling.ModelingClass()
 
@@ -104,10 +103,10 @@ def setup(
             screen_center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # Finds the coordinate for the screen_center of the screen
             
             # Run model, find best bbox, and re-initialize tracker/kalman filters every model.frequency frames or whenever the tracker fails
-            if counter % params.model.frequency == 0 or (best_bounding_box is None):
+            if counter % config.model.frequency == 0 or (best_bounding_box is None):
                 counter=1
                 best_bounding_box = None
-                boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, params.model.threshold, filter_team_color) # Call model
+                boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, config.model.threshold, filter_team_color) # Call model
                 if len(boxes)!=0:
                     best_bounding_box, cf = model.get_optimal_bounding_box(boxes, confidences, screen_center, aiming_methods.distance)
                     best_bounding_box, kalman_filter = aiming_methods.initialize_tracker_and_kalman(best_bounding_box, track, color_image, kalman_filters)

@@ -1,16 +1,16 @@
 import cv2
 import numpy as np
 from math import sqrt,degrees,acos,asin
-from toolbox.globals import PARAMETERS,PATHS
+from toolbox.globals import path_to, config, print
 
-cap = cv2.VideoCapture(PATHS['rune_test_video'])
-small_image = cv2.imread(PATHS['R_test_image']) # THE SMALL IMAGE WE USE WILL BE BASED ON THE QUALITY OF OUR CAMERA DUE TO TEMPLATE MATCHING
-blue_light_bound = PARAMETERS['aiming']['blue_light']
-blue_dark_bound = PARAMETERS['aiming']['blue_dark']
-area_arrow_bound = PARAMETERS['aiming']['area_arrow_bound']
-center_image_offset = PARAMETERS['aiming']['center_image_offset']
-min_area = PARAMETERS['aiming']['min_area']
-r_timer = PARAMETERS['aiming']['r_timer']
+cap = cv2.VideoCapture(path_to.rune_test_video)
+small_image = cv2.imread(path_to.R_test_image) # THE SMALL IMAGE WE USE WILL BE BASED ON THE QUALITY OF OUR CAMERA DUE TO TEMPLATE MATCHING
+blue_light_bound = config.aiming.blue_light
+blue_dark_bound = config.aiming.blue_dark
+area_arrow_bound = config.aiming.area_arrow_bound
+center_image_offset = config.aiming.center_image_offset
+min_area = config.aiming.min_area
+r_timer = config.aiming.r_timer
 
 counter = 0
 mp_x, mp_y = 0,0

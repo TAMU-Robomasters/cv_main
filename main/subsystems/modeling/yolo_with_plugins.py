@@ -10,8 +10,7 @@ import numpy as np
 import cv2
 import tensorrt as trt
 import pycuda.driver as cuda
-from toolbox.globals import MACHINE,PATHS,PARAMETERS,MODE,MODEL_COLORS,MODEL_LABELS, print
-
+from toolbox.globals import path_to, config, print
 
 try:
     ctypes.cdll.LoadLibrary('./source/modeling/plugins/libyolo_layer.so')
@@ -264,7 +263,7 @@ class TrtYOLO(object):
     """TrtYOLO class encapsulates things needed to run TRT YOLO."""
 
     def _load_engine(self):
-        TRTbin = PATHS['model_trt']
+        TRTbin = path_to.model_trt
         with open(TRTbin, 'rb') as f, trt.Runtime(self.trt_logger) as runtime:
             return runtime.deserialize_cuda_engine(f.read())
 

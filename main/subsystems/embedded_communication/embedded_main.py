@@ -1,4 +1,4 @@
-from toolbox.globals import MACHINE, PATHS, PARAMETERS, params, print
+from toolbox.globals import path_to, config, print
 import serial
 import time
 import numpy as np
@@ -91,6 +91,6 @@ class EmbeddedCommunication:
 
 
 embedded_communication = EmbeddedCommunication(
-    port=PARAMETERS["embedded_communication"]["serial_port"],
-    baudrate=PARAMETERS["embedded_communication"]["serial_baudrate"],
+    port=config.embedded_communication.serial_port,
+    baudrate=config.embedded_communication.serial_baudrate,
 )

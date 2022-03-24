@@ -1,100 +1,32 @@
-import yaml
-import numpy as np
-from super_map import Map, LazyDict
-# relative imports
-from toolbox.file_system_tools import FS
+from quik_config import find_and_load
 
-# 
-# explaination
-# 
-# this file contains (ideally) constants that can be used in many/most of the tools
-# it imports the paths from the info.yaml file so that python knows where everything is
-# exports:
-#     PATHS
-#     PARAMETERS
-#     MACHINE
-#     MODE
-#     INFO
-#     MODEL_LABELS
-#     MODEL_COLORS
-
-
-# 
 # load the info.yaml
-# 
-INFO = yaml.unsafe_load(FS.read(FS.join(FS.dirname(__file__),'..','info.yaml')))
+info = find_and_load(
+    "main/info.yaml",
+    default_options=[
+        "GPU=NONE",
+        "BOARD=LAPTOP",
+        "CAMERA=NONE",
+        "MODE=DEVELOPMENT",
+        "TEAM=RED",
+    ],
+    cd_to_filepath=True,
+)
+
+# create all of these for exporting
+config                = info.config         # the resulting dictionary for all the selected options
+path_to               = info.path_to               # a dictionary of paths relative to the root_path
+absolute_path_to      = info.absolute_path_to      # same dictionary of paths, but made absolute
+project               = info.project               # the dictionary to everything inside (project)
+root_path             = info.root_path             # parent folder of the .yaml file
+configuration_choices = info.configuration_choices # the dictionary of the local config-choices files
+configuration_options = info.configuration_options # the dictionary of all possible options
+as_dict               = info.as_dict               # the dictionary to the whole file (info.yaml)
 
 # 
-# load PATHS
-# 
-PATHS = INFO["paths"]
-# make paths absolute if they're relative
-for each_key in PATHS.keys():
-    *folders, name, ext = FS.path_pieces(PATHS[each_key])
-    # if there are no folders then it must be a relative path (otherwise it would start with the roo "/" folder)
-    if len(folders) == 0:
-        folders.append(".")
-    # if not absolute, then make it absolute
-    if folders[0] != "/":
-        if folders[0] == '.' or folders[0] == './':
-            _, *folders = folders
-        PATHS[each_key] = FS.absolute_path(PATHS[each_key])
-
-# 
-# MODE and MACHINE
-# 
-import os
-# laptop or tx2 (default laptop), and it to be overridden by the 'PROJECT_ENVIRONMENT' environment variable
-MACHINE = os.environ.get('PROJECT_ENVIRONMENT',"laptop")
-# development or production (default to development), and allow for it to be overridden as well
-MODE = os.environ.get('PROJECT_MODE',"development")
-
-# 
-# PARAMETERS
-# 
-PARAMETERS = INFO["default_parameters"]
-ENVIRONMENT_PARAMETERS = INFO["environment_parameters"][MACHINE]
-from dict_recursive_update import recursive_update
-PARAMETERS = recursive_update(PARAMETERS, ENVIRONMENT_PARAMETERS)
-recursive_lazy_dict = lambda arg: arg if not isinstance(arg, dict) else LazyDict({ key: recursive_lazy_dict(value) for key, value in arg.items() })
-params = recursive_lazy_dict(PARAMETERS)
-
-# 
-# modeling
-# 
-MODEL_LABELS = open(PATHS["model_labels"]).read().strip().split("\n")
-# initialize a list of colors to represent each possible class label
-np.random.seed(42)
-MODEL_COLORS = np.random.randint(0, 255, size=(len(MODEL_LABELS), 3), dtype="uint8")
-# Green in RGB
-COLOR_GREEN = (0, 255, 0)
-COLOR_YELLOW = (255, 255, 00)
-
-# 
-# print
+# print (so we can disable it in production for performance)
 # 
 original_print = print
 def print(*args,**kwargs):
-    global MODE
-    if MODE == "development":
-        # bundle up prints
-        if print.collect_prints:
-            for each in args:
-                print.collection.append(each)
-        # release bundle
-        else:
-            args = list(args)
-            args += print.collection
-            print.collection = []
-            return original_print(*args,**kwargs)
-    # if not in development (e.g. production) don't print anything
-print.collection = []
-print.collect_prints = False
-
-# 
-# dynamic imports
-# 
-if MACHINE == "laptop":
-    realsense = None
-else:
-    import pyrealsense2.pyrealsense2 as realsense
+    if config.mode == "development":
+        original_print(*args,**kwargs)

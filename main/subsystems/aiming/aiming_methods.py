@@ -3,37 +3,38 @@ import cv2
 import math
 import collections
 
-from toolbox.globals import PARAMETERS, params, print
+from toolbox.globals import path_to, config, print
+from toolbox.config import aiming
 
-prediction_time     = params.aiming.prediction_time
-stream_width        = params.aiming.stream_width
-stream_height       = params.aiming.stream_height
-stream_framerate    = params.aiming.stream_framerate
-grid_size           = params.aiming.grid_size
-horizontal_fov      = params.aiming.horizontal_fov
-vertical_fov        = params.aiming.vertical_fov
-model_fps           = params.aiming.model_fps
-bullet_velocity     = params.aiming.bullet_velocity
-length_barrel       = params.aiming.length_barrel
-camera_gap          = params.aiming.camera_gap
-std_buffer_size     = params.aiming.std_buffer_size
-heat_buffer_size    = params.aiming.heat_buffer_size
-rate_of_fire        = params.aiming.rate_of_fire
-idle_counter        = params.aiming.idle_counter
-std_error_bound     = params.aiming.std_error_bound
-min_range           = params.aiming.min_range
-max_range           = params.aiming.max_range
-blue_light          = params.aiming.blue_light
-blue_dark           = params.aiming.blue_dark
-area_arrow_bound    = params.aiming.area_arrow_bound
-center_image_offset = params.aiming.center_image_offset
-min_area            = params.aiming.min_area
-r_timer             = params.aiming.r_timer
-barrel_camera_gap   = params.aiming.barrel_camera_gap
+prediction_time     = aiming.prediction_time
+stream_width        = aiming.stream_width
+stream_height       = aiming.stream_height
+stream_framerate    = aiming.stream_framerate
+grid_size           = aiming.grid_size
+horizontal_fov      = aiming.horizontal_fov
+vertical_fov        = aiming.vertical_fov
+model_fps           = aiming.model_fps
+bullet_velocity     = aiming.bullet_velocity
+length_barrel       = aiming.length_barrel
+camera_gap          = aiming.camera_gap
+std_buffer_size     = aiming.std_buffer_size
+heat_buffer_size    = aiming.heat_buffer_size
+rate_of_fire        = aiming.rate_of_fire
+idle_counter        = aiming.idle_counter
+std_error_bound     = aiming.std_error_bound
+min_range           = aiming.min_range
+max_range           = aiming.max_range
+blue_light          = aiming.blue_light
+blue_dark           = aiming.blue_dark
+area_arrow_bound    = aiming.area_arrow_bound
+center_image_offset = aiming.center_image_offset
+min_area            = aiming.min_area
+r_timer             = aiming.r_timer
+barrel_camera_gap   = aiming.barrel_camera_gap
 
 # these are used to ensure we are locked on a target
-x_circular_buffer = collections.deque(maxlen=params.aiming.std_buffer_size)
-y_circular_buffer = collections.deque(maxlen=params.aiming.std_buffer_size)
+x_circular_buffer = collections.deque(maxlen=aiming.std_buffer_size)
+y_circular_buffer = collections.deque(maxlen=aiming.std_buffer_size)
 
 def visualize_depth_frame(depth_frame_array):
     """
@@ -60,7 +61,7 @@ def get_dist_from_array(depth_frame_array, bbox):
     Input: Depth frame and bounding box.
     Output: Single depth value.
     """
-    grid_size = PARAMETERS['aiming']['grid_size']
+    grid_size = aiming.grid_size
 
     try:
         x_top_left = bbox[0] 
@@ -186,7 +187,7 @@ def bullet_drop_compensation2(depth_amount, gimbal_pitch, v_angle, proj_velocity
     Input: Depth Amount of Bounding Box.
     Output: Offset in Pixels.
     """
-    barrel_camera_gap = PARAMETERS["aiming"]["barrel_camera_gap"]
+    barrel_camera_gap = aiming.barrel_camera_gap
     radius = math.sqrt(depth_amount ** 2 + (depth_amount * math.tan(v_angle) + barrel_camera_gap) ** 2)
     total_angle = gimbal_pitch + math.atan2(depth_amount * math.tan(v_angle) + barrel_camera_gap, depth_amount)
     time_interval = (radius * math.cos(total_angle)) / (proj_velocity * math.cos(gimbal_pitch))

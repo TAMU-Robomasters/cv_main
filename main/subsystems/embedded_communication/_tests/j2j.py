@@ -1,11 +1,11 @@
-from toolbox.globals import MACHINE, PATHS, PARAMETERS, print
+from toolbox.globals import path_to, config, print
 import serial
 import time
 import math
 import numpy as np
 
-port_param=PARAMETERS["embedded_communication"]["serial_port"]
-baudrate_param=PARAMETERS["embedded_communication"]["serial_baudrate"]
+port_param=config.embedded_communication.serial_port
+baudrate_param=config.embedded_communication.serial_baudrate
 
 connection=serial.Serial(port_param,baudrate=baudrate_param,bytesize=serial.EIGHTBITS,parity=serial.PARITY_NONE,stopbits=serial.STOPBITS_ONE)
 print("Opened:",connection.name)

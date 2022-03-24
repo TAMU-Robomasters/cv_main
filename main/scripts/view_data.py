@@ -3,13 +3,13 @@ import sys
 import cv2
 
 # relative imports
-from toolbox.globals import MACHINE, PATHS, PARAMETERS, print
+from toolbox.globals import path_to, config, print
 
-npy_frames_location = PATHS['npy_frames']
-stream_width = PARAMETERS['aiming']['stream_width']
-stream_height = PARAMETERS['aiming']['stream_height']
-kalman_video_path = PATHS['kalman_video']
-framerate = PARAMETERS['aiming']['stream_framerate']
+npy_frames_location = path_to.npy_frames
+stream_width = config.aiming.stream_width
+stream_height = config.aiming.stream_height
+kalman_video_path = path_to.kalman_video
+framerate = config.aiming.stream_framerate
 
 counter = 0
 colors = []

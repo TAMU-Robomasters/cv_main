@@ -1,7 +1,7 @@
 import numpy as np
 import time
 
-from toolbox.globals import params, print
+from toolbox.globals import path_to, config, print
 
 def display_information(found_robot, initial_time, frame_number, color_image, depth_image, horizontal_angle, vertical_angle, depth_amount, pixel_diff, x_std, y_std, cf, shoot, phi):  
     """
@@ -10,7 +10,7 @@ def display_information(found_robot, initial_time, frame_number, color_image, de
     Input: Information to be displayed
     Output: None.
     """
-    with_gui = params.testing.open_each_frame
+    with_gui = config.testing.open_each_frame
 
     # If gui is enabled then draw bounding boxes around the selected robot
     if with_gui and found_robot:
@@ -20,8 +20,7 @@ def display_information(found_robot, initial_time, frame_number, color_image, de
     iteration_time = time.time()-initial_time
     # relase all print info on one line
     print(" "*200)
-    print.collect_prints = False
-    print(f'\rframe#: {frame_number} model took: {iteration_time:.4f}sec,', sep='', end='', flush=True)
+    print(f'\nframe#: {frame_number} model took: {iteration_time:.4f}sec,', sep='', end='', flush=True)
 
     # Show live feed is gui is enabled
     if with_gui:

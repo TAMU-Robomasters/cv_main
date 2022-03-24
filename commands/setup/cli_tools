@@ -5,6 +5,7 @@ echo '
 # installing basic CLI tools if not installed
 #'
 # install basics
+nix-env -iA nixpkgs.git
 nix-env -iA nixpkgs.curl
 nix-env -iA nixpkgs.fd     # for finding things
 nix-env -iA nixpkgs.dua    # for cleaning disk space

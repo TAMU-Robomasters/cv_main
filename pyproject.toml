@@ -14,6 +14,10 @@ pyserial = "3.4"
 opencv-contrib-python = "4.5.1.48"
 dict-recursive-update = "1.0.1"
 super-map = "^1.1.1"
+walk-up = "^0.1.0"
+ez-yaml = "^1.1.0"
+torch = "^1.10.2"
+quik-config = "0.1.0"
 
 [tool.poetry.dev-dependencies]
 

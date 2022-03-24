@@ -2,12 +2,12 @@ import time
 import itertools
 # relative imports
 from toolbox.video_tools import Video
-from toolbox.globals import MACHINE, PATHS, params, print
+from toolbox.globals import path_to, config, print
 from toolbox.video_tools import Video
-from toolbox.globals import realsense as rs
+from toolbox.globals import path_to, config, print
 import numpy as np
 
-simulation = params.videostream.simulation
+simulation = config.videostream.simulation
 
 class VideoStream:
     def __init__(self):
@@ -23,7 +23,7 @@ class VideoStream:
             self.framerate = simulated_output
             self.used_frames = set([])
         else:
-            raise Exception(f'simulated VideoStream was created, but params.videostream.simulation.grab_frame was {simulation.grab_frame} instead of one of ["next_frame", "latest_frame"]')
+            raise Exception(f'simulated VideoStream was created, but config.videostream.simulation.grab_frame was {simulation.grab_frame} instead of one of ["next_frame", "latest_frame"]')
     
     def frames(self):
         # for now it simply doesn't exist

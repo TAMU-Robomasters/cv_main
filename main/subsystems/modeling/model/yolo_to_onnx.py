@@ -72,18 +72,18 @@ class DarkNetParser(object):
         """Initializes a DarkNetParser object.
         Keyword argument:
         supported_layers -- a string list of supported layers in DarkNet naming convention,
-        parameters are only added to the class dictionary if a parsed layer is included.
+        config are only added to the class dictionary if a parsed layer is included.
         """
 
         # A list of YOLO layers containing dictionaries with all layer
-        # parameters:
+        # config:
         self.layer_configs = OrderedDict()
         self.supported_layers = supported_layers
         self.layer_counter = 0
 
     def parse_cfg_file(self, cfg_file_path):
         """Takes the yolov?.cfg file and parses it layer by layer,
-        appending each layer's parameters as a dictionary to layer_configs.
+        appending each layer's config as a dictionary to layer_configs.
         Keyword argument:
         cfg_file_path
         """
@@ -97,7 +97,7 @@ class DarkNetParser(object):
 
     def _next_layer(self, remainder):
         """Takes in a string and segments it by looking for DarkNet delimiters.
-        Returns the layer parameters and the remaining string after the last delimiter.
+        Returns the layer config and the remaining string after the last delimiter.
         Example for the first Conv layer in yolo.cfg ...
         [convolutional]
         batch_normalize=1
@@ -152,7 +152,7 @@ class DarkNetParser(object):
         return layer_dict, layer_name, remainder
 
     def _parse_params(self, param_line):
-        """Identifies the parameters contained in one of the cfg file and returns
+        """Identifies the config contained in one of the cfg file and returns
         them in the required format for each parameter type, e.g. as a list, an int or a float.
         Keyword argument:
         param_line -- one parsed line within a layer block
@@ -199,7 +199,7 @@ class MajorNodeSpecs(object):
 
 
 class ConvParams(object):
-    """Helper class to store the hyper parameters of a Conv layer,
+    """Helper class to store the hyper config of a Conv layer,
     including its prefix name in the ONNX graph and the expected dimensions
     of weights for convolution, bias, and batch normalization.
     Additionally acts as a wrapper for generating safe names for all
@@ -334,7 +334,7 @@ class WeightLoader(object):
         the input tensors.
         Keyword arguments:
         conv_params -- a ConvParams object
-        param_category -- the category of parameters to be created ('bn' or 'conv')
+        param_category -- the category of config to be created ('bn' or 'conv')
         suffix -- a string determining the sub-type of above param_category (e.g.,
         'weights' or 'bias')
         """
@@ -351,7 +351,7 @@ class WeightLoader(object):
         """Deserializes the weights from a file stream in the DarkNet order.
         Keyword arguments:
         conv_params -- a ConvParams object
-        param_category -- the category of parameters to be created ('bn' or 'conv')
+        param_category -- the category of config to be created ('bn' or 'conv')
         suffix -- a string determining the sub-type of above param_category (e.g.,
         'weights' or 'bias')
         """
@@ -377,7 +377,7 @@ class GraphBuilderONNX(object):
     """Class for creating an ONNX graph from a previously generated list of layer dictionaries."""
 
     def __init__(self, model_name, output_tensors):
-        """Initialize with all DarkNet default parameters used creating
+        """Initialize with all DarkNet default config used creating
         YOLO, and specify the output tensors as an OrderedDict for their
         output dimensions with their names as keys.
         Keyword argument:
@@ -428,18 +428,18 @@ class GraphBuilderONNX(object):
         inputs = [self.input_tensor]
         weight_loader = WeightLoader(weights_file_path)
         initializer = list()
-        # If a layer has parameters, add them to the initializer and input lists.
+        # If a layer has config, add them to the initializer and input lists.
         for layer_name in self.param_dict.keys():
             _, layer_type = layer_name.split('_', 1)
-            params = self.param_dict[layer_name]
+            config = self.param_dict[layer_name]
             if layer_type == 'convolutional':
                 initializer_layer, inputs_layer = weight_loader.load_conv_weights(
-                    params)
+                    config)
                 initializer.extend(initializer_layer)
                 inputs.extend(inputs_layer)
             elif layer_type == 'upsample':
                 initializer_layer, inputs_layer = weight_loader.load_upsample_scales(
-                    params)
+                    config)
                 initializer.extend(initializer_layer)
                 inputs.extend(inputs_layer)
         del weight_loader
@@ -761,7 +761,7 @@ class GraphBuilderONNX(object):
         layer_dict -- a layer parameter dictionary (one element of layer_configs)
         """
         upsample_factor = float(layer_dict['stride'])
-        # Create the scales array with node parameters
+        # Create the scales array with node config
         scales = np.array([1.0, 1.0, upsample_factor, upsample_factor]).astype(np.float32)
         previous_node_specs = self._get_previous_node_specs()
         inputs = [previous_node_specs.name]
@@ -864,7 +864,7 @@ def main():
     # For example, "yolov4-416x256" -> width=416, height=256
     w, h = get_input_wh(args.model)
 
-    # These are the only layers DarkNetParser will extract parameters
+    # These are the only layers DarkNetParser will extract config
     # from.  The three layers of type 'yolo' are not parsed in detail
     # because they are included in the post-processing later.
     supported_layers = ['net', 'convolutional', 'maxpool',

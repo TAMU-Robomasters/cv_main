@@ -6,15 +6,15 @@ import subsystems.aiming.filter as f
 import subsystems.aiming.depth_camera as dc
 
 # relative imports
-from toolbox.globals import MACHINE, PATHS, PARAMETERS, print
+from toolbox.globals import path_to, config, print
 
-npy_frames_location = PATHS['npy_frames']
-stream_width = PARAMETERS['aiming']['stream_width']
-stream_height = PARAMETERS['aiming']['stream_height']
-kalman_video_path = PATHS['kalman_video']
-framerate = PARAMETERS['aiming']['stream_framerate']
-grid_size = PARAMETERS['aiming']['grid_size']
-model_fps = PARAMETERS['aiming']['model_fps']
+npy_frames_location = path_to.npy_frames
+stream_width = config.aiming.stream_width
+stream_height = config.aiming.stream_height
+kalman_video_path = path_to.kalman_video
+framerate = config.aiming.stream_framerate
+grid_size = config.aiming.grid_size
+model_fps = config.aiming.model_fps
 
 counter = 0
 colors = []
