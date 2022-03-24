@@ -1,99 +1,34 @@
-import os
+from quik_config import find_and_load
 
-import numpy as np
-from super_map import Map, LazyDict
-from walk_up import walk_up_until
-import ez_yaml
-from dict_recursive_update import recursive_update
-
-# relative imports
-from toolbox.file_system_tools import FS
-
-# 
-# explaination
-# 
-# this file contains (ideally) constants that can be used in many/most of the tools
-# it imports the paths from the info.yaml file so that python knows where everything is
-# exports:
-#     INFO
-#     PATHS
-#     config
-#     print
-
-
-# 
 # load the info.yaml
-# 
-INFO = ez_yaml.to_object(
-    file_path=walk_up_until("main/info.yaml")
+info = find_and_load(
+    "main/info.yaml",
+    cd_to_filepath=True,
+    parse_args=True,
+    defaults_for_local_data=[
+        "GPU=NONE",
+        "BOARD=LAPTOP",
+        "CAMERA=NONE",
+        "MODE=DEVELOPMENT",
+        "TEAM=RED",
+    ],
 )
 
-# 
-# load PATHS
-# 
-PATHS = INFO["paths"]
-# make paths absolute if they're relative
-for each_key in PATHS.keys():
-    *folders, name, ext = FS.path_pieces(PATHS[each_key])
-    # if there are no folders then it must be a relative path (otherwise it would start with the roo "/" folder)
-    if len(folders) == 0:
-        folders.append(".")
-    # if not absolute, then make it absolute
-    if folders[0] != "/":
-        if folders[0] == '.' or folders[0] == './':
-            _, *folders = folders
-        PATHS[each_key] = FS.absolute_path(PATHS[each_key])
-PATHS = LazyDict(PATHS)
+# create all of these for exporting
+config                = info.config         # the resulting dictionary for all the selected options
+path_to               = info.path_to               # a dictionary of paths relative to the root_path
+absolute_path_to      = info.absolute_path_to      # same dictionary of paths, but made absolute
+secrets               = info.secrets               # same dictionary of paths, but made absolute
+project               = info.project               # the dictionary to everything inside (project)
+root_path             = info.root_path             # parent folder of the .yaml file
+selected_profiles     = info.selected_profiles     # the dictionary of the local config-choices files
+profile_names         = info.profile_names         # the dictionary of all possible options
+as_dict               = info.as_dict               # the dictionary to the whole file (info.yaml)
 
 # 
-# configuration
-# 
-# create the default options file if it doesnt exist
-if not FS.is_file(PATHS.configuration):
-    FS.write(
-        to=PATHS.configuration,
-        data="""
-            # Things at the top of the list will override things at the bottom
-            - GPU=NONE
-            - BOARD=LAPTOP
-            - CAMERA=ZED
-            - MODE=DEVELOPMENT
-            - TEAM=RED
-        """.replace("\n            ","\n"),
-    )
-selected_options = ez_yaml.to_object(
-    file_path=PATHS.configuration,
-)
-# start off with default
-config = INFO["configuration"]["(default)"]
-# merge in all the other options
-for each_option in reversed(selected_options):
-    config = recursive_update(config, INFO["configuration"][each_option])
-# create a helper for recursive converting to lazy dict (much more useful than a regular dict)
-recursive_lazy_dict = lambda arg: arg if not isinstance(arg, dict) else LazyDict({ key: recursive_lazy_dict(value) for key, value in arg.items() })
-config = recursive_lazy_dict(config)
-
-# 
-# print
+# print (so we can disable it in production for performance)
 # 
 original_print = print
 def print(*args,**kwargs):
     if config.mode == "development":
-        # bundle up prints
-        if print.collect_prints:
-            for each in args:
-                print.collection.append(each)
-        # release bundle
-        else:
-            args = list(args)
-            args += print.collection
-            print.collection = []
-            return original_print(*args,**kwargs)
-    # if not in development (e.g. production) don't print anything
-def _dump_collection(*args, **kwargs):
-    print.collect_prints = False
-    print() # dump any pending prints
-    print(*args, **kwargs)
-print.dump_collection = _dump_collection
-print.collection = []
-print.collect_prints = False
+        original_print(*args,**kwargs)

@@ -1,4 +1,4 @@
-from toolbox.globals import PATHS, config, print
+from toolbox.globals import path_to, config, print
 import serial
 import time
 import numpy as np

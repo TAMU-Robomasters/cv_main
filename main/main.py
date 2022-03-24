@@ -15,7 +15,7 @@ import datetime
 import collections
 
 # relative imports
-from toolbox.globals import PATHS, config, print
+from toolbox.globals import path_to, config, print
 from subsystems.embedded_communication.embedded_main import embedded_communication
 import subsystems.modeling.modeling_main as modeling
 import subsystems.tracking.tracking_main as tracking
@@ -60,7 +60,6 @@ def setup(
         # Run detection infinitely
         for frame_number, (color_image, depth_image) in enumerate(video_stream.frames()):
             # Grab frame and record initial time
-            print.collect_prints = True
             initial_time = time.time()
             
             # modeling

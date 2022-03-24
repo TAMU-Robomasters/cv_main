@@ -1,10 +1,10 @@
 import cv2
 import numpy as np
 from math import sqrt,degrees,acos,asin
-from toolbox.globals import PATHS, config, print
+from toolbox.globals import path_to, config, print
 
-cap = cv2.VideoCapture(PATHS.rune_test_video)
-small_image = cv2.imread(PATHS.R_test_image) # THE SMALL IMAGE WE USE WILL BE BASED ON THE QUALITY OF OUR CAMERA DUE TO TEMPLATE MATCHING
+cap = cv2.VideoCapture(path_to.rune_test_video)
+small_image = cv2.imread(path_to.R_test_image) # THE SMALL IMAGE WE USE WILL BE BASED ON THE QUALITY OF OUR CAMERA DUE TO TEMPLATE MATCHING
 blue_light_bound = config.aiming.blue_light
 blue_dark_bound = config.aiming.blue_dark
 area_arrow_bound = config.aiming.area_arrow_bound

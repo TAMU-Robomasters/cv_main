@@ -1,9 +1,9 @@
 import time
+import numpy as np
+import pyrealsense2.pyrealsense2 as rs
 # relative imports
 from toolbox.video_tools import Video
-from toolbox.globals import PATHS, config, print
-import pyrealsense2.pyrealsense2 as rs
-import numpy as np
+from toolbox.globals import path_to, config, print
 
 videostream = config.videostream
 aiming      = config.aiming
@@ -62,7 +62,7 @@ class VideoStream:
         Output: Video object to add frames too.
         """
 
-        color_video_location = PATHS.record_video_output_color
+        color_video_location = path_to.record_video_output_color
         
         # Setup video output path based on date and counter
         c = 1

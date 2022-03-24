@@ -1,11 +1,11 @@
 import cv2
 import os
 import datetime
-# relative imports
-from toolbox.video_tools import Video
-from toolbox.globals import PATHS, config, print
 import pyzed.sl as zed
 import numpy as np
+# relative imports
+from toolbox.video_tools import Video
+from toolbox.globals import path_to, config, print
 
 videostream = config.videostream
 aiming      = config.aiming
@@ -82,7 +82,7 @@ class VideoStream:
         Output: Video object to add frames too.
         """
 
-        color_video_location = PATHS.record_video_output_color
+        color_video_location = path_to.record_video_output_color
         
         # Setup video output path based on date and counter
         c = 1
