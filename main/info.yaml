@@ -1,11 +1,10 @@
-# NOTE: names in parentheses are special
-# All other names are not special
+# NOTE: names in parentheses are special, all other names are not!
 (project):
-    # paths the code will probably need to use
+    
+    # a central place for filepaths
     (path_to):
         project_root: "../"
         source_dir: ./
-        configuration: ./configuration.ignore.yaml
         main_test_video: &main_test_video ./_tests/data/test.avi
         main_test_image: ./_tests/data/test.png
         video_output: ./result.do_not_sync.mp4
@@ -23,15 +22,12 @@
         rune_test_video: ./_tests/data/rune3.mp4
         color_depth_bbox: ../output.do_not_sync.txt
     
-    # this is your local-machine config choices
-    # (should point to a file that is git-ignored)
-    # (this file will be auto-generated with the correct format)
-    (configuration): ./configuration.ignore.yaml
+    # this file will be generated automatically
+    (local_data): ./local_data.ignore.yaml
+            # this^ is where you choose which profile(s)
+            # and is where to store auth tokens and other secrets
     
-    # below are options that the config file can choose
-    #     when multiple options are selected
-    #     their keys/values will be merged recursively
-    (configuration_options):
+    (profiles):
         (default):
             mode: development
             team_color: 'red' # 'red' or 'blue'
