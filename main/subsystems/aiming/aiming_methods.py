@@ -255,7 +255,7 @@ def angle_from_center(prediction, screen_center):
 
     return math.radians(horizontal_angle),math.radians(vertical_angle)
 
-def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, using_tracker, kalman_filter):
+def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, using_tracker, kalman_filter=None):
     """
     Decide the shooting location based on the best bounding box. Find depth of detected robot. Update the circular buffers.
 
