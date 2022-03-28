@@ -95,6 +95,9 @@ def setup(
         track = tracker.TrackingClass()
         model = modeling.ModelingClass()
 
+        a = 0
+        start_time = time.time()
+
         # Run detection infinitely
         for frame_number, (color_image, depth_image) in enumerate(video_stream.frames()):
             # Grab frame and record initial time
@@ -131,8 +134,11 @@ def setup(
             if not (on_next_frame is None):
                 on_next_frame(frame_number, color_image, ([best_bounding_box], [1])if best_bounding_box else ([], []),(horizontal_angle,vertical_angle))
 
-    # return a list of the different main options
-    return simple_synchronous, synchronous_with_tracker 
+        fps = a / (time.time() - start_time)
+        print("Average fps:", fps)
+
+        # return a list of the different main options
+        return simple_synchronous, synchronous_with_tracker 
     
 
 if __name__ == '__main__':
