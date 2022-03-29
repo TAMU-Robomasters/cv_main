@@ -37,12 +37,11 @@
                 has_gpu: False
                 board: laptop
             model:
-                hardware_acceleration: null
+                hardware_acceleration: null # one of: [ null, "gpu", "tensor_rt" ]
                 confidence: 0.8
                 threshold: 0.3
                 frequency: 30
                 input_dimension: 416
-                hardware_acceleration: "tensor_rt" # one of: [ null, "gpu", "tensor_rt" ]
             aiming:
                 prediction_time: 2 # time interval in seconds to predict using kalman filters
                 
