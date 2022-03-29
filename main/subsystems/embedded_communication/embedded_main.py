@@ -45,8 +45,8 @@ class EmbeddedCommunication:
         reset_default_position = np.uint8(reset_default_position)
         shoot = np.uint8(shoot)
         
-        print(" reset_position:", reset_default_position)
-        print(" shoot:", shoot)
+        print(" reset_position:", reset_default_position, end=", ")
+        print(" shoot:", shoot, end=", ")
 
         if self.port is not None:
             self.port.write("a".encode())
