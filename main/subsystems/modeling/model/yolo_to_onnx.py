@@ -55,7 +55,7 @@ from __future__ import print_function
 import os
 import sys
 import hashlib
-import argparse
+
 from collections import OrderedDict
 
 import numpy as np
