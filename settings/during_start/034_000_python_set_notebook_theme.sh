@@ -1,0 +1,1 @@
+../extensions/python/commands/set_notebook_theme

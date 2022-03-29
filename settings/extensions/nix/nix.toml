@@ -39,6 +39,9 @@
 
 # [[ you can add tools for your project right here or at the bottom ]]
 
+[[packages]]
+load = [ "p7zip",] # for yolov5 training
+
 # 
 # Python
 # 
@@ -175,6 +178,11 @@ onlyIf = [ [ "stdenv", "isDarwin",],]
 
 [[packages]]
 load = [ "darwin", "apple_sdk", "frameworks", "Foundation" ]
+asNativeBuildInput = true
+onlyIf = [ [ "stdenv", "isDarwin",],]
+
+[[packages]]
+load = [ "darwin", "apple_sdk", "frameworks", "AVFoundation" ]
 asNativeBuildInput = true
 onlyIf = [ [ "stdenv", "isDarwin",],]
 

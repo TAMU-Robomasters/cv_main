@@ -12,6 +12,7 @@
         kalman_video: ./kalman_video.do_not_sync.mp4
         npy_frames: ./scripts/data1 # replace with whichever frame set you want to use in the source/scripts/data<num> directory
         # model
+        datasets: ./subsystems/modeling/datasets.ignore/
         model_weights: ./subsystems/modeling/model/yolov4-tiny-416.weights
         model_config: ./subsystems/modeling/model/yolov4-tiny-416.cfg
         model_labels: ./subsystems/modeling/model/yolov4-tiny-416.names
