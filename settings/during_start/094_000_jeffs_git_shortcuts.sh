@@ -423,7 +423,8 @@ git_url_of_origin () {
 
 git_squash_to () {
     commit_hash="$1"
-    git reset --soft "$commit_hash" && git add -A && git commit -m "squashed back to $commit" && echo "squash complete"
+    commit_message="$2"
+    git reset --soft "$commit_hash" && git add -A && git commit -m "$commit_message" && echo "squash complete"
 }
 
 # self submodule
