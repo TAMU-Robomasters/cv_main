@@ -421,6 +421,11 @@ git_url_of_origin () {
     git config --get remote.origin.url
 }
 
+git_squash_to () {
+    commit_hash="$1"
+    git reset --soft "$commit_hash" && git add -A && git commit -m "squashed back to $commit" && echo "squash complete"
+}
+
 # self submodule
 # git submodule add -b jirl --name "jirl" -- https://github.com/jeff-hykin/model_racer.git ./source/jirl
 
