@@ -20,6 +20,6 @@ def aim(best_bounding_box, cf, boxes, screen_center, depth_image):
     else: 
         x_circular_buffer.clear()
         y_circular_buffer.clear()
-        print(" bounding_boxes: []")
+        print(" bounding_boxes: []", end=", ")
         
     return horizontal_angle, vertical_angle, should_shoot, (x_std, y_std, depth_amount, pixel_diff)

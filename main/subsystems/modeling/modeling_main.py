@@ -3,7 +3,7 @@ import numpy as np
 import cv2
 import os
 import time
-import argparse
+
 
 # relative imports
 from toolbox.globals import path_to, absolute_path_to, config, print

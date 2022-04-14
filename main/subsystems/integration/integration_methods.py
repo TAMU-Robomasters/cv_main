@@ -21,7 +21,7 @@ def display_information(found_robot, initial_time, frame_number, color_image, de
     # Display time taken for single iteration of loop
     iteration_time = time.time()-initial_time
     # relase all print info on one line
-    print(" "*200)
+    # print(" "*200)
     print(f'\nframe#: {frame_number} model took: {iteration_time:.4f}sec, {(1/iteration_time):.4f} fps, ', sep='', end='', flush=True)
 
     # Show live feed is gui is enabled

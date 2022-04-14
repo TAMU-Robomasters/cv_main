@@ -12,10 +12,11 @@
         kalman_video: ./kalman_video.do_not_sync.mp4
         npy_frames: ./scripts/data1 # replace with whichever frame set you want to use in the source/scripts/data<num> directory
         # model
-        model_weights: ./subsystems/modeling/model/yolov4-tiny-416.weights
-        model_config: ./subsystems/modeling/model/yolov4-tiny-416.cfg
-        model_labels: ./subsystems/modeling/model/yolov4-tiny-416.names
-        model_trt: ./subsystems/modeling/model/yolov4-tiny-416.do_not_sync.trt
+        datasets: ./subsystems/modeling/datasets.ignore/
+        model_weights: ./subsystems/modeling/model/yolov3-tiny-416.weights
+        model_config: ./subsystems/modeling/model/yolov3-tiny-416.cfg
+        model_labels: ./subsystems/modeling/model/yolov3-tiny-416.names
+        model_trt: ./subsystems/modeling/model/yolov3-tiny-416.do_not_sync.trt
         frame_save_location: ./subsystems/modeling/_tests/test.do_not_sync.png
         #aiming
         R_test_image: ./_tests/data/mask_r_blur.png
@@ -36,12 +37,11 @@
                 has_gpu: False
                 board: laptop
             model:
-                hardware_acceleration: null
+                hardware_acceleration: null # one of: [ null, "gpu", "tensor_rt" ]
                 confidence: 0.8
                 threshold: 0.3
                 frequency: 30
                 input_dimension: 416
-                hardware_acceleration: "tensor_rt" # one of: [ null, "gpu", "tensor_rt" ]
             aiming:
                 prediction_time: 2 # time interval in seconds to predict using kalman filters
                 

@@ -12,6 +12,7 @@ relatively_link="$FORNIX_FOLDER/settings/extensions/#standard/commands/tools/fil
 "$relatively_link" "$__THIS_FORNIX_EXTENSION_FOLDERPATH__/commands/add_project_to_pythonpath" "$FORNIX_FOLDER/settings/during_start/022_000_setup_pythonpath.sh"
 "$relatively_link" "$__THIS_FORNIX_EXTENSION_FOLDERPATH__/commands/ensure_pip_modules"        "$FORNIX_FOLDER/settings/during_start/021_000_ensure_pip_modules.sh"
 "$relatively_link" "$__THIS_FORNIX_EXTENSION_FOLDERPATH__/commands/refresh_ignores"           "$FORNIX_FOLDER/settings/during_start/024_000_python_ignores.sh"
+"$relatively_link" "$__THIS_FORNIX_EXTENSION_FOLDERPATH__/commands/set_notebook_theme"        "$FORNIX_FOLDER/settings/during_start/034_000_python_set_notebook_theme.sh"
 
 
 # 
@@ -34,6 +35,7 @@ relatively_link="$FORNIX_FOLDER/settings/extensions/#standard/commands/tools/fil
 # connect commands
 # 
 "$relatively_link" "$__THIS_FORNIX_EXTENSION_FOLDERPATH__/commands" "$FORNIX_COMMANDS_FOLDER/tools/python"
+"$relatively_link" "$__THIS_FORNIX_EXTENSION_FOLDERPATH__/commands/start_notebook_server" "$FORNIX_COMMANDS_FOLDER/project/start_notebook_server"
 
 # 
 # connect git hooks
