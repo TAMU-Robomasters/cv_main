@@ -52,7 +52,7 @@ class Filter():
         return depth/26
 
     def process_imu(self, data, frame):
-        import pyrealsense2.pyrealsense2 as rs
+        import pyrealsense2 as rs
         gyro_frame = frame.first_or_default(rs.stream.gyro)
         accel_frame = frame.first_or_default(rs.stream.accel)
 

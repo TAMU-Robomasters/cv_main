@@ -1,9 +1,11 @@
 import time
 import numpy as np
-import pyrealsense2.pyrealsense2 as rs
+import pyrealsense2 as rs
 # relative imports
 from toolbox.video_tools import Video
 from toolbox.globals import path_to, config, print
+import pyrealsense2 as rs
+import numpy as np
 
 videostream = config.videostream
 aiming      = config.aiming
