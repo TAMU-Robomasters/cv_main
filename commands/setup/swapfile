@@ -1,0 +1,6 @@
+storage_12GB_in_blocks=12582912
+dd if=/dev/zero of=/swapfile bs=1024 count=$storage_12GB_in_blocks
+ls -l /swapfile
+mkswap /swapfile
+swapon -a /swapfile
+swapon -s

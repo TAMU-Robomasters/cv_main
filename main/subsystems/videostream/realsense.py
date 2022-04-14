@@ -2,7 +2,7 @@ import time
 # relative imports
 from toolbox.video_tools import Video
 from toolbox.globals import PATHS, config, print
-import pyrealsense2.pyrealsense2 as rs
+import pyrealsense2 as rs
 import numpy as np
 
 videostream = config.videostream
