@@ -43,10 +43,12 @@ def visualize_depth_frame(depth_frame_array):
     Input: Depth Frame.
     Output: None.
     """
+    print("HELLOOOOOOOOOOOOOOOOOO")
     depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_frame_array, alpha = 0.04), cv2.COLORMAP_JET)# this puts a color efffect on the depth frame
     images = depth_colormap                              # use this for individual streams
+    print(depth_colormap)
     cv2.namedWindow('Align Example', cv2.WINDOW_NORMAL)   # names and shows the streams
-    cv2.imwrite('depthmap.jpg', images)
+    cv2.imshow('depthmap.jpg', images)
 
     # # if you press escape or q you can cancel the process
     key = cv2.waitKey(1)
@@ -54,6 +56,26 @@ def visualize_depth_frame(depth_frame_array):
     if key & 0xFF == ord('q') or key == 27:
         cv2.destroyAllWindows()
     
+def visualize_color_frame(color_frame_array):
+    """
+    Displays a rgb frame in a visualized color format.
+
+    Input: RGB Frame.
+    Output: None.
+    """
+    print("HELLOOOOOOOOOOOOOOOOOO")
+    images = color_frame_array                              # use this for individual streams
+    cv2.namedWindow('Align Example', cv2.WINDOW_NORMAL)   # names and shows the streams
+    cv2.imshow('depthmap.jpg', images)
+
+    # # if you press escape or q you can cancel the process
+    key = cv2.waitKey(1)
+    print("press escape to cancel")
+    if key & 0xFF == ord('q') or key == 27:
+        cv2.destroyAllWindows()
+
+
+
 def get_dist_from_array(depth_frame_array, bbox):
     """
     Determines the depth of a bounding box by choosing and filtering the depths of specific points in the bounding box.
@@ -279,7 +301,7 @@ def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_ci
         kalman_filter.update(measured)
 
     depth_amount = get_dist_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
-    print(" best_bounding_box:",best_bounding_box, " prediction:", prediction, " depth_amount: ", depth_amount, end=", ")
+    #print(" best_bounding_box:",best_bounding_box, " prediction:", prediction, " depth_amount: ", depth_amount, end=", ")
 
     # phi = embedded_communication.get_phi()
     # print("PHI:",phi)

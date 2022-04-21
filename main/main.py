@@ -61,11 +61,18 @@ def setup(
         for frame_number, (color_image, depth_image) in enumerate(video_stream.frames()):
             # Grab frame and record initial time
             initial_time = time.time()
-            
+        
+
             # modeling
             boxes, confidences, class_ids, color_image = model.get_bounding_boxes(color_image, config.model.threshold, filter_team_color)
             screen_center = (color_image.shape[1] / 2, color_image.shape[0] / 2)
             best_bounding_box, cf = model.get_optimal_bounding_box(boxes, confidences, screen_center, aiming_methods.distance)
+
+            if best_bounding_box:
+                cv2.rectangle(color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (0,255,0), 2)
+            aiming_methods.visualize_color_frame(color_image)
+
+            
             # aiming
             horizontal_angle, vertical_angle, should_shoot, (x_std, y_std, depth_amount, pixel_diff) = aiming.aim(best_bounding_box, cf, boxes, screen_center, depth_image)
             # communication
@@ -101,7 +108,6 @@ def setup(
 
             counter+=1
             screen_center = (color_image.shape[1] / 2, color_image.shape[0] / 2) # Finds the coordinate for the screen_center of the screen
-            
             # Run model, find best bbox, and re-initialize tracker/kalman filters every model.frequency frames or whenever the tracker fails
             if counter % config.model.frequency == 0 or (best_bounding_box is None):
                 counter=1
