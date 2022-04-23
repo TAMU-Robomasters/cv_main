@@ -37,8 +37,8 @@ class VideoStream:
                 frame = self.pipeline.wait_for_frames()
                 frame_number += 1
                 # create the frames
-                color_frame = np.asanyarray(frame.get_color_frame().get_data()) 
-                depth_frame = np.asanyarray(frame.get_depth_frame() .get_data()) 
+                color_frame = np.array(frame.get_color_frame().get_data()) 
+                depth_frame = np.array(frame.get_depth_frame() .get_data()) 
                 
                 # Add frame to video recording based on recording frequency
                 if self.video_output and (frame_number % videostream.testing.record_interval == 0):

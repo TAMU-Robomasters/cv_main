@@ -13,10 +13,12 @@
         npy_frames: ./scripts/data1 # replace with whichever frame set you want to use in the source/scripts/data<num> directory
         # model
         datasets: ./subsystems/modeling/datasets.ignore/
-        model_weights: ./subsystems/modeling/model/yolov4-tiny-416.weights
-        model_config: ./subsystems/modeling/model/yolov4-tiny-416.cfg
-        model_labels: ./subsystems/modeling/model/yolov4-tiny-416.names
-        model_trt: ./subsystems/modeling/model/yolov4-tiny-416.do_not_sync.trt
+        model: ./subsystems/modeling/model/yolov3-tiny-416
+        yolo_to_onnx: main/subsystems/modeling/model/yolo_to_onnx.py
+        model_weights: ./subsystems/modeling/model/yolov3-tiny-416.weights
+        model_config: ./subsystems/modeling/model/yolov3-tiny-416.cfg
+        model_labels: ./subsystems/modeling/model/yolov3-tiny-416.names
+        model_trt: ./subsystems/modeling/model/yolov3-tiny-416.do_not_sync.trt
         frame_save_location: ./subsystems/modeling/_tests/test.do_not_sync.png
         tensorrt_so_file: ./subsystems/modeling/plugins/libyolo_layer.so
         #aiming
@@ -40,8 +42,8 @@
                 board: laptop
             model:
                 hardware_acceleration: null # one of: [ null, "gpu", "tensor_rt" ]
-                confidence: 0.8
-                threshold: 0.99
+                confidence: 0.4     # 0.8
+                threshold: 0.10        #0.3
                 frequency: 30
                 input_dimension: 416
             aiming:
@@ -134,6 +136,9 @@
         CAMERA=ZED:
             hardware:
                 camera: zed
+            aiming:
+                stream_width: 1920
+                stream_height: 1080
         CAMERA=REALSENSE:
             hardware:
                 camera: realsense

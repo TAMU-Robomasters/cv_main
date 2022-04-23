@@ -23,6 +23,18 @@ class VideoStream:
         init_params.camera_fps = aiming.stream_framerate
         init_params.depth_mode = zed.DEPTH_MODE.PERFORMANCE
         init_params.coordinate_units = zed.UNIT.METER
+
+
+        self.camera.set_camera_settings(zed.VIDEO_SETTINGS.BRIGHTNESS,2)
+        self.camera.set_camera_settings(zed.VIDEO_SETTINGS.CONTRAST,8)
+        self.camera.set_camera_settings(zed.VIDEO_SETTINGS.HUE, 0)
+        self.camera.set_camera_settings(zed.VIDEO_SETTINGS.SATURATION,8)
+        self.camera.set_camera_settings(zed.VIDEO_SETTINGS.SHARPNESS,8)
+        self.camera.set_camera_settings(zed.VIDEO_SETTINGS.GAMMA,7)
+        self.camera.set_camera_settings(zed.VIDEO_SETTINGS.GAIN,50)
+        self.camera.set_camera_settings(zed.VIDEO_SETTINGS.EXPOSURE, 3)
+        
+
         # TODO - customize runtime params with config
         self.runtime_parameters = zed.RuntimeParameters()
 
@@ -51,11 +63,11 @@ class VideoStream:
             while self.camera.grab(self.runtime_parameters) == zed.ERROR_CODE.SUCCESS:
                 frame_number += 1
                 # TODO - if using depth and left camera view, have to reconcile them with an additional transformation
-                self.camera.retrieve_image(self.image_zed, zed.VIEW.LEFT)
+                self.camera.retrieve_image(self.image_zed, zed.VIEW.RIGHT)
                 self.camera.retrieve_measure(self.depth_zed, zed.MEASURE.DEPTH)
                 # Convert images to ocv format, remove alpha channel
-                color_image = self.image_zed.get_data()[:,:,:3]
-                depth_image = self.depth_zed.get_data()
+                color_image = np.array(self.image_zed.get_data()[:,:,:3])
+                depth_image = np.array(self.depth_zed.get_data())
                 # Add frame to video recording based on recording frequency
                 if self.video_output and (frame_number % videostream.testing.record_interval == 0):
                     print(" saving_frame:",frame_number)

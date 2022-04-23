@@ -7,4 +7,4 @@ fi
 
 echo "creating TensorRT model from onnx"
 cd "$FORNIX_FOLDER/main/subsystems/modeling/model"
-python3 onnx_to_tensorrt.py -m "$FORNIX_FOLDER/main/subsystems/modeling/model/yolov4-tiny-416" --category_num 2
+python3 onnx_to_tensorrt.py -m "$FORNIX_FOLDER/main/subsystems/modeling/model/yolov3-tiny-416" --category_num 2

@@ -69,8 +69,14 @@ def setup(
             best_bounding_box, cf = model.get_optimal_bounding_box(boxes, confidences, screen_center, aiming_methods.distance)
 
             if best_bounding_box:
+                # print(type(color_image))
+                # color_image = np.array(color_image)
+                # print(type(color_image))
+                print(color_image.shape)
+
                 cv2.rectangle(color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (0,255,0), 2)
-            # aiming_methods.visualize_color_frame(color_image)
+            
+            aiming_methods.visualize_color_frame(color_image)
 
             
             # aiming
