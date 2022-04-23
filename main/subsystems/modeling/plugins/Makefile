@@ -30,8 +30,15 @@ endif
 NVCCFLAGS=
 
 # These are the directories where I installed TensorRT on my x86_64 PC.
-TENSORRT_INCS=-I"/usr/local/TensorRT-7.1.3.4/include"
-TENSORRT_LIBS=-L"/usr/local/TensorRT-7.1.3.4/lib"
+# TENSORRT_INCS=-I"/usr/local/TensorRT-7.1.3.4/include"
+# TENSORRT_LIBS=-L"/usr/local/TensorRT-7.1.3.4/lib"
+
+# These are the directories where the TensorRT is installed by default for Jetsons
+TENSORRT_INCS=-I"/usr/include/aarch64-linux-gnu/"
+TENSORRT_LIBS=-L"/usr/lib/aarch64-linux-gnu/"
+
+
+
 
 # INCS and LIBS
 INCS=-I"/usr/local/cuda/include" $(TENSORRT_INCS) -I"/usr/local/include" -I"plugin"

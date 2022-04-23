@@ -32,3 +32,14 @@ original_print = print
 def print(*args,**kwargs):
     if config.mode == "development":
         original_print(*args,**kwargs)
+
+# 
+# set port permissions
+# 
+if config.hardware.board == "xavier":
+    import subprocess
+    print("giving myself access to the communication port...")
+    subprocess.run(["sudo", "chmod", "777", "/dev/ttyTHS0"])
+
+
+print(config)

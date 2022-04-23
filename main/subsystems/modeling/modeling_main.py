@@ -16,7 +16,7 @@ should_use_gpu       = config.model.hardware_acceleration == 'gpu'
 # enable certain imports if tensorRT is enabled to prevent crashes in case it is not enabled
 if should_use_tensor_rt:
     import pycuda.autoinit  # This is needed for initializing CUDA driver
-    from modeling.yolo_with_plugins import TrtYOLO
+    from subsystems.modeling.yolo_with_plugins import TrtYOLO
 
 class ModelingClass:
     def __init__(self):

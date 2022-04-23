@@ -70,7 +70,7 @@ def setup(
 
             if best_bounding_box:
                 cv2.rectangle(color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (0,255,0), 2)
-            aiming_methods.visualize_color_frame(color_image)
+            # aiming_methods.visualize_color_frame(color_image)
 
             
             # aiming
@@ -144,15 +144,17 @@ if __name__ == '__main__':
     # Relative imports here since pyrealsense requires camera to be plugged in or code will crash
     if config.hardware.camera == 'zed':
         from subsystems.videostream.zed import VideoStream
-    else:
+    elif config.hardware.camera == 'realsense':
         from subsystems.videostream.realsense import VideoStream
+    else:
+        from subsystems.videostream.simulation import VideoStream
     
     video_stream = VideoStream()
     simple_synchronous, synchronous_with_tracker = setup(
         video_stream=video_stream,
         modeling=modeling,
         tracker=tracking,
-        live_camera=True,
+        live_camera=config.hardware.camera!=None,
         kalman_filters=False,
         with_gui=False,
         filter_team_color=True,
