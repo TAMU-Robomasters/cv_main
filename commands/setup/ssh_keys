@@ -1,12 +1,14 @@
 #!/usr/bin/env -S deno run --allow-all
-const { run, Timeout, Env, Cwd, Stdin, Stdout, Stderr, Out, Overwrite, AppendTo, zipInto, mergeInto, returnAsString, } = await import(`https://deno.land/x/sprinter@0.3.1/index.js`)
-const { FileSystem, Console } = await import(`https://deno.land/x/file_system_js@0.0.22/main/deno.js`)
-const { vibrance } = (await import('https://cdn.skypack.dev/vibrance@v0.1.33')).default
+import { ensure } from 'https://deno.land/x/ensure/mod.ts'; ensure({ denoVersion: "1.17.1", })
+const { run, Timeout, Env, Cwd, Stdin, Stdout, Stderr, Out, Overwrite, AppendTo, zipInto, mergeInto, returnAsString, } = await import(`https://deno.land/x/quickr@0.3.17/main/run.js`)
+const { FileSystem } = await import(`https://deno.land/x/quickr@0.3.17/main/file_system.js`)
+const { Console, cyan, white } = await import(`https://deno.land/x/quickr@0.3.17/main/console.js`)
 
 const sshFolder = `${FileSystem.home}/.ssh/`
 const authorizedKeysPath = `${FileSystem.home}/.ssh/authorized_keys`
 const defaultPrivateKeyPath = `${sshFolder}/id_rsa`
 const defaultPublicKeyPath = `${sshFolder}/id_rsa.pub`
+const configPath = `${sshFolder}/config`
 
 // 
 // 
@@ -23,11 +25,12 @@ console.log(`
 `)
 if (await Console.askFor.yesNo("Is this script running on your machine right now?")) {
     await ensurePrivatePublicRsaKeyExists()
-    console.log("Now run this same script on the remote server (on your account)")
+    console.log("\nOkay, now run this same script on the remote server")
     console.log("Paste the value below when it asks for your public key")
+    console.log()
     console.log("(and FYI you can show this to anyone, its not private)")
     console.log()
-    vibrance.bgBlack.blue(await FileSystem.read(defaultPublicKeyPath)).log()
+    console.log(cyan.blackBackground(await FileSystem.read(defaultPublicKeyPath)))
     console.log()
     console.log()
 } else {
@@ -54,7 +57,7 @@ async function ensurePrivatePublicRsaKeyExists() {
     let publicKey = await FileSystem.info(defaultPublicKeyPath)
     while (!privateKey.isFile || !publicKey.isFile) {
         console.log("\nLooks like your private key doesn't exist so lets make one")
-        vibrance.bgBlack.white("    running: ").bgBlack.blue("ssh-keygen -t rsa").log()
+        console.log(white.blackBackground`    running: `.cyan`ssh-keygen -t rsa`)
         await run("ssh-keygen", "-t", "rsa", "-f", defaultPrivateKeyPath)
         privateKey = await FileSystem.info(defaultPrivateKeyPath)
         publicKey = await FileSystem.info(defaultPublicKeyPath)
@@ -73,7 +76,7 @@ async function verifyAndSetupSshFolderStructure() {
     }
     // following: https://superuser.com/a/925859/399438
 
-    // SSH folder on the server needs 700 permissions: chmod 700 /home/$USER/.ssh
+    // SSH folder on the server needs 700 permissions: chmod 700 $HOME/.ssh
     await FileSystem.addPermissions({
         path: sshFolder,
         permissions: {
@@ -95,7 +98,39 @@ async function verifyAndSetupSshFolderStructure() {
             }
         },
     })
-    // authorized_keys file needs 644 permissions: chmod 644 /home/$USER/.ssh/authorized_keys
+    
+    // sudo chmod 600 ~/.ssh/config
+    const configInfo = await FileSystem.info(configPath)
+    if (configInfo.doesntExist) {
+        await FileSystem.write({
+            data: `# Read more about SSH config files: https://linux.die.net/man/5/ssh_config\n# Host alias\n#     HostName hostname\n#     User user\n`,
+            path: configPath,
+        })
+    }
+    await FileSystem.addPermissions({
+        path: configPath,
+        permissions: {
+            owner:{
+                canRead: true,
+                canWrite: true,
+                canExecute: false,
+            }, 
+            group:{
+                canRead: false,
+                canWrite: false,
+                canExecute: false,
+            },
+            others:{
+                canRead: false,
+                canWrite: false,
+                canExecute: false,
+
+            }
+        },
+    })
+    const permissions = await FileSystem.getPermissions({path: configPath,})
+
+    // authorized_keys file needs 644 permissions: chmod 644 $HOME/.ssh/authorized_keys
     await FileSystem.addPermissions({
         path: authorizedKeysPath,
         permissions: {
@@ -118,12 +153,13 @@ async function verifyAndSetupSshFolderStructure() {
         },
     })
     // Make sure that user owns the files/folders and not root: chown user:user authorized_keys and chown user:user /home/$USER/.ssh
-    const username = await run("whoami", Stdout(returnAsString))
-    const fileOwner = await run("stat", "-c", "%U", sshFolder, Stdout(returnAsString))
-    if (username != fileOwner) {
+    const username = (await run("whoami", Stdout(returnAsString))).trim()
+    const userId = (await run("id", "-u", username, Stdout(returnAsString))).trim()
+    const { uid } = await Deno.lstat(sshFolder)
+    if (`${userId}` !== `${uid}`) {
         console.log(`\nFor some reason you're not the owner of your own home/.ssh/ folder (strange)`)
         console.log(`    your  username: ${username}`)
-        console.log(`    owner username: ${fileOwner}`)
+        // console.log(`    owner username: ${fileOwner}`) // currently don't have folder owner name
         console.log(`Lets change that:\n`)
         await run("sudo", "chown", username, sshFolder)
     }
