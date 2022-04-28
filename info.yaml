@@ -65,7 +65,7 @@ default_parameters:
         save_frame_to_file: true
         open_each_frame: false
         main_function: 0 # 0 is simple synchronous, 1 is synchronous with tracker, 2 is multiprocessing with tracker
-        filter_team_color: False
+        filter_team_color: false
     embedded_communication:
         serial_baudrate: 115200
         serial_port: null

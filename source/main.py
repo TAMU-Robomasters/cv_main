@@ -42,6 +42,7 @@ colorVideoLocation = PATHS['record_video_output_color']
 record_interval = PARAMETERS['videostream']['testing']['record_interval']
 horizontal_fov = PARAMETERS['aiming']['horizontal_fov']
 vertical_fov = PARAMETERS['aiming']['vertical_fov']
+filter_tc = PARAMETERS['testing']['filter_team_color']
 
 
 def setup(
@@ -662,7 +663,7 @@ if __name__ == '__main__':
             live_camera = True,
             kalman_filters = False,
             with_gui = False,
-            filter_team_color = True,
+            filter_team_color = filter_tc,
             video_output = video_output
         )
 
