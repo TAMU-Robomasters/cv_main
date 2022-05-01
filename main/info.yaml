@@ -35,7 +35,6 @@
             hardware:
                 board: laptop
                 camera: realsense # "realsense" or "zed"
-                has_gpu: false
             model:
                 hardware_acceleration: null # one of: [ null, "gpu", "tensor_rt" ]
                 minimum_confidence: 0.8 # should be a value between 0-1
@@ -93,6 +92,19 @@
                 serial_baudrate: 115200
                 serial_port: null
                 magic_number: 0xdeadbeefdeadbef
+            zed:
+                resolution: "HD720"       # HD2K, HD1080, HD720, VGA, LAST
+                depth_mode: "PERFORMANCE" # ULTRA, QUALITY, NEURAL, PERFORMANCE, NONE, LAST
+                unit:       "METER"       # CENTIMETER, FOOT, INCH, LAST, METER, MILLIMETER
+                calibration:
+                    brightness:  2
+                    contrast:    8
+                    hue:         0
+                    saturation:  8
+                    sharpness:   8
+                    gamma:       7
+                    gain:       50
+                    exposure:    3
         
         # 
         # optionals (which are combined/merged with defaults)
