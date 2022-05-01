@@ -2,11 +2,11 @@ import time
 
 # project imports
 from toolbox.globals import path_to, config, print, runtime
+import subsystems.video_stream as video_stream
 import subsystems.model        as model
 import subsystems.aim          as aim
 import subsystems.communicate  as communicate
 import subsystems.log          as log
-import subsystems.video_stream as video_stream
 
 # Run detection infinitely
 for frame_number, (color_image, depth_image) in enumerate(video_stream.frames()):

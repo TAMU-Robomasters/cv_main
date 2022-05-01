@@ -41,7 +41,7 @@ if should_use_tensor_rt: # tensorRT enabled
     import pycuda.autoinit  # This is needed for initializing CUDA driver
     from subsystems.modeling.yolo_with_plugins import TrtYOLO
     print("RUNNING WITH TENSORRT")
-    model.trt_yolo = TrtYOLO((input_dimension, input_dimension), 3, False) # what is the 3? -- Jeff
+    model.trt_yolo = TrtYOLO(input_shape=(input_dimension, input_dimension), category_num=3, letter_box=False) # what is the 3? -- Jeff
 else:
     model.net = cv2.dnn.readNetFromDarknet(path_to.model_config, path_to.model_weights)  # init the model
     if should_use_gpu:

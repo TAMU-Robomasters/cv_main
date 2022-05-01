@@ -1,7 +1,8 @@
 # NOTE: names in parentheses are special, all other names are not!
 (project):
     ToDo:
-        - merge in aiming changes
+        - fix zed camera calibration
+        - tensor_rt with zed
         - have better team detection (manually compute color) so we can lower the minimum_confidence for further recognition
         - get yolov5 working
     

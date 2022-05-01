@@ -267,9 +267,13 @@ class TrtYOLO(object):
         with open(TRTbin, 'rb') as f, trt.Runtime(self.trt_logger) as runtime:
             return runtime.deserialize_cuda_engine(f.read())
 
-    def __init__(self,input_shape, category_num=80, letter_box=False,
-                 cuda_ctx=None):
+    def __init__(self,input_shape, category_num=80, letter_box=False, cuda_ctx=None):
         """Initialize TensorRT plugins, engine and conetxt."""
+        self.outputs = None
+        self.inputs = None
+        self.stream = None
+        self.has_been_deleted = False
+        
         self.input_shape = input_shape
         self.category_num = category_num
         self.letter_box = letter_box
@@ -277,15 +281,13 @@ class TrtYOLO(object):
         if self.cuda_ctx:
             self.cuda_ctx.push()
 
-        self.inference_fn = do_inference if trt.__version__[0] < '7' \
-                                         else do_inference_v2
+        self.inference_fn = do_inference if trt.__version__[0] < '7' else do_inference_v2
         self.trt_logger = trt.Logger(trt.Logger.INFO)
         self.engine = self._load_engine()
-
+        
         try:
             self.context = self.engine.create_execution_context()
-            self.inputs, self.outputs, self.bindings, self.stream = \
-                allocate_buffers(self.engine)
+            self.inputs, self.outputs, self.bindings, self.stream = allocate_buffers(self.engine)
         except Exception as e:
             raise RuntimeError('fail to allocate CUDA resources') from e
         finally:
@@ -294,15 +296,17 @@ class TrtYOLO(object):
 
     def __del__(self):
         """Free CUDA memories."""
-        del self.outputs
-        del self.inputs
-        del self.stream
+        if not self.has_been_deleted:
+            if self.outputs: del self.outputs
+            if self.inputs : del self.inputs
+            if self.stream : del self.stream
+        self.has_been_deleted = True
 
     def detect(self, img, conf_th=0.3, letter_box=None):
         """Detect objects in the input image."""
         letter_box = self.letter_box if letter_box is None else letter_box
         img_resized = _preprocess_yolo(img, self.input_shape, letter_box)
-
+        
         # Set host input to the image. The do_inference() function
         # will copy the input to the GPU before executing.
         self.inputs[0].host = np.ascontiguousarray(img_resized)
@@ -313,7 +317,8 @@ class TrtYOLO(object):
             bindings=self.bindings,
             inputs=self.inputs,
             outputs=self.outputs,
-            stream=self.stream)
+            stream=self.stream
+        )
         if self.cuda_ctx:
             self.cuda_ctx.pop()
 

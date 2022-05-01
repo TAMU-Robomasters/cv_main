@@ -16,14 +16,19 @@ class VideoStream:
         if videostream.testing.record_interval > 0:
             self.video_output = self.begin_video_recording()
 
+        init_params = zed.InitParameters(sdk_verbose=True)
         self.camera = zed.Camera()
-        # TODO - make these params dependent on config. is the format something we need to worry about? (int8 vs ...)
-        init_params = zed.InitParameters()
         init_params.camera_fps        = aiming.stream_framerate
         init_params.camera_resolution = getattr(zed.RESOLUTION, config.zed.resolution)
         init_params.depth_mode        = getattr(zed.DEPTH_MODE, config.zed.depth_mode)
         init_params.coordinate_units  = getattr(zed.UNIT      , config.zed.unit      )
-
+        
+        err = self.camera.open(init_params)
+        while err != zed.ERROR_CODE.SUCCESS:
+            print('VideoStream: Failed to open ZED camera! Retrying...')
+            err = self.camera.open(init_params)
+        
+        # not sure if this is doing what we want it to do
         self.camera.set_camera_settings(zed.VIDEO_SETTINGS.BRIGHTNESS, config.zed.calibration.brightness)
         self.camera.set_camera_settings(zed.VIDEO_SETTINGS.CONTRAST,   config.zed.calibration.contrast  )
         self.camera.set_camera_settings(zed.VIDEO_SETTINGS.HUE,        config.zed.calibration.hue       )
@@ -32,22 +37,23 @@ class VideoStream:
         self.camera.set_camera_settings(zed.VIDEO_SETTINGS.GAMMA,      config.zed.calibration.gamma     )
         self.camera.set_camera_settings(zed.VIDEO_SETTINGS.GAIN,       config.zed.calibration.gain      )
         self.camera.set_camera_settings(zed.VIDEO_SETTINGS.EXPOSURE,   config.zed.calibration.exposure  )
-        
 
         # TODO - customize runtime params with config
         self.runtime_parameters = zed.RuntimeParameters()
-
-        err = self.camera.open(init_params)
-        while err != zed.ERROR_CODE.SUCCESS:
-            print('VideoStream: Failed to open ZED camera! Retrying...')
-            err = self.camera.open(init_params)
         
         # Create an RGB sl.Mat object with int8
-        self.image_zed = zed.Mat(self.camera.get_camera_information().camera_resolution.width, 
-            self.camera.get_camera_information().camera_resolution.height, zed.MAT_TYPE.U8_C3)
+        self.image_zed = zed.Mat(
+            self.camera.get_camera_information().camera_resolution.width, 
+            self.camera.get_camera_information().camera_resolution.height,
+            # TODO - make these params dependent on config. is the format something we need to worry about? (int8 vs ...)
+            zed.MAT_TYPE.U8_C3
+        )
         # Create a sl.Mat with float type (32-bit)
-        self.depth_zed = zed.Mat(self.camera.get_camera_information().camera_resolution.width, 
-            self.camera.get_camera_information().camera_resolution.height, zed.MAT_TYPE.F32_C1)
+        self.depth_zed = zed.Mat(
+            self.camera.get_camera_information().camera_resolution.width, 
+            self.camera.get_camera_information().camera_resolution.height,
+            zed.MAT_TYPE.F32_C1
+        )
     
     def frames(self):
         """
@@ -71,8 +77,8 @@ class VideoStream:
                 if self.video_output and (frame_number % videostream.testing.record_interval == 0):
                     print(" saving_frame:",frame_number)
                     self.video_output.write(color_image)
-#                 cv2.imshow('img', depth_image)
-#                 cv2.waitKey(100)
+                # cv2.imshow('img', depth_image)
+                # cv2.waitKey(100)
                 yield color_image, depth_image
             if config.mode == 'development':
                 print("VideoStream: unable to retrieve frame.")
