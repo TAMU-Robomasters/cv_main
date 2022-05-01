@@ -193,6 +193,11 @@ def get_optimal_bounding_box(boxes, confidences, screen_center, distance):
     
     return best_bounding_box, confidence
 
+
+color_to_class_id = dict(
+    red=0,
+    blue=1,
+)
 def filter_team(boxes, confidences, class_ids):
     """
     Filter bounding boxes based on team color.
@@ -203,13 +208,12 @@ def filter_team(boxes, confidences, class_ids):
     enemy_boxes = []
     enemy_confidences = []
     enemy_class_ids = []
-
+    
     for index in range(len(boxes)):
-        print(f'''class_ids[index] = {class_ids[index]}''')
-        if class_ids[index] != config.our_team_color:
+        if class_ids[index] != color_to_class_id[config.our_team_color]:
             enemy_boxes.append(boxes[index])
             enemy_confidences.append(confidences[index])
             enemy_class_ids.append(class_ids[index])
 
-    print(enemy_boxes)
+    print(enemy_boxes, end=", ")
     return enemy_boxes,enemy_confidences,enemy_class_ids

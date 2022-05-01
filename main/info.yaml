@@ -1,5 +1,7 @@
 # NOTE: names in parentheses are special, all other names are not!
 (project):
+    ToDo:
+        - filter_team doesnt seem to do what it says it does
     
     # a central place for filepaths
     (path_to):
