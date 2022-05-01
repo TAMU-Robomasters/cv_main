@@ -15,8 +15,6 @@ import subsystems.aiming.aiming_main as aiming
 should_use_tensor_rt = config.model.hardware_acceleration == 'tensor_rt'
 should_use_gpu       = config.model.hardware_acceleration == 'gpu'
 input_dimension      = config.model.input_dimension
-confidence           = config.model.confidence
-threshold            = config.model.threshold
 
 # 
 # shared data (imported by modeling and integration)
@@ -65,7 +63,7 @@ def when_frame_arrives():
     # all boxes
     boxes, confidences, class_ids = get_bounding_boxes(
         frame=runtime.color_image,
-        confidence=config.model.confidence,
+        minimum_confidence=config.model.minimum_confidence,
         threshold=config.model.threshold,
     )
     
@@ -89,7 +87,7 @@ def when_frame_arrives():
 # helpers
 # 
 # 
-def get_bounding_boxes(frame, confidence, threshold):
+def get_bounding_boxes(frame, minimum_confidence, threshold):
     # NOTE: this code is derived from https://www.pyimagesearch.com/2018/11/12/yolo-object-detection-with-opencv/
 
     # initialize our lists of detected bounding boxes, confidences, and class IDs, respectively
@@ -103,9 +101,9 @@ def get_bounding_boxes(frame, confidence, threshold):
         new_confidences = []
         new_class_ids = []
 
-        # Filter bounding boxes based on confidence
+        # Filter bounding boxes based on minimum_confidence
         for i in range(len(boxes)):
-            if confidences[i] >= confidence:
+            if confidences[i] >= minimum_confidence:
                 box = boxes[i]
                 new_box = [box[0],box[1],abs(box[2]-box[0]),abs(box[3]-box[1])]
                 new_boxes.append(new_box)
@@ -119,31 +117,25 @@ def get_bounding_boxes(frame, confidence, threshold):
         if model.W is None or model.H is None:
             (model.H, model.W) = frame.shape[:2]
         
-        print(f'''frame.shape = {frame.shape}''')
         # convert image to blob before running it in the model
         blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (input_dimension, input_dimension), swapRB=True, crop=False)
-        print(f'''model.output_layer_names = {model.output_layer_names}''')
         # provide input and retrive output
         model.net.setInput(blob)
         layer_outputs = model.net.forward(model.output_layer_names)
-        print(f'''layer_outputs = {layer_outputs}''')
-        print(f'''blob = {blob}''')
 
         # loop over each of the layer outputs
         for output in layer_outputs:
             # loop over each of the detections
             for detection in output:
-                # extract the class ID and confidence (i.e., probability)
+                # extract the class ID and minimum_confidence (i.e., probability)
                 # of the current object detection
                 scores = detection[5:]
                 class_id = np.argmax(scores)
-                confidence = scores[class_id]
-                if confidence > 0.00000001:
-                    print(f'''    confidence = {confidence}''')
+                current_confidence = scores[class_id]
 
                 # filter out weak predictions by ensuring the detected
                 # probability is greater than the minimum probability
-                if confidence > confidence:
+                if current_confidence > minimum_confidence:
                     # scale the bounding box coordinates back relative to
                     # the size of the image, keeping in mind that YOLO
                     # actually returns the center (x, y)-coordinates of
@@ -161,7 +153,7 @@ def get_bounding_boxes(frame, confidence, threshold):
                     # confidences, and class IDs
                     boxes.append([x, y, int(width), int(height)])
 
-                    confidences.append(float(confidence))
+                    confidences.append(float(current_confidence))
                     class_ids.append(class_id)
                     
     if config.testing.filter_team_color:

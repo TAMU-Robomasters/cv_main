@@ -40,7 +40,7 @@
                 has_gpu: false
             model:
                 hardware_acceleration: null # one of: [ null, "gpu", "tensor_rt" ]
-                confidence: 0.8 # should be a value between 0-1
+                minimum_confidence: 0.8 # should be a value between 0-1
                 threshold: 0.3  # should be a value between 0-1
                 frequency: 30
                 input_dimension: 416
