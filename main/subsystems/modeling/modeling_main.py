@@ -51,6 +51,7 @@ else:
     else:
         print("RUNNING WITHOUT GPU ACCELERATION")
     model.layer_names = model.net.getLayerNames()
+    print(f'''model.layer_names = {model.layer_names}''')
     model.output_layer_names = [model.layer_names[index[0] - 1] for index in model.net.getUnconnectedOutLayers()]
     model.W, model.H = None, None
 
@@ -121,10 +122,12 @@ def get_bounding_boxes(frame, confidence, threshold):
         print(f'''frame.shape = {frame.shape}''')
         # convert image to blob before running it in the model
         blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (input_dimension, input_dimension), swapRB=True, crop=False)
-        
+        print(f'''model.output_layer_names = {model.output_layer_names}''')
         # provide input and retrive output
         model.net.setInput(blob)
         layer_outputs = model.net.forward(model.output_layer_names)
+        print(f'''layer_outputs = {layer_outputs}''')
+        print(f'''blob = {blob}''')
 
         # loop over each of the layer outputs
         for output in layer_outputs:
@@ -135,6 +138,8 @@ def get_bounding_boxes(frame, confidence, threshold):
                 scores = detection[5:]
                 class_id = np.argmax(scores)
                 confidence = scores[class_id]
+                if confidence > 0.00000001:
+                    print(f'''    confidence = {confidence}''')
 
                 # filter out weak predictions by ensuring the detected
                 # probability is greater than the minimum probability
