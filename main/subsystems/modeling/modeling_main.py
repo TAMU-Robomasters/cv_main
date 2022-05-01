@@ -117,7 +117,8 @@ def get_bounding_boxes(frame, confidence, threshold):
     else:
         if model.W is None or model.H is None:
             (model.H, model.W) = frame.shape[:2]
-
+        
+        print(f'''frame.shape = {frame.shape}''')
         # convert image to blob before running it in the model
         blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (input_dimension, input_dimension), swapRB=True, crop=False)
         
