@@ -24,6 +24,7 @@ pyngrok = "^5.1.0"
 roboflow = "^0.2.2"
 opencv-python = "4.1.2.30"
 jupyterthemes = "^0.20.0"
+black = "^22.3.0"
 
 [tool.poetry.dev-dependencies]
 
