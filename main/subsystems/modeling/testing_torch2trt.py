@@ -1,8 +1,12 @@
-from torch2trt import torch2trt
+from toolbox.globals import path_to, absolute_path_to, config, print
+import numpy # Dont delete - uses our numpy version isntead of torch's
 import torch
-from torchvision.models.alexnet import alexnet
-model = alexnet(pretrained=True).eval().cuda()
-x = torch.ones((1, 3, 224, 224)).cuda()
+
+model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_to.yolov5_pt)
+
+from torch2trt import torch2trt
+
+x = torch.ones((1, 3, config.model.input_dimension, config.model.input_dimension)).cuda()
 model_trt = torch2trt(model, [x])
 
 # save

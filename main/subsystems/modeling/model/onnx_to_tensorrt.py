@@ -58,6 +58,7 @@ import os
 import tensorrt as trt
 
 from plugins import get_input_wh, add_yolo_plugins
+import argparse
 
 
 MAX_BATCH_SIZE = 1

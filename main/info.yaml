@@ -16,10 +16,14 @@
         npy_frames: ./scripts/data1 # replace with whichever frame set you want to use in the source/scripts/data<num> directory
         # model
         datasets: ./subsystems/modeling/datasets.ignore/
+        model: ./subsystems/modeling/model/yolov4-tiny-416
+        yolo_to_onnx: main/subsystems/modeling/model/yolo_to_onnx.py
         model_weights: ./subsystems/modeling/model/yolov4-tiny-416.weights
         model_config: ./subsystems/modeling/model/yolov4-tiny-416.cfg
         model_labels: ./subsystems/modeling/model/yolov4-tiny-416.names
         model_trt: ./subsystems/modeling/model/yolov4-tiny-416.do_not_sync.trt
+        tensorrt_so_file: ./subsystems/modeling/plugins/libyolo_layer.so
+        yolov5_pt: ./subsystems/modeling/model/best.pt
     
     # this file will be generated automatically
     (local_data): ./local_data.ignore.yaml
@@ -132,8 +136,6 @@
             communication:
                 serial_port: "/dev/ttyTHS0" # UART serial 0 works but try 1
         BOARD=LAPTOP:
-            model:
-                hardware_acceleration: null
             communication:
                 serial_port: null
             
