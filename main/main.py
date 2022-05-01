@@ -10,11 +10,11 @@ import collections
 
 # project imports
 from toolbox.globals import path_to, config, print, runtime
-import subsystems.modeling.modeling_main               as modeling
-import subsystems.aiming.aiming_main                   as aiming
-import subsystems.embedded_communication.embedded_main as communication
-import subsystems.logging.logging_main                 as logging
-from subsystems.video_stream.video_stream_main         import video_stream
+import subsystems.model        as model
+import subsystems.aim          as aim
+import subsystems.communicate  as communicate
+import subsystems.log          as log
+import subsystems.video_stream as video_stream
 
 # Run detection infinitely
 for frame_number, (color_image, depth_image) in enumerate(video_stream.frames()):
@@ -23,10 +23,10 @@ for frame_number, (color_image, depth_image) in enumerate(video_stream.frames())
     runtime.frame_number  = frame_number
     runtime.color_image   = color_image
     runtime.depth_image   = depth_image
-    runtime.screen_center = aiming.screen_center(color_image)
+    runtime.screen_center = aim.screen_center(color_image)
     
     # process it
-    modeling.when_frame_arrives()
-    aiming.when_bounding_boxes_refresh()
-    communication.when_aiming_refreshes()
-    logging.when_finished_processing_frame()
+    model.when_frame_arrives()
+    aim.when_bounding_boxes_refresh()
+    communicate.when_aiming_refreshes()
+    log.when_finished_processing_frame()

@@ -3,7 +3,7 @@ import filterpy
 from statistics import stdev
 from filterpy.kalman import KalmanFilter
 from filterpy.common import Q_discrete_white_noise
-import subsystems.aiming.aiming_main as dc
+import subsystems.aim as aiming
 
 
 class Filter:
@@ -167,7 +167,7 @@ class Filter:
 
         time = self.time_predict(pos_z)
         depth_frame = frame.getDepthFrame()
-        x_in_meters = dc.world_coordinate(depth_frame, [X[0], X[2]])
+        x_in_meters = aiming.world_coordinate(depth_frame, [X[0], X[2]])
 
         X = [
             x_in_meters[0] + time * (x_in_meters[1] + vel_data[0] + vel_data[3]),
@@ -175,6 +175,6 @@ class Filter:
             x_in_meters[4] + time * (x_in_meters[5] + vel_data[2] + vel_data[5]),
         ]
         # X = [X[0] + time * X[1] + 0.5 * U[0] * time**2, X[2] + time * X[3] + 0.5 * U[1] * time**2, X[4] + time * X[5] + 0.5 * U[2] * time**2]
-        X = dc.pixel_coordinate(X)
+        X = aiming.pixel_coordinate(X)
         location = [X[0], X[1]]
         return location

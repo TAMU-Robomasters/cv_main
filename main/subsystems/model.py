@@ -7,7 +7,7 @@ from super_map import LazyDict
 
 # project imports
 from toolbox.globals import path_to, config, print, runtime
-import subsystems.aiming.aiming_main as aiming
+import subsystems.aim as aiming
 
 # 
 # config
@@ -49,7 +49,6 @@ else:
     else:
         print("RUNNING WITHOUT GPU ACCELERATION")
     model.layer_names = model.net.getLayerNames()
-    print(f'''model.layer_names = {model.layer_names}''')
     model.output_layer_names = [model.layer_names[index[0] - 1] for index in model.net.getUnconnectedOutLayers()]
     model.W, model.H = None, None
 
