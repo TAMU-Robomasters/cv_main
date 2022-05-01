@@ -3,8 +3,8 @@
     ToDo:
         - fix zed camera calibration
         - tensor_rt with zed
+        - install python 3.7 using the deadsnakes source, then retry yolov5
         - have better team detection (manually compute color) so we can lower the minimum_confidence for further recognition
-        - get yolov5 working
     
     # a central place for filepaths
     (path_to):
