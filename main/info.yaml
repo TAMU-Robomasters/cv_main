@@ -6,7 +6,7 @@
         main_folder: ./
         project_root: "../"
         main_test_video: &main_test_video ../data/test.avi
-        video_output: ./result.do_not_sync.mp4
+        video_output: ../result.do_not_sync.mp4
         record_video_output_color: ./recorded_videos/recorded_video_with_color.do_not_sync.mp4
         kalman_video: ./kalman_video.do_not_sync.mp4
         npy_frames: ./scripts/data1 # replace with whichever frame set you want to use in the source/scripts/data<num> directory
