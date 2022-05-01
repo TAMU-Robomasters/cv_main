@@ -136,7 +136,6 @@
                 disable_print: true
                 save_frame_to_file: false
                 open_each_frame: false
-                filter_team_color: false
         MODE=DEVELOPMENT:
             mode: development
         

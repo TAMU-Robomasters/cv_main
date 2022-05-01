@@ -154,9 +154,9 @@ def get_bounding_boxes(frame, minimum_confidence, threshold):
 
                     confidences.append(float(current_confidence))
                     class_ids.append(class_id)
-                    
+       
     if config.filter_team_color:
-        boxes, confidences, class_ids = model.filter_team(boxes, confidences, class_ids)
+        boxes, confidences, class_ids = filter_team(boxes, confidences, class_ids)
     
     # 
     # share data
