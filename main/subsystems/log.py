@@ -2,6 +2,8 @@ import numpy as np
 import time
 
 from toolbox.globals import path_to, config, print, runtime
+from toolbox.video_tools import Video
+from toolbox.image_tools import Image
 
 # 
 # config
@@ -16,6 +18,12 @@ with_gui = config.testing.open_each_frame
 # 
 def when_finished_processing_frame():
     display_information()
+    record_images_if_needed()
+
+def when_iteration_stops():
+    save_frames_as_video(
+        path=path_to.video_output,
+    )
 
 # 
 # 
@@ -61,3 +69,24 @@ def display_information():
 
         cv2.imshow("RGB Feed",color_image)
         cv2.waitKey(10)
+
+
+frames = []
+def record_images_if_needed():
+    """
+    this function is designed to be called every time main() processes a frame
+    its only purpose is to bundle all of the debugging output
+    """
+    
+    if config.testing.save_frame_to_file:
+        image = Image(runtime.color_image)
+        for each in runtime.modeling.boxes:
+            image.add_bounding_box(each)
+        
+        frames.append(image.img)
+
+def save_frames_as_video(path):
+    if config.testing.save_frame_to_file:
+        # save all the frames as a video
+        Video.create_from_frames(frames, save_to=path)
+        print(f"\n\nvideo output has been saved to {path}")

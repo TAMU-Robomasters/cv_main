@@ -1,3 +1,5 @@
+import time
+
 # project imports
 from toolbox.globals import path_to, config, print, runtime
 import subsystems.model        as model
@@ -20,3 +22,5 @@ for frame_number, (color_image, depth_image) in enumerate(video_stream.frames())
     aim.when_bounding_boxes_refresh()
     communicate.when_aiming_refreshes()
     log.when_finished_processing_frame()
+
+log.when_iteration_stops()

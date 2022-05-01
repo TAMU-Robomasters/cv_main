@@ -3,10 +3,9 @@
     
     # a central place for filepaths
     (path_to):
+        main_folder: ./
         project_root: "../"
-        source_dir: ./
-        main_test_video: &main_test_video ./_tests/data/test.avi
-        main_test_image: ./_tests/data/test.png
+        main_test_video: &main_test_video ../data/test.avi
         video_output: ./result.do_not_sync.mp4
         record_video_output_color: ./recorded_videos/recorded_video_with_color.do_not_sync.mp4
         kalman_video: ./kalman_video.do_not_sync.mp4
@@ -17,11 +16,6 @@
         model_config: ./subsystems/modeling/model/yolov4-tiny-416.cfg
         model_labels: ./subsystems/modeling/model/yolov4-tiny-416.names
         model_trt: ./subsystems/modeling/model/yolov4-tiny-416.do_not_sync.trt
-        frame_save_location: ./subsystems/modeling/_tests/test.do_not_sync.png
-        #aiming
-        R_test_image: ./_tests/data/mask_r_blur.png
-        rune_test_video: ./_tests/data/rune3.mp4
-        color_depth_bbox: ../output.do_not_sync.txt
     
     # this file will be generated automatically
     (local_data): ./local_data.ignore.yaml
