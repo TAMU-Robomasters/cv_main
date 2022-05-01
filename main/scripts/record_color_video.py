@@ -3,7 +3,7 @@ import pyrealsense2.pyrealsense2 as rs
 import numpy as np
 import cv2
 
-# relative imports
+# project imports
 from toolbox.video_tools import Video
 from toolbox.image_tools import Image
 from toolbox.globals import path_to, config, print

@@ -3,7 +3,7 @@ import filterpy
 from statistics import stdev
 from filterpy.kalman import KalmanFilter
 from filterpy.common import Q_discrete_white_noise
-import subsystems.aiming.aiming_methods as dc
+import subsystems.aiming.aiming_main as dc
 
 class Filter():
     def __init__(self, FPS):  # t = time interval

@@ -2,7 +2,7 @@ import numpy as np
 import sys
 import cv2
 
-# relative imports
+# project imports
 from toolbox.globals import path_to, config, print
 
 npy_frames_location = path_to.npy_frames

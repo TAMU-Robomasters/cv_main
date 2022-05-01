@@ -4,7 +4,7 @@ import numpy as np
 import sys
 import cv2
 import os
-# relative imports
+# project imports
 from toolbox.video_tools import Video
 from toolbox.image_tools import Image
 from toolbox.globals import path_to, config, print

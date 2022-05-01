@@ -4,7 +4,7 @@ import cv2
 import datetime
 import os
 
-# relative imports
+# project imports
 from toolbox.globals import path_to, config, print
 
 stream_width = config.aiming.stream_width

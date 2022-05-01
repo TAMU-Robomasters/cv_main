@@ -8,6 +8,6 @@ GPIO.setup(but_pin, GPIO.IN)  # Button pin set as input
 
 # Initial state for LEDs:
 GPIO.output(led_pin, GPIO.LOW)
-team_color = GPIO.input(but_pin)
-print("GPIO:",team_color)
+our_team_color = GPIO.input(but_pin)
+print("GPIO:",our_team_color)
 GPIO.cleanup()

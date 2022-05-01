@@ -5,7 +5,7 @@ import cv2
 import subsystems.aiming.filter as f
 import subsystems.aiming.depth_camera as dc
 
-# relative imports
+# project imports
 from toolbox.globals import path_to, config, print
 
 npy_frames_location = path_to.npy_frames

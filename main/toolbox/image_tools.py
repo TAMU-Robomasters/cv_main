@@ -1,10 +1,11 @@
 import numpy
 import cv2
-# relative imports 
+# project imports 
 from toolbox.globals import path_to, config, print
 from toolbox.file_system_tools import FS
 
-from subsystems.modeling.static_info import MODEL_LABELS, MODEL_COLORS, COLOR_GREEN, COLOR_YELLOW
+COLOR_GREEN  = (0, 255, 0)
+COLOR_YELLOW = (255, 255, 00)
 
 class Image(object):
     def __init__(self, arg1):

@@ -30,16 +30,18 @@
     
     (profiles):
         (default):
+            our_team_color: 'red' # 'red' or 'blue'
+            kalman_filters: false
+            filter_team_color: true
             mode: development
-            team_color: 'red' # 'red' or 'blue'
             hardware:
-                camera: realsense # "realsense" or "zed"
-                has_gpu: False
                 board: laptop
+                camera: realsense # "realsense" or "zed"
+                has_gpu: false
             model:
                 hardware_acceleration: null # one of: [ null, "gpu", "tensor_rt" ]
-                confidence: 0.8
-                threshold: 0.3
+                confidence: 0.8 # should be a value between 0-1
+                threshold: 0.3  # should be a value between 0-1
                 frequency: 30
                 input_dimension: 416
             aiming:
@@ -86,10 +88,10 @@
                     record_time: 10 # seconds to record for
                     record_interval: 0 # records one out of every x frames, <1 to not record
             testing:
+                disable_print: false
                 save_frame_to_file: true
                 open_each_frame: false
-                main_function: 'simple_synchronous' # 'simple_synchronous' or 'synchronous_with_tracker'
-                filter_team_color: False
+                filter_team_color: false
             embedded_communication:
                 serial_baudrate: 115200
                 serial_port: null
@@ -137,10 +139,15 @@
         
         MODE=PRODUCTION:
             mode: production
+            testing:
+                disable_print: true
+                save_frame_to_file: false
+                open_each_frame: false
+                filter_team_color: false
         MODE=DEVELOPMENT:
             mode: development
         
         TEAM=RED:
-            team_color: 'red'
+            our_team_color: 'red'
         TEAM=BLUE:
-            team_color: 'blue'
+            our_team_color: 'blue'
