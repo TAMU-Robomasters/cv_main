@@ -22,7 +22,7 @@ file-system-py = "^0.0.3"
 gdown = "^4.4.0"
 pyngrok = "^5.1.0"
 roboflow = "^0.2.2"
-opencv-python = "4.1.2.30"
+opencv-python = "4.2.0.32"
 jupyterthemes = "^0.20.0"
 black = "^22.3.0"
 
