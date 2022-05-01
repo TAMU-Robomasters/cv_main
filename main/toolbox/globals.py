@@ -10,8 +10,6 @@ info = find_and_load(
         "GPU=NONE",
         "BOARD=LAPTOP",
         "CAMERA=NONE",
-        "MODE=DEVELOPMENT",
-        "TEAM=RED",
     ],
 )
 

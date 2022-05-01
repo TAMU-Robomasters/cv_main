@@ -28,7 +28,7 @@
     
     (profiles):
         (default):
-            our_team_color: 'red' # 'red' or 'blue'
+            our_team_color: 'blue' # 'red' or 'blue'
             kalman_filters: false
             filter_team_color: true
             mode: development
@@ -135,16 +135,13 @@
             hardware:
                 camera: null
         
-        MODE=PRODUCTION:
+        SHOWTIME:
             mode: production
             testing:
                 disable_print: true
                 save_frame_to_file: false
                 open_each_frame: false
-        MODE=DEVELOPMENT:
-            mode: development
-        
-        TEAM=RED:
+        WE_RED:
             our_team_color: 'red'
-        TEAM=BLUE:
+        WE_BLUE:
             our_team_color: 'blue'
