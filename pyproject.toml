@@ -22,9 +22,10 @@ file-system-py = "^0.0.3"
 gdown = "^4.4.0"
 pyngrok = "^5.1.0"
 roboflow = "^0.2.2"
-opencv-python = "4.1.2.30"
+opencv-python = "4.4.0.46"
 jupyterthemes = "^0.20.0"
 black = "^22.3.0"
+# ffmpeg-python==0.2.0
 
 [tool.poetry.dev-dependencies]
 

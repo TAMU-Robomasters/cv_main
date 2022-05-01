@@ -130,9 +130,6 @@ in
                 main.project
                 linuxOnly
                 macOnly
-                (main.importMixin 
-                    "salt.nix"
-                )
                 # an "inline" mixin (this is what each mixin looks like)
                 ({
                     # inside that shell, make sure to use these packages
