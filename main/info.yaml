@@ -115,7 +115,7 @@
                 hardware_acceleration: null
         GPU=TENSOR_RT:
             model:
-                hardware_acceleration: "TENSOR_RT"
+                hardware_acceleration: "tensor_rt"
         GPU=REGULAR:
             model:
                 hardware_acceleration: "gpu"
