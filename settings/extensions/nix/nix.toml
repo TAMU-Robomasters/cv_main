@@ -71,11 +71,11 @@ load = [ "python38Packages", "scipy",]
 from = "3f50332bc4913a56ad216ca01f5d0bd24277a6b2"
 
 # opencv
-[[packages]]
-load = [ "opencv4",]
-override = { enableGtk3 = true, enableFfmpeg = true, enableCuda = false, enableUnfree = true }
-# see https://discourse.nixos.org/t/opencv-with-cuda-in-nix-shell/7358/5
-from = { fetchGit = { url = "https://github.com/NixOS/nixpkgs/", rev = "a332da8588aeea4feb9359d23f58d95520899e3c" }, options = { config = { allowUnfree = true } } }
+# [[packages]]
+# load = [ "opencv4",]
+# override = { enableGtk3 = true, enableFfmpeg = true, enableCuda = false, enableUnfree = true }
+# # see https://discourse.nixos.org/t/opencv-with-cuda-in-nix-shell/7358/5
+# from = { fetchGit = { url = "https://github.com/NixOS/nixpkgs/", rev = "a332da8588aeea4feb9359d23f58d95520899e3c" }, options = { config = { allowUnfree = true } } }
 
 [[packages]]
 load = [ "python38Packages", "pyrealsense2WithoutCuda",]

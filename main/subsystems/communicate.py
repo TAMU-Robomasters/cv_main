@@ -1,6 +1,6 @@
+from ctypes import *
 import serial
 import time
-import numpy as np
 import time
 
 from toolbox.globals import path_to, config, print, runtime
@@ -8,8 +8,9 @@ from toolbox.globals import path_to, config, print, runtime
 # 
 # config
 # 
-serial_port = config.embedded_communication.serial_port
-baudrate    = config.embedded_communication.serial_baudrate
+serial_port  = config.communication.serial_port
+baudrate     = config.communication.serial_baudrate
+magic_number = config.communication.magic_number
 
 # 
 # 
@@ -29,6 +30,15 @@ else:
         parity=serial.PARITY_NONE,
         stopbits=serial.STOPBITS_ONE
     )
+# C++ struct
+class Message(Structure):
+    _fields_ = [
+        ("magic_number"    , c_longlong),
+        ("horizontal_angle", c_float   ),
+        ("vertical_angle"  , c_float   ),
+        ("should_shoot"    , c_int     ),
+    ]
+message = Message(magic_number, 0.0, 0.0, 0)
 
 
 # 
@@ -37,12 +47,12 @@ else:
 # 
 # 
 def when_aiming_refreshes():
-    # yup thats all there is to it
-    send_output(
-        x=runtime.aiming.horizontal_angle,
-        y=runtime.aiming.vertical_angle,
-        shoot=runtime.aiming.should_shoot,
-    )
+    message.horizontal_angle = float(runtime.aiming.horizontal_angle)
+    message.vertical_angle   = float(runtime.aiming.vertical_angle)
+    message.should_shoot     = int(runtime.aiming.should_shoot)
+    
+    if port is not None:
+        port.write(bytes(message))
 
 
 # 
@@ -50,41 +60,6 @@ def when_aiming_refreshes():
 # helpers
 # 
 # 
-def send_output(x, y, shoot, reset_default_position=0):
-    """
-    Send data to DJI board via serial communication as raw bytes.
-
-    Input: Data to send which can be written as bytes.
-    Output: None.
-    """
-
-    # Convert all data to constrained bytes.
-    x = np.uint16(int(x*10000)+32768)
-    y = np.uint16(int(y*10000)+32768)
-
-    x1 = np.uint8(x>>8)
-    x2 = np.uint8(x)
-    y1 = np.uint8(y>>8)
-    y2 = np.uint8(y)
-
-    reset_default_position = np.uint8(reset_default_position)
-    shoot = np.uint8(shoot)
-    
-    print(" reset_position:", reset_default_position, end=", ")
-    print(" shoot:", shoot, end=", ")
-
-    if port is not None:
-        port.write("a".encode())
-        port.write(x1.tobytes())
-        port.write(x2.tobytes())
-        port.write(y1.tobytes())
-        port.write(y2.tobytes())
-        port.write(shoot.tobytes())
-        port.write(reset_default_position.tobytes())
-        port.write('e'.encode())
-
-    return shoot
-
 def read_input():
     """
     Read data from DJI board
@@ -100,6 +75,7 @@ def get_phi():
     Input: None.
     Output: Value read from serial.
     """
+    import numpy as np
     try:
         port.flushInput() # Get rid of data stored in buffer since UART is FIFO.
         phi = port.read(4)[1:3] # Read the first 4 bytes but only grab the middle two bytes which represent the value.

@@ -335,7 +335,7 @@ def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_ci
     depth_amount = get_dist_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
     print(" best_bounding_box:",best_bounding_box, " prediction:", prediction, " depth_amount: ", depth_amount, end=", ")
 
-    # phi = embedded_communication.get_phi()
+    # phi = communication.get_phi()
     # print("PHI:",phi)
     # pixel_diff = 0
     # if phi:

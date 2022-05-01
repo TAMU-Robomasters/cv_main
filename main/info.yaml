@@ -88,9 +88,10 @@
                 disable_print: false
                 save_frame_to_file: true
                 open_each_frame: false
-            embedded_communication:
+            communication:
                 serial_baudrate: 115200
                 serial_port: null
+                magic_number: 0xdeadbeefdeadbef
         
         # 
         # optionals (which are combined/merged with defaults)
@@ -109,18 +110,18 @@
         BOARD=TX2:
             model:
                 hardware_acceleration: "tensor_rt"
-            embedded_communication:
+            communication:
                 # serial_port: "/dev/ttyACM0" # USB serial
                 serial_port: "/dev/ttyTHS2" # UART serial
         BOARD=XAVIER:
             model:
                 hardware_acceleration: "tensor_rt"
-            embedded_communication:
+            communication:
                 serial_port: "/dev/ttyTHS0" # UART serial 0 works but try 1
         BOARD=LAPTOP:
             model:
                 hardware_acceleration: null
-            embedded_communication:
+            communication:
                 serial_port: null
             
         CAMERA=ZED:
