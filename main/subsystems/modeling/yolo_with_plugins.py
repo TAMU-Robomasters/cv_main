@@ -13,9 +13,9 @@ import pycuda.driver as cuda
 from toolbox.globals import path_to, config, print
 
 try:
-    ctypes.cdll.LoadLibrary('./source/modeling/plugins/libyolo_layer.so')
+    ctypes.cdll.LoadLibrary(path_to.tensorrt_so_file)
 except OSError as e:
-    raise SystemExit('ERROR: failed to load ./plugins/libyolo_layer.so.  '
+    raise SystemExit(f'ERROR: failed to load {path_to.tensorrt_so_file}  '
                      'Did you forget to do a "make" in the "./plugins/" '
                      'subdirectory?') from e
 

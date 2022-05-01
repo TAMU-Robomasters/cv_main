@@ -3,8 +3,6 @@ import filterpy
 from statistics import stdev
 from filterpy.kalman import KalmanFilter
 from filterpy.common import Q_discrete_white_noise
-import subsystems.aim as aiming
-
 
 class Filter:
     def __init__(self, FPS):  # t = time interval
@@ -149,6 +147,8 @@ class Filter:
         ]
 
     def predict(self, data, frame):
+        import subsystems.aim as aiming
+        
         # center of bounding box given by (x, y, z) (x,y) in pixels z in meters
         pos_x = int(data[0])
         pos_y = int(data[1])

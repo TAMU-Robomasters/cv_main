@@ -8,12 +8,13 @@ import ctypes
 
 import numpy as np
 import tensorrt as trt
+from toolbox.globals import path_to, config, print
 
 try:
-    ctypes.cdll.LoadLibrary('../plugins/libyolo_layer.so')
+    ctypes.cdll.LoadLibrary(path_to.tensorrt_so_file)
 except OSError as e:
-    raise SystemExit('ERROR: failed to load ../plugins/libyolo_layer.so.  '
-                     'Did you forget to do a "make" in the "../plugins/" '
+    raise SystemExit(f'ERROR: failed to load {path_to.tensorrt_so_file}  '
+                     'Did you forget to do a "make" in the "./plugins/" '
                      'subdirectory?') from e
 
 
@@ -157,7 +158,7 @@ def add_yolo_plugins(network, model_name, num_classes, logger):
                 trt.PluginField("num_classes", np.array(num_classes, dtype=np.int32), trt.PluginFieldType.INT32),
                 trt.PluginField("num_anchors", np.array(len(anchors[i]) // 2, dtype=np.int32), trt.PluginFieldType.INT32),
                 trt.PluginField("anchors", np.ascontiguousarray(anchors[i], dtype=np.float32), trt.PluginFieldType.FLOAT32),
-                trt.PluginField("scale_xy", np.array(scales[i], dtype=np.float32), trt.PluginFieldType.FLOAT32),
+                trt.PluginField("scale_x_y", np.array(scales[i], dtype=np.float32), trt.PluginFieldType.FLOAT32),
             ]))
         ).get_output(0)
 

@@ -63,7 +63,7 @@ import onnx
 from onnx import helper, TensorProto
 
 from plugins import verify_classes, get_input_wh
-
+import argparse
 
 class DarkNetParser(object):
     """Definition of a parser for DarkNet-based YOLO model."""

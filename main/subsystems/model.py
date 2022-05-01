@@ -15,6 +15,8 @@ import subsystems.aim as aiming
 should_use_tensor_rt = config.model.hardware_acceleration == 'tensor_rt'
 should_use_gpu       = config.model.hardware_acceleration == 'gpu'
 input_dimension      = config.model.input_dimension
+# config check
+assert config.model.hardware_acceleration in ['tensor_rt', 'gpu', None]
 
 # 
 # shared data (imported by modeling and integration)
@@ -37,7 +39,7 @@ print("[INFO] loading YOLO from disk...")
 # Setup modeling system based on forms of gpu acceleration
 if should_use_tensor_rt: # tensorRT enabled
     import pycuda.autoinit  # This is needed for initializing CUDA driver
-    from modeling.yolo_with_plugins import TrtYOLO
+    from subsystems.modeling.yolo_with_plugins import TrtYOLO
     print("RUNNING WITH TENSORRT")
     model.trt_yolo = TrtYOLO((input_dimension, input_dimension), 3, False) # what is the 3? -- Jeff
 else:
