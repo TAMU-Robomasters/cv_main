@@ -155,7 +155,7 @@ def get_bounding_boxes(frame, minimum_confidence, threshold):
                     confidences.append(float(current_confidence))
                     class_ids.append(class_id)
                     
-    if config.testing.filter_team_color:
+    if config.filter_team_color:
         boxes, confidences, class_ids = model.filter_team(boxes, confidences, class_ids)
     
     # 
@@ -205,6 +205,7 @@ def filter_team(boxes, confidences, class_ids):
     enemy_class_ids = []
 
     for index in range(len(boxes)):
+        print(f'''class_ids[index] = {class_ids[index]}''')
         if class_ids[index] != config.our_team_color:
             enemy_boxes.append(boxes[index])
             enemy_confidences.append(confidences[index])
