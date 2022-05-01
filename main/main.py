@@ -1,13 +1,3 @@
-# library imports
-import cv2
-import os
-import numpy as np
-from itertools import count
-import math
-import time
-import datetime
-import collections
-
 # project imports
 from toolbox.globals import path_to, config, print, runtime
 import subsystems.model        as model
