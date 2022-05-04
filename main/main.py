@@ -2,8 +2,8 @@ import time
 
 # project imports
 from toolbox.globals import path_to, config, print, runtime
-import subsystems.video_stream as video_stream
 import subsystems.model        as model
+import subsystems.video_stream as video_stream
 import subsystems.aim          as aim
 import subsystems.communicate  as communicate
 import subsystems.log          as log

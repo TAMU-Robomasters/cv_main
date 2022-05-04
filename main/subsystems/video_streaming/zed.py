@@ -5,7 +5,7 @@ import pyzed.sl as zed
 import numpy as np
 # relative imports
 from toolbox.video_tools import Video
-from toolbox.globals import path_to, config, print
+from toolbox.globals import path_to, config, print, runtime
 
 videostream = config.videostream
 aiming      = config.aiming
@@ -13,12 +13,14 @@ aiming      = config.aiming
 class VideoStream:
     def __init__(self):
         self.video_output = None
+        self.camera = None
         if videostream.testing.record_interval > 0:
             self.video_output = self.begin_video_recording()
 
         init_params = zed.InitParameters(sdk_verbose=True)
         self.camera = zed.Camera()
-        init_params.camera_fps        = aiming.stream_framerate
+        init_params.sdk_cuda_ctx_     = runtime.tensorrt_context
+        # init_params.camera_fps        = aiming.stream_framerate # attempting to fix this: https://community.stereolabs.com/t/zed-tensorrt-problems-invalidating-cuda-context-handle/1099/3
         init_params.camera_resolution = getattr(zed.RESOLUTION, config.zed.resolution)
         init_params.depth_mode        = getattr(zed.DEPTH_MODE, config.zed.depth_mode)
         init_params.coordinate_units  = getattr(zed.UNIT      , config.zed.unit      )
@@ -85,8 +87,9 @@ class VideoStream:
                 print('(retrying)')
         
     def __del__(self):
-        print("Closing ZED camera")
-        self.camera.close()
+        if self.camera:
+            print("Closing ZED camera")
+            self.camera.close()
     
     # TODO - another option for ZED is to use SVO instead of a collection of video frames.
     # If we want to record with SVO, we cannot also use the camera in "live" mode.

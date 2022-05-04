@@ -10,7 +10,7 @@ import numpy as np
 import cv2
 import tensorrt as trt
 import pycuda.driver as cuda
-from toolbox.globals import path_to, config, print
+from toolbox.globals import path_to, config, print, runtime
 
 try:
     ctypes.cdll.LoadLibrary(path_to.tensorrt_so_file)
@@ -286,7 +286,8 @@ class TrtYOLO(object):
         self.engine = self._load_engine()
         
         try:
-            self.context = self.engine.create_execution_context()
+            runtime.tensorrt_context = self.context = self.engine.create_execution_context()
+            # runtime.tensorrt_context is only for tring to fix: https://community.stereolabs.com/t/zed-tensorrt-problems-invalidating-cuda-context-handle/1099/3
             self.inputs, self.outputs, self.bindings, self.stream = allocate_buffers(self.engine)
         except Exception as e:
             raise RuntimeError('fail to allocate CUDA resources') from e
