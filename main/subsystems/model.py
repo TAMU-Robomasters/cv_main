@@ -4,6 +4,7 @@ import cv2
 import os
 import time
 from super_map import LazyDict
+import torch
 
 # project imports
 from toolbox.globals import path_to, config, print, runtime
@@ -43,15 +44,20 @@ if should_use_tensor_rt: # tensorRT enabled
     print("RUNNING WITH TENSORRT")
     model.trt_yolo = TrtYOLO(input_shape=(input_dimension, input_dimension), category_num=3, letter_box=False) # what is the 3? -- Jeff
 else:
-    model.net = cv2.dnn.readNetFromDarknet(path_to.model_config, path_to.model_weights)  # init the model
+    # model.net = cv2.dnn.readNetFromDarknet(path_to.model_config, path_to.model_weights)  # init the model
+    device = torch.device("cuda")
+    model.net = torch.hub.load('ultralytics/yolov5', 'custom', path=path_to.yolov5_pt)
+    model.net.eval()
+    torch.no_grad()
+
     if should_use_gpu:
         print("RUNNING WITH GPU ACCELERATION")
-        model.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-        model.net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+        # model.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+        # model.net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
     else:
         print("RUNNING WITHOUT GPU ACCELERATION")
-    model.layer_names = model.net.getLayerNames()
-    model.output_layer_names = [model.layer_names[index[0] - 1] for index in model.net.getUnconnectedOutLayers()]
+    # model.layer_names = model.net.getLayerNames()
+    # model.output_layer_names = [model.layer_names[index[0] - 1] for index in model.net.getUnconnectedOutLayers()]
     model.W, model.H = None, None
 
 
@@ -119,15 +125,25 @@ def get_bounding_boxes(frame, minimum_confidence, threshold):
             (model.H, model.W) = frame.shape[:2]
         
         # convert image to blob before running it in the model
-        blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (input_dimension, input_dimension), swapRB=True, crop=False)
+        # blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (input_dimension, input_dimension), swapRB=True, crop=False)
+        # blob = cv2.resize(frame, (input_dimension, input_dimension))
         # provide input and retrive output
-        model.net.setInput(blob)
-        layer_outputs = model.net.forward(model.output_layer_names)
+        # model.net.setInput(blob)
+        # layer_outputs = model.net.forward(model.output_layer_names)
+
+        layer_outputs = model.net(frame)
+        labels = layer_outputs.xyxy[0]
+        # labels, cord_thres = layer_outputs.xyxyn[0][:, -1].numpy(), layer_outputs.xyxyn[0][:, :-1].numpy()
+        # prediction = torch.argmax(layer_outputs)
+        # print("\noutputs - ", layer_outputs)
+        print('labels - ', labels)
+        # print("pred - ", prediction)
 
         # loop over each of the layer outputs
-        for output in layer_outputs:
+        if True:
             # loop over each of the detections
-            for detection in output:
+            for detection in labels:
+                detection = detection.numpy()
                 # extract the class ID and minimum_confidence (i.e., probability)
                 # of the current object detection
                 scores = detection[5:]
@@ -142,17 +158,17 @@ def get_bounding_boxes(frame, minimum_confidence, threshold):
                     # actually returns the center (x, y)-coordinates of
                     # the bounding box followed by the boxes' width and
                     # height
-                    box = detection[0:4] * np.array([model.W,model.H, model.W, model.H])
-                    (center_x, center_y, width, height) = box.astype("int")
+                    # box = detection[0:4] * np.array([model.W,model.H, model.W, model.H])
+                    # (center_x, center_y, width, height) = box.astype("int")
 
                     # use the center (x, y)-coordinates to derive the top
                     # and and left corner of the bounding box
-                    x = int(center_x - (width / 2))
-                    y = int(center_y - (height / 2))
+                    # x = int(center_x - (width / 2))
+                    # y = int(center_y - (height / 2))
 
                     # update our list of bounding box coordinates,
                     # confidences, and class IDs
-                    boxes.append([x, y, int(width), int(height)])
+                    boxes.append(detection[0:4])
 
                     confidences.append(float(current_confidence))
                     class_ids.append(class_id)

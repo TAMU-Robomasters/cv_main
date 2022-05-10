@@ -1,5 +1,6 @@
 import numpy as np
 import time
+import cv2
 
 from toolbox.globals import path_to, config, print, runtime
 from toolbox.video_tools import Video
@@ -37,6 +38,8 @@ def display_information():
     initial_time       = runtime.initial_time
     found_robot        = runtime.modeling.found_robot
     current_confidence = runtime.modeling.current_confidence
+    best_bounding_box  = runtime.modeling.best_bounding_box
+    boxes              = runtime.modeling.boxes
     should_shoot       = runtime.aiming.should_shoot
     horizontal_angle   = runtime.aiming.horizontal_angle
     vertical_angle     = runtime.aiming.vertical_angle
@@ -47,7 +50,10 @@ def display_information():
 
     # If gui is enabled then draw bounding boxes around the selected robot
     if with_gui and found_robot:
-        cv2.rectangle(found_robot, color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (255,0,0), 2)  
+        # 416x416     color_image.shape[0] color_image.shape[1]
+        for box in boxes:
+            box = [int(each) for each in box]
+            cv2.rectangle(color_image, (box[0], box[1]), (box[2], box[3]), (255,0,0), 2)  
 
     # Display time taken for single iteration of loop
     iteration_time = time.time()-initial_time

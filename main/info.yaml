@@ -133,7 +133,9 @@
                 serial_port: "/dev/ttyTHS2" # UART serial
         BOARD=XAVIER:
             model:
-                hardware_acceleration: "tensor_rt"
+                hardware_acceleration: "gpu"
+            testing:
+                open_each_frame: true
             communication:
                 serial_port: "/dev/ttyTHS0" # UART serial 0 works but try 1
         BOARD=LAPTOP:
