@@ -1,7 +1,6 @@
 from ctypes import *
 import serial
 import time
-import time
 
 from toolbox.globals import path_to, config, print, runtime
 
@@ -45,11 +44,12 @@ else:
         )
 # C++ struct
 class Message(Structure):
+    _pack_ = 1
     _fields_ = [
-        ("magic_number"    , c_longlong),
+        ("magic_number"    , c_uint64  ),
         ("horizontal_angle", c_float   ),
         ("vertical_angle"  , c_float   ),
-        ("should_shoot"    , c_int     ),
+        ("should_shoot"    , c_uint8   ),
     ]
 message = Message(magic_number, 0.0, 0.0, 0)
 
@@ -63,6 +63,13 @@ def when_aiming_refreshes():
     message.horizontal_angle = float(runtime.aiming.horizontal_angle)
     message.vertical_angle   = float(runtime.aiming.vertical_angle)
     message.should_shoot     = int(runtime.aiming.should_shoot)
+    message.horizontal_angle = float(69)
+    message.vertical_angle   = float(420)
+    message.should_shoot     = int(0)
+    
+    # print(f'''message.horizontal_angle = {message.horizontal_angle}''', end=", ")
+    # print(f'''message.vertical_angle = {message.vertical_angle}''', end=", ")
+    # print(f'''message.should_shoot = {message.should_shoot}''', end=", ")
     
     if port is not None:
         port.write(bytes(message))
