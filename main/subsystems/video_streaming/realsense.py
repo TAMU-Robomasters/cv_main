@@ -57,6 +57,7 @@ class VideoStream:
                 yield color_frame, depth_frame
                 
             except Exception as error:
+                import sys
                 print("VideoStream: error while getting frames:", error, sys.exc_info()[0])
                 print('(retrying)')
         
