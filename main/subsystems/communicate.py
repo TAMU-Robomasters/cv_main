@@ -22,14 +22,27 @@ if not serial_port:
     port = None # disable port
 else:
     print("Embedded Communication: Port is set to", serial_port)
-    port = serial.Serial(
-        serial_port,
-        baudrate=baudrate,
-        timeout=.05,
-        bytesize=serial.EIGHTBITS,
-        parity=serial.PARITY_NONE,
-        stopbits=serial.STOPBITS_ONE
-    )
+    try:
+        port = serial.Serial(
+            serial_port,
+            baudrate=baudrate,
+            timeout=config.communication.timeout,
+            bytesize=serial.EIGHTBITS,
+            parity=serial.PARITY_NONE,
+            stopbits=serial.STOPBITS_ONE
+        )
+    except Exception as error:
+        import subprocess
+        print("please enter password to get access to the serial port")
+        subprocess.run(["sudo", "chmod", "777", serial_port, ])
+        port = serial.Serial(
+            serial_port,
+            baudrate=baudrate,
+            timeout=config.communication.timeout,
+            bytesize=serial.EIGHTBITS,
+            parity=serial.PARITY_NONE,
+            stopbits=serial.STOPBITS_ONE
+        )
 # C++ struct
 class Message(Structure):
     _fields_ = [
