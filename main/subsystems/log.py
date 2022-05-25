@@ -8,7 +8,7 @@ from toolbox.image_tools import Image
 # 
 # config
 # 
-with_gui = config.testing.open_each_frame
+with_gui = config.testing.display_live_frames
 
 
 # 
