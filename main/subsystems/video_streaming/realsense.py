@@ -27,9 +27,10 @@ class VideoStream:
         # config.enable_stream(rs.stream.accel,rs.format.motion_xyz32f,250)
         # config.enable_stream(rs.stream.gyro,rs.format.motion_xyz32f,200)
         # config.enable_stream(rs.stream.pose,rs.format.motion_xyz32f,200)
+        self.que = rs.queue(1)
         while True:
             try:
-                self.pipeline.start(rs_config)
+                self.pipeline.start(rs_config, que)
             except Exception as error:
                 print("")
                 print(error)
@@ -43,7 +44,7 @@ class VideoStream:
         # retry after failure
         while True:
             try:
-                frame = self.pipeline.wait_for_frames()
+                frame = self.que.wait_for_frame().as_frame()
                 frame_number += 1
                 # create the frames
                 color_frame = np.array(frame.get_color_frame().get_data()) 
