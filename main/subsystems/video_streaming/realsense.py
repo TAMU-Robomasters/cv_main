@@ -44,7 +44,7 @@ class VideoStream:
         # retry after failure
         while True:
             try:
-                frame = self.que.wait_for_frame().as_frame()
+                frame = self.que.wait_for_frame().as_frameset()
                 frame_number += 1
                 # create the frames
                 color_frame = np.array(frame.get_color_frame().get_data()) 
