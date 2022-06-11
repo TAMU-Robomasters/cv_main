@@ -1,0 +1,18 @@
+{
+    "makefile.extensionOutputFolder": "./.vscode",
+    "files.exclude": {
+        "**/.git": false,
+        "**/.svn": false,
+        "**/.hg": false,
+        "**/.DS_Store": false
+    },
+    "search.exclude": {
+        "**/local_data.ignore.yaml": false,
+        "**/.git": true,
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/venv": true,
+        "**/dist": true,
+        "**/.cache": true
+    }
+}

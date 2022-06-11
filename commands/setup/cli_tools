@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+echo '
+#
+# installing basic CLI tools if not installed
+#'
+# install basics
+nix-env -iA nixpkgs.git
+nix-env -iA nixpkgs.curl
+nix-env -iA nixpkgs.fd     # for finding things
+nix-env -iA nixpkgs.dua    # for cleaning disk space
+nix-env -iA nixpkgs.xplr   # file explorer
+nix-env -iA nixpkgs.zellij # detachable sessions
+nix-env -iA nixpkgs.bottom # "btm" better than top
+nix-env -iA nixpkgs.vscode
+
+# vs code extensions
+code --install-extension jeff-hykin.swe-starter-pack
+code --install-extension jeff-hykin.xd-theme
+code --install-extension jeff-hykin.PKief.material-icon-theme

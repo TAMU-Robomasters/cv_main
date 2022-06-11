@@ -1,0 +1,33 @@
+[tool.poetry]
+name = "fornix"
+version = "0.1.0"
+description = ""
+authors = [""]
+
+[tool.poetry.dependencies]
+python = ">=3.7,<3.10"
+pip = "20.1.1"
+PyYAML = "^5.1.2"
+regex = ">=2022.3.2"
+filterpy = "1.4.4"
+pyserial = "3.4"
+opencv-contrib-python = "4.5.1.48"
+dict-recursive-update = "1.0.1"
+super-map = "^1.1.1"
+walk-up = "^0.1.0"
+ez-yaml = "^1.1.0"
+quik-config = "1.6.0"
+file-system-py = "^0.0.3"
+gdown = "^4.4.0"
+pyngrok = "^5.1.0"
+roboflow = "^0.2.2"
+opencv-python = "4.4.0.46"
+jupyterthemes = "^0.20.0"
+black = "^22.3.0"
+# ffmpeg-python==0.2.0
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
