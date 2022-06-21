@@ -1,45 +1,51 @@
 #include <SoftwareSerial.h>
 
-SoftwareSerial XavierSerial(2, 3); // RX, TX
-SoftwareSerial DevSerial(4, 5);    // RX, TX
+// plug wire from pin 0 to pin 3 then use the serial monitor to verify this
+// expect some problems with chars because arduino is processing both input and output
+
+SoftwareSerial XavierSerial(3, 4); // RX, TX
+SoftwareSerial DevSerial(5, 6);    // RX, TX
+
+const auto baud = 115200;
 
 void setup() {
     // Open serial communications and wait for port to open:
-    Serial.begin(115200);
-    while (!Serial) {}; // wait for serial port to connect. Needed for Native USB only
-    XavierSerial.begin(115200);
-    DevSerial.begin(115200);
+    Serial.begin(baud);
+    XavierSerial.begin(baud);
+    DevSerial.begin(baud);
 }
 
 #define DEBUGGING // comment out to disable debugging
 
 
 #ifdef DEBUGGING
+    int cycle = 0;
     const auto xavier_prefix = "Xavier says: ";
     const auto dev_previx    = "Dev    says: ";
 #endif
 
 
 void loop() {
+    XavierSerial.listen(); // cant listen to DevSerial and XavierSerial at same time
     if (XavierSerial.available()) {
-        auto incoming_byte = XavierSerial.read();
-        DevSerial.write((char*)&message, sizeof(message));
+        char incoming_byte = XavierSerial.read();
+        DevSerial.write(incoming_byte);
         
         #ifdef DEBUGGING
-            Serial.write((char*)&xavier_prefix, sizeof(xavier_prefix));
-            Serial.write((char*)&message, sizeof(message));
-            Serial.println();
+            Serial.write(xavier_prefix);
+            Serial.write(incoming_byte);
+            Serial.write('\n');
         #endif
     }
     
     if (DevSerial.available()) {
-        auto incoming_byte = DevSerial.read();
-        XavierSerial.write((char*)&message, sizeof(message));
+        char incoming_byte = DevSerial.read();
+        XavierSerial.write(incoming_byte);
         
         #ifdef DEBUGGING
-            Serial.write((char*)&dev_previx, sizeof(dev_previx));
-            Serial.write((char*)&message, sizeof(message));
-            Serial.println();
+            Serial.write(dev_previx);
+            Serial.write(incoming_byte);
+            Serial.write('\n');
         #endif
     }
 }
