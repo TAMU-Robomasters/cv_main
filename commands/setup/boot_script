@@ -4,7 +4,7 @@ if [ -z "$(command -v "crontab")" ]
 then
     echo 'I dont see the "crontab" command, so I cant setup the boot script'
 else
-    (crontab -l ; echo "0 * * * * '$HOME'/.boot.sh") | sort - | uniq - | crontab -
+    (crontab -l ; echo "@reboot '$HOME'/.boot.sh") | sort - | uniq - | crontab -
 
     echo '
 

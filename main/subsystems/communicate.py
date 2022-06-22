@@ -46,12 +46,12 @@ else:
 class Message(Structure):
     _pack_ = 1
     _fields_ = [
-        ("magic_number"    , c_uint64  ),
+        ("magic_number"    , c_uint8   ),
         ("horizontal_angle", c_float   ),
         ("vertical_angle"  , c_float   ),
         ("should_shoot"    , c_uint8   ),
     ]
-message = Message(magic_number, 0.0, 0.0, 0)
+message = Message('a', 0.0, 0.0, 0)
 
 
 # 

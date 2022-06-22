@@ -27,23 +27,26 @@ port = serial.Serial(
 
 inc = 0
 while 1:
-    #print(f'''----------------------------------------''')
-    #print(f'''Writing {bytes(message)}''')
-    # print(f'''sizeof(message) = {sizeof(message)}''')
-    inc += 1
-    #print(f'''inc = {inc}''')
-    # for each in bytes(message):
-    #     print(int(each))
-    message.horizontal_angle += 1
-    port.write(bytes(message))
-    #port.write("a".encode())
-    #print(f'''port.out_waiting = {port.out_waiting}''')
-    time.sleep(0.001)
-    
-    # print(f'''Reading''')
-    # # result = port.readline()
-    # print(f'''result = {result}''')
-    # time.sleep(1)
-    
-    
+    try:
+        #print(f'''----------------------------------------''')
+        #print(f'''Writing {bytes(message)}''')
+        # print(f'''sizeof(message) = {sizeof(message)}''')
+        inc += 1
+        #print(f'''inc = {inc}''')
+        # for each in bytes(message):
+        #     print(int(each))
+        message.horizontal_angle += 1
+        port.write(bytes(message))
+        #port.write("a".encode())
+        #print(f'''port.out_waiting = {port.out_waiting}''')
+        time.sleep(0.01)
+        
+        # print(f'''Reading''')
+        # # result = port.readline()
+        # print(f'''result = {result}''')
+        # time.sleep(1)
+        
+        
+    except Exception as error:
+        pass
     
