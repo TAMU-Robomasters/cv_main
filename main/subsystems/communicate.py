@@ -51,7 +51,7 @@ class Message(Structure):
         ("vertical_angle"  , c_float   ),
         ("should_shoot"    , c_uint8   ),
     ]
-message = Message('a', 0.0, 0.0, 0)
+message = Message(ord('a'), 0.0, 0.0, 0)
 
 
 # 
