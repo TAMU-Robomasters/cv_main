@@ -39,7 +39,7 @@ while 1:
         port.write(bytes(message))
         #port.write("a".encode())
         #print(f'''port.out_waiting = {port.out_waiting}''')
-        time.sleep(0.01)
+        time.sleep(0.02)
         
         # print(f'''Reading''')
         # # result = port.readline()

@@ -1,4 +1,4 @@
-import time
+from time import time as now
 
 # project imports
 from toolbox.globals import path_to, config, print, runtime
@@ -9,12 +9,10 @@ import subsystems.communicate  as communicate
 import subsystems.log          as log
 
 # Run detection infinitely
-for frame_number, (color_image, depth_image) in enumerate(video_stream.frames()):
+for runtime.frame_number, (runtime.color_image , runtime.depth_image) in enumerate(video_stream.frames()):
     # set frame data
-    runtime.initial_time  = time.time()
+    runtime.initial_time  = now()
     runtime.frame_number  = frame_number
-    runtime.color_image   = color_image
-    runtime.depth_image   = depth_image
     runtime.screen_center = aim.screen_center(color_image)
     
     # process it

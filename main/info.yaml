@@ -92,6 +92,7 @@
                     record_interval: 0 # records one out of every x frames, <1 to not record
             testing:
                 disable_print: false
+                disable_logging: true
                 save_frame_to_file: true
                 display_live_frames: false
             communication:
@@ -156,6 +157,7 @@
             mode: production
             testing:
                 disable_print: true
+                disable_logging: true
                 save_frame_to_file: false
                 display_live_frames: false
         WE_RED:
