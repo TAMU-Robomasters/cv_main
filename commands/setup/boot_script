@@ -11,12 +11,21 @@ else
         # give self access to port (which resets on boot for some reason)
         if [ -f "/dev/ttyTHS0" ]
         then
-            sudo -S chmod 777 /dev/ttyTHS0 <<< "tamucv319
-        "
+            sudo -S chmod 777 /dev/ttyTHS0 <<< '"'"'tamucv319
+'"'"'
         fi
 
         # then run main file
-        python3 "$HOME/repos/cv_main/main/subsystems/communicating/test_pyserial.py"
-
+        python3 "$HOME/repos/cv_main/main/main.py" &>"$HOME/MAIN_PY_LOGFILE.log" &
+        export PID_OF_MAIN_PY=$!
+        
+        # see: https://lwn.net/Articles/317814/
+        # if file exists
+        if [ -f "/proc/$PID_OF_MAIN_PY/oom_adj" ]
+        then
+            sudo -S echo '"'"'-16'"'"' > "/proc/$PID_OF_MAIN_PY/oom_adj" <<< '"'"'tamucv319
+'"'"'
+        fi
+        
     ' > "$HOME/.boot.sh"
 fi
