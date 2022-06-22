@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# for xavier
+if [ -d "$HOME"/repos/cv_main/ ]
+then
+    cd "$HOME"/repos/cv_main/
+fi
+
+export main_folder="$(python3 -c 'from quik_config import find_and_load;print(find_and_load("main/info.yaml").absolute_path_to.main_folder)')"
+
+python -m profile -o output.ignore.pstats "$main_folder/main.py" -- testing:save_frame_to_file:false
+gprof2dot.py -f pstats output.ignore.pstats | dot -Tpng -o output.png

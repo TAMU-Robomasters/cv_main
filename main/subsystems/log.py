@@ -57,7 +57,7 @@ def display_information():
         cv2.rectangle(found_robot, color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (255,0,0), 2)  
 
     # Display time taken for single iteration of loop
-    now_in_miliseconds = now() * 1000
+    now_in_miliseconds = int(now() * 1000)
     iteration_time = now_in_miliseconds-prev_loop_time
     runtime.prev_loop_time = now_in_miliseconds
     

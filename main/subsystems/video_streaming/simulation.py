@@ -26,7 +26,6 @@ class VideoStream:
             raise Exception(f'simulated VideoStream was created, but config.videostream.simulation.grab_frame was {simulation.grab_frame} instead of one of ["next_frame", "latest_frame"]')
     
     def frames(self):
-        print("here frames()")
         # for now it simply doesn't exist
         depth_frame = None
         
