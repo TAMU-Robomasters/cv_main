@@ -26,5 +26,6 @@ runtime = LazyDict()
 # 
 original_print = print
 def print(*args,**kwargs):
+    kwargs["flush"] = True
     if not config.testing.disable_print:
         original_print(*args,**kwargs)
