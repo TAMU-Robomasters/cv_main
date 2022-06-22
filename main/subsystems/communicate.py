@@ -61,12 +61,12 @@ print(f'''sizeof(message) = {sizeof(message)}''')
 # 
 # 
 def when_aiming_refreshes():
-    # message.horizontal_angle = float(runtime.aiming.horizontal_angle)
-    # message.vertical_angle   = float(runtime.aiming.vertical_angle)
-    # message.should_shoot     = int(runtime.aiming.should_shoot)
-    message.horizontal_angle += 1
-    message.vertical_angle   += 1
-    message.should_shoot     += 1
+    message.horizontal_angle = float(runtime.aiming.horizontal_angle)
+    message.vertical_angle   = float(runtime.aiming.vertical_angle)
+    message.should_shoot     = int(runtime.aiming.should_shoot)
+    # message.horizontal_angle += 1
+    # message.vertical_angle   += 1
+    # message.should_shoot     += 1
     
     print(f'''message.horizontal_angle = {message.horizontal_angle}''', end=", ")
     print(f'''message.vertical_angle = {message.vertical_angle}''', end=", ")
