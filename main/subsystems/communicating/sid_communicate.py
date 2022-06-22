@@ -73,8 +73,10 @@ def when_aiming_refreshes():
     
     if port is not None:
         try:
-            print(f'''bytes(message) = {bytes(message)}''', end=", ")
-            port.write(bytes(message))
+            #print(f'''bytes(message) = {bytes(message)}''', end=", ")
+            #port.write(bytes(message))
+            testvals = bytearray([1,2,3])
+            port.write(testvals)
         except Exception as error:
             print("error when writing over UART")
 
@@ -113,3 +115,7 @@ def get_phi():
         return signed_p
     except:
         return None
+
+while(1):
+	when_aiming_refreshes()
+	time.sleep(0.25)
