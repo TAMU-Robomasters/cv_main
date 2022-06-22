@@ -42,6 +42,9 @@
 [[packages]]
 load = [ "p7zip",] # for yolov5 training
 
+[[packages]]
+load = [ "screen",] # for yolov5 training
+
 # 
 # Python
 # 

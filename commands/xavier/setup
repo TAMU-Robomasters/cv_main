@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 
+# 
+# enable performance mode
+# 
+sudo nvpmodel -m 0
+sudo jetson_clocks --fan
+
+# allow user to access pins
+sudo usermod -a -G dialout "$(whoami)"
+
 # update everything as always
 sudo apt-get update -y
 sudo apt-get upgrade -y

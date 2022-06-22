@@ -7,7 +7,7 @@ from toolbox.image_tools import Image
 # 
 # config
 # 
-with_gui = config.testing.display_live_frames
+display_live_frames = config.testing.display_live_frames
 
 # 
 # 
@@ -27,7 +27,7 @@ def when_iteration_stops():
 # 
 # disable log check
 # 
-if config.testing.disable_logging:
+if config.testing.disable_all_logging:
     # override above definition and disable
     def when_finished_processing_frame():
         pass # do nothing intentionally
@@ -53,7 +53,7 @@ def display_information():
     y_std              = runtime.aiming.y_std
 
     # If gui is enabled then draw bounding boxes around the selected robot
-    if with_gui and found_robot:
+    if display_live_frames and found_robot:
         cv2.rectangle(found_robot, color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (255,0,0), 2)  
 
     # Display time taken for single iteration of loop
@@ -65,7 +65,7 @@ def display_information():
     print(f'\nframe#:{f"{frame_number}".rjust(5)},{f"{iteration_time}".rjust(4)}ms,', sep='', end='', flush=True)
 
     # Show live feed is gui is enabled
-    if with_gui:
+    if display_live_frames:
         from toolbox.image_tools import add_text
         add_text(text="horizontal_angle: "+str(round(horizontal_angle,2)     ), location=(30, 50), image=color_image)
         add_text(text="vertical_angle: "  +str(round(vertical_angle,2)       ), location=(30,100), image=color_image)
@@ -87,6 +87,7 @@ def record_images_if_needed():
     this function is designed to be called every time main() processes a frame
     its only purpose is to bundle all of the debugging output
     """
+    global frames
     
     if config.testing.save_frame_to_file:
         image = Image(runtime.color_image)
@@ -94,6 +95,8 @@ def record_images_if_needed():
             image.add_bounding_box(each)
         
         frames.append(image.img)
+        # limit the number of frames in ram
+        frames = frames[-config.testing.max_number_of_frames:]
 
 def save_frames_as_video(path):
     if config.testing.save_frame_to_file:

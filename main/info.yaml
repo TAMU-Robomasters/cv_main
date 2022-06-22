@@ -38,6 +38,7 @@
             kalman_filters: false
             filter_team_color: true
             mode: development
+            process_name: cv_main
             hardware:
                 board: laptop
                 camera: realsense # "realsense" or "zed"
@@ -91,10 +92,11 @@
                     record_time: 10 # seconds to record for
                     record_interval: 0 # records one out of every x frames, <1 to not record
             testing:
+                disable_all_logging: false
                 disable_print: false
-                disable_logging: false
                 save_frame_to_file: true
                 display_live_frames: false
+                max_number_of_frames: 4000 # 5000 is consumes about 6GB of ram
             communication:
                 timeout: 0.05
                 serial_baudrate: 115200
@@ -138,9 +140,14 @@
                 hardware_acceleration: "tensor_rt"
             communication:
                 serial_port: "/dev/ttyTHS0" # UART serial 0 works but try 1
+            testing:
+                save_frame_to_file: false
+                
         BOARD=LAPTOP:
             communication:
                 serial_port: null
+            testing:
+                save_frame_to_file: true
             
         CAMERA=ZED:
             hardware:
@@ -155,8 +162,8 @@
         SHOWTIME:
             mode: production
             testing:
+                disable_all_logging: true
                 disable_print: true
-                disable_logging: true
                 save_frame_to_file: false
                 display_live_frames: false
         WE_RED:
