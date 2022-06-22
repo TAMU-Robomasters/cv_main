@@ -25,7 +25,9 @@ runtime = LazyDict()
 # print (so we can disable it in production for performance)
 # 
 original_print = print
-def print(*args,**kwargs):
-    kwargs["flush"] = True
-    if not config.testing.disable_print:
+if not config.testing.disable_print:
+    def print(*args,**kwargs): pass # do nothing
+else:
+    def print(*args,**kwargs):
+        kwargs["flush"] = True # force writing to a file (slows down program but makes log files update immediately)
         original_print(*args,**kwargs)
