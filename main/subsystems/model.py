@@ -68,15 +68,18 @@ def when_frame_arrives():
         threshold=config.model.threshold,
     )
     
+    screen_center = compute_screen_center(runtime.color_image)
+    
     # best box
     best_bounding_box, current_confidence = get_optimal_bounding_box(
         boxes=boxes,
         confidences=confidences,
-        screen_center=runtime.screen_center,
+        screen_center=screen_center,
         distance=aiming.distance,
     )
     
     # export data
+    runtime.screen_center               = screen_center
     runtime.modeling.boxes              = boxes
     runtime.modeling.confidences        = confidences
     runtime.modeling.best_bounding_box  = best_bounding_box
@@ -88,6 +91,9 @@ def when_frame_arrives():
 # helpers
 # 
 # 
+def compute_screen_center(color_image):
+    return (color_image.shape[1] / 2, color_image.shape[0] / 2)
+
 def get_bounding_boxes(frame, minimum_confidence, threshold):
     # NOTE: this code is derived from https://www.pyimagesearch.com/2018/11/12/yolo-object-detection-with-opencv/
 

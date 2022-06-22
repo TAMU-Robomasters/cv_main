@@ -1,5 +1,4 @@
-import numpy as np
-import time
+from time import time_ns
 
 from toolbox.globals import path_to, config, print, runtime
 from toolbox.video_tools import Video
@@ -10,12 +9,12 @@ from toolbox.image_tools import Image
 # 
 with_gui = config.testing.display_live_frames
 
-
 # 
 # 
 # main
 # 
 # 
+runtime.prev_loop_time = 0 # init time value
 def when_finished_processing_frame():
     display_information()
     record_images_if_needed()
@@ -26,6 +25,14 @@ def when_iteration_stops():
     )
 
 # 
+# disable log check
+# 
+if config.testing.disable_logging:
+    # override above definition and disable
+    def when_finished_processing_frame():
+        pass # do nothing intentionally
+
+# 
 # 
 # helpers
 # 
@@ -34,7 +41,7 @@ def display_information():
     frame_number       = runtime.frame_number
     color_image        = runtime.color_image
     depth_image        = runtime.depth_image
-    initial_time       = runtime.initial_time
+    prev_loop_time     = runtime.prev_loop_time
     found_robot        = runtime.modeling.found_robot
     current_confidence = runtime.modeling.current_confidence
     should_shoot       = runtime.aiming.should_shoot
@@ -50,22 +57,25 @@ def display_information():
         cv2.rectangle(found_robot, color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (255,0,0), 2)  
 
     # Display time taken for single iteration of loop
-    iteration_time = time.time()-initial_time
+    now_in_miliseconds = time_ns() // 1000000
+    iteration_time = now_in_miliseconds-prev_loop_time
+    runtime.prev_loop_time = now_in_miliseconds
+    
     # relase all print info on one line
-    print(f'\nframe#: {frame_number} model took: {iteration_time:.4f}sec,', sep='', end='', flush=True)
+    print(f'\nframe#:{f"{frame_number}".rjust(5)},{f"{iteration_time}".rjust(4)}ms,', sep='', end='', flush=True)
 
     # Show live feed is gui is enabled
     if with_gui:
         from toolbox.image_tools import add_text
-        add_text(text="horizontal_angle: "+str(np.round(horizontal_angle,2)), location=(30, 50), image=color_image)
-        add_text(text="vertical_angle: "  +str(np.round(vertical_angle,2))  , location=(30,100), image=color_image)
-        add_text(text="depth_amount: "    +str(np.round(depth_amount,2))    , location=(30,150), image=color_image)
-        add_text(text="pixel_diff: "      +str(np.round(pixel_diff,2))      , location=(30,200), image=color_image)
-        add_text(text="x_std: "           +str(np.round(x_std,2))           , location=(30,250), image=color_image)
-        add_text(text="y_std: "           +str(np.round(y_std,2))           , location=(30,300), image=color_image)
-        add_text(text="confidence: "      +str(np.round(current_confidence,2))              , location=(30,350), image=color_image)
-        add_text(text="fps: "             +str(np.round(1/iteration_time,2)), location=(30,400), image=color_image)
-        add_text(text="shoot: "           +str(should_shoot)                , location=(30,450), image=color_image)
+        add_text(text="horizontal_angle: "+str(round(horizontal_angle,2)     ), location=(30, 50), image=color_image)
+        add_text(text="vertical_angle: "  +str(round(vertical_angle,2)       ), location=(30,100), image=color_image)
+        add_text(text="depth_amount: "    +str(round(depth_amount,2)         ), location=(30,150), image=color_image)
+        add_text(text="pixel_diff: "      +str(round(pixel_diff,2)           ), location=(30,200), image=color_image)
+        add_text(text="x_std: "           +str(round(x_std,2)                ), location=(30,250), image=color_image)
+        add_text(text="y_std: "           +str(round(y_std,2)                ), location=(30,300), image=color_image)
+        add_text(text="confidence: "      +str(round(current_confidence,2)   ), location=(30,350), image=color_image)
+        add_text(text="fps: "             +str(round(1000/iteration_time,2)  ), location=(30,400), image=color_image)
+        add_text(text="shoot: "           +str(should_shoot                  ), location=(30,450), image=color_image)
 
         cv2.imshow("RGB Feed",color_image)
         cv2.waitKey(10)
@@ -90,3 +100,22 @@ def save_frames_as_video(path):
         # save all the frames as a video
         Video.create_from_frames(frames, save_to=path)
         print(f"\n\nvideo output has been saved to {path}")
+
+def visualize_depth_frame(depth_frame_array):
+    """
+    Displays a depth frame in a visualized color format.
+
+    Input: Depth Frame.
+    Output: None.
+    """
+    import cv2
+    depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_frame_array, alpha = 0.04), cv2.COLORMAP_JET)# this puts a color efffect on the depth frame
+    images = depth_colormap                              # use this for individual streams
+    cv2.namedWindow('Align Example', cv2.WINDOW_NORMAL)   # names and shows the streams
+    cv2.imwrite('depthmap.jpg', images)
+
+    # # if you press escape or q you can cancel the process
+    key = cv2.waitKey(1)
+    print("press escape to cancel")
+    if key & 0xFF == ord('q') or key == 27:
+        cv2.destroyAllWindows()

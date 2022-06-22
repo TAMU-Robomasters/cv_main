@@ -1,5 +1,4 @@
 import numpy as np
-import cv2
 import math
 import collections
 from super_map import LazyDict
@@ -98,24 +97,6 @@ def when_bounding_boxes_refresh():
 # helpers
 # 
 # 
-def visualize_depth_frame(depth_frame_array):
-    """
-    Displays a depth frame in a visualized color format.
-
-    Input: Depth Frame.
-    Output: None.
-    """
-    depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_frame_array, alpha = 0.04), cv2.COLORMAP_JET)# this puts a color efffect on the depth frame
-    images = depth_colormap                              # use this for individual streams
-    cv2.namedWindow('Align Example', cv2.WINDOW_NORMAL)   # names and shows the streams
-    cv2.imwrite('depthmap.jpg', images)
-
-    # # if you press escape or q you can cancel the process
-    key = cv2.waitKey(1)
-    print("press escape to cancel")
-    if key & 0xFF == ord('q') or key == 27:
-        cv2.destroyAllWindows()
-    
 def get_dist_from_array(depth_frame_array, bbox):
     """
     Determines the depth of a bounding box by choosing and filtering the depths of specific points in the bounding box.
@@ -389,13 +370,8 @@ def update_circular_buffers(x_circular_buffer,y_circular_buffer,prediction):
 
 def send_shoot(xstd,ystd):
     """
-    Decide whether to shoot or not.
-
     Input: Standard Deviations for both x and y.
-    Output: Yes or no.
+    Output: True=shoot
     """
 
     return 1 if ((xstd+ystd)/2 < std_error_bound) else 0
-
-def screen_center(color_image):
-    return (color_image.shape[1] / 2, color_image.shape[0] / 2)

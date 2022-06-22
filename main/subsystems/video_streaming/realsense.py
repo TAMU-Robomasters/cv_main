@@ -1,12 +1,10 @@
-import time
-import numpy as np
-
 # relative imports
 from toolbox.video_tools import Video
 from toolbox.globals import path_to, config, print
 
-videostream = config.videostream
-aiming      = config.aiming
+videostream     = config.videostream
+aiming          = config.aiming
+record_interval = videostream.testing.record_interval
 
 class VideoStream:
     def __init__(self):
@@ -17,7 +15,7 @@ class VideoStream:
         framerate     = aiming.stream_framerate
         
         self.video_output = None
-        if videostream.testing.record_interval > 0:
+        if record_interval > 0:
             self.video_output = self.begin_video_recording()
 
         self.pipeline = rs.pipeline()                                                               # declares and initializes the pipeline variable
@@ -39,27 +37,41 @@ class VideoStream:
             break
     
     def frames(self):
-        frame_number = 0
-        # retry after failure
-        while True:
-            try:
-                frame = self.pipeline.wait_for_frames()
-                frame_number += 1
-                # create the frames
-                color_frame = np.array(frame.get_color_frame().get_data()) 
-                depth_frame = np.array(frame.get_depth_frame() .get_data()) 
-                
-                # Add frame to video recording based on recording frequency
-                if self.video_output and (frame_number % videostream.testing.record_interval == 0):
-                    print(" saving_frame:",frame_number)
-                    self.video_output.write(color_frame)
+        from numpy import array
+        from itertools import count
+        
+        wait_for_frames    = self.pipeline.wait_for_frames
+        video_output_write = self.video_output and self.video_output.write
+        
+        def generator():
+            success_number = 0
+            while True:
+                try:
+                    success_number += 1
+                    frame = wait_for_frames()
+                    yield success_number, array(frame.get_color_frame().get_data()), array(frame.get_depth_frame().get_data())
+                    if success_number > (60*5): # 60fps for 5sec
+                        break # use more efficient loop below without try-catch
+                except Exception as error: # failure to connect to realsense
+                    import sys
+                    print("VideoStream: error while getting frames:", error, sys.exc_info()[0])
+                    print('(retrying)')
+            
+            for frame_number in count(success_number): # starting at success_number
+                frame = wait_for_frames()
+                yield frame_number, array(frame.get_color_frame().get_data()), array(frame.get_depth_frame().get_data())
+        
+        if not video_output_write:
+            return generator()
+        else:
+            def wrapper():
+                for frame_number, color_frame, depth_frame in generator():
+                    if frame_number % record_interval == 0:
+                        print(" saving_frame:", frame_number)
+                        video_output_write(color_frame)
                     
-                yield color_frame, depth_frame
-                
-            except Exception as error:
-                import sys
-                print("VideoStream: error while getting frames:", error, sys.exc_info()[0])
-                print('(retrying)')
+                    yield frame_data
+            return wrapper()
         
     def __del__(self):
         print("Closing Realsense Pipeline")
@@ -72,7 +84,7 @@ class VideoStream:
         Input: None
         Output: Video object to add frames too.
         """
-
+        import datetime
         color_video_location = path_to.record_video_output_color
         
         # Setup video output path based on date and counter

@@ -92,14 +92,13 @@
                     record_interval: 0 # records one out of every x frames, <1 to not record
             testing:
                 disable_print: false
-                disable_logging: true
+                disable_logging: false
                 save_frame_to_file: true
                 display_live_frames: false
             communication:
                 timeout: 0.05
                 serial_baudrate: 115200
                 serial_port: null
-                magic_number: 0xdeadbeefdeadbef
             zed:
                 resolution: "HD720"       # HD2K, HD1080, HD720, VGA, LAST
                 depth_mode: "PERFORMANCE" # ULTRA, QUALITY, NEURAL, PERFORMANCE, NONE, LAST

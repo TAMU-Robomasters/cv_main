@@ -44,7 +44,8 @@ finally:
 
 
     # filter = f.Filter(5)
-    # dc.visualize_depth_frame(depths[220])
+    # from subsystems.log import visualize_depth_frame
+    # visualize_depth_frame(depths[220])
     depth_value = 1.0
     filter = f.Filter(model_fps)
     for i in range(len(depths)):

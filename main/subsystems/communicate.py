@@ -9,7 +9,6 @@ from toolbox.globals import path_to, config, print, runtime
 # 
 serial_port  = config.communication.serial_port
 baudrate     = config.communication.serial_baudrate
-magic_number = config.communication.magic_number
 
 # 
 # 
@@ -65,9 +64,9 @@ def when_aiming_refreshes():
     message.vertical_angle   = float(runtime.aiming.vertical_angle)
     message.should_shoot     = int(runtime.aiming.should_shoot)
     
-    print(f'''message.horizontal_angle = {message.horizontal_angle}''', end=", ")
-    print(f'''message.vertical_angle = {message.vertical_angle}''', end=", ")
-    print(f'''message.should_shoot = {message.should_shoot}''', end=", ")
+    print(f'''horizontal_angle = {message.horizontal_angle}''', end=", ")
+    print(f'''vertical_angle = {message.vertical_angle}''', end=", ")
+    print(f'''should_shoot = {message.should_shoot}''', end=", ")
     
     if port is not None:
         try:

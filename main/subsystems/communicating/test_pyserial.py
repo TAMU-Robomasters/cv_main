@@ -9,12 +9,12 @@ from ctypes import *
 class Message(Structure):
     _pack_ = 1
     _fields_ = [
-        ("magic_number"    , c_uint64  ),
+        ("magic_number"    , c_uint8  ),
         ("horizontal_angle", c_float   ),
         ("vertical_angle"  , c_float   ),
         ("should_shoot"    , c_uint8   ),
     ]
-message = Message(0xdeadbeefdeadbef, 0.0, 0.0, 0)
+message = Message(ord('a'), 0.0, 0.0, 0)
 
 port = serial.Serial(
     "/dev/ttyTHS0",
@@ -48,5 +48,5 @@ while 1:
         
         
     except Exception as error:
-        pass
+        print(f'''error = {error}''')
     
