@@ -64,8 +64,8 @@ def when_aiming_refreshes():
     message.vertical_angle   = float(runtime.aiming.vertical_angle)
     message.should_shoot     = int(runtime.aiming.should_shoot)
     from random import random
-    message.horizontal_angle = float(69 + random())
-    message.vertical_angle   = float(420 + random())
+    message.horizontal_angle = float(69 + message.horizontal_angle)
+    message.vertical_angle   = float(420 + message.vertical_angle)
     message.should_shoot     = int(runtime.aiming.should_shoot)
     
     print(f'''horizontal_angle = {message.horizontal_angle}''', end=", ")
