@@ -77,8 +77,8 @@ def when_bounding_boxes_refresh():
     # smooth angles
     # 
     from statistics import mean as average
-    horizontal_angle = average(horizontal_angle, average(runtime.aiming.horizontal_angles))
-    vertical_angle   = average(vertical_angle  , average(runtime.aiming.vertical_angles  ))
+    horizontal_angle = average((horizontal_angle, average(runtime.aiming.horizontal_angles)))
+    vertical_angle   = average((vertical_angle  , average(runtime.aiming.vertical_angles  )))
     
     # If we detected robots, find bounding box closest to center of screen and determine angles to turn by
     if found_robot:
