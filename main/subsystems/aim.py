@@ -314,7 +314,7 @@ def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_ci
         # print("Kalman Filter updated Prediction to:",prediction)
 
     depth_amount = get_dist_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
-    print(" best_bounding_box:",best_bounding_box, " prediction:", prediction, " depth_amount: ", depth_amount, end=", ")
+    # print(" best_bounding_box:",best_bounding_box, " prediction:", prediction, " depth_amount: ", depth_amount, end=", ")
 
     # phi = communication.get_phi()
     # print("PHI:",phi)
