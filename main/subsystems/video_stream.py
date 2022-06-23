@@ -21,9 +21,10 @@ if not config.hardware.camera_is_upsidedown:
     frames = frames_function
 else:
     def frames():
-        for frame_number, color_image, depth_image in frames_function():
+        thing = frames_function()
+        for frame_number, color_image, depth_image in thing:
             yield (
                 frame_number,
                 Image(color_image).rotated_180_degrees().in_cv2_format,
-                Image(depth_image).rotated_180_degrees().in_cv2_format,
+                Image(depth_image).rotated_180_degrees().in_cv2_format if type(depth_image) != type(None) else None,
             )
