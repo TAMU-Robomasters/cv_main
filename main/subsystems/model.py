@@ -223,5 +223,5 @@ def filter_team(boxes, confidences, class_ids):
             enemy_confidences.append(confidences[index])
             enemy_class_ids.append(class_ids[index])
 
-    print(enemy_boxes, end=", ")
+    # print(enemy_boxes, end=", ")
     return enemy_boxes,enemy_confidences,enemy_class_ids
