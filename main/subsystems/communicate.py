@@ -66,7 +66,7 @@ def when_aiming_refreshes():
     # UP = negative (for some reason)
     # LEFT = negative
     # values are in radians
-    print(f'''msg({message.horizontal_angle:.4:f},{message.vertical_angle:.4:f}, {message.should_shoot})''', end=", ")
+    print(f'''msg({message.horizontal_angle:.4f},{message.vertical_angle:.4f}, {message.should_shoot})''', end=", ")
     
     if port is not None:
         try:
