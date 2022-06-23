@@ -55,9 +55,9 @@ class Message(Structure):
 message = Message(ord('a'), 0.0, 0.0, 0)
 
 action = LazyDict(
-    LOOK_AT_COORDS=0,
-    FIRE=1,
-    LOOK_AROUND=2,
+    LOOK_AROUND=0,
+    LOOK_AT_COORDS=1,
+    FIRE=2,
 )
 
 # 
