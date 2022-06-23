@@ -81,7 +81,7 @@ def when_bounding_boxes_refresh():
     else: 
         x_circular_buffer.clear()
         y_circular_buffer.clear()
-        print(" bounding_boxes: []", end=", ")
+        # print(" bounding_boxes: []", end=", ")
         
     # update the shared data
     runtime.aiming.should_shoot      = should_shoot
