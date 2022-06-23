@@ -66,6 +66,8 @@ def when_bounding_boxes_refresh():
     screen_center     = runtime.screen_center
     
     horizontal_angle, vertical_angle, should_shoot, x_std, y_std, depth_amount, pixel_diff = (0, 0, 0, 0, 0, 0, 0)
+    
+    
     # If we detected robots, find bounding box closest to center of screen and determine angles to turn by
     if found_robot:
         prediction, depth_amount, x_std, y_std, pixel_diff = decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, False)
@@ -81,7 +83,7 @@ def when_bounding_boxes_refresh():
     else: 
         x_circular_buffer.clear()
         y_circular_buffer.clear()
-        print(" bounding_boxes: []", end=", ")
+        # print(" bounding_boxes: []", end=", ")
         
     # update the shared data
     runtime.aiming.should_shoot      = should_shoot
@@ -291,7 +293,7 @@ def angle_from_center(prediction, screen_center):
     horizontal_angle = ((x_bbox_center-x_cam_center)/x_cam_center)*(horizontal_fov/2)
     vertical_angle = ((y_bbox_center-y_cam_center)/y_cam_center)*(vertical_fov/2)
 
-    print("horizontal_angle:",f"{horizontal_angle:.4f}"," vertical_angle:", f"{vertical_angle:.4f}", end=", ")
+    # print("horizontal_angle:",f"{horizontal_angle:.4f}"," vertical_angle:", f"{vertical_angle:.4f}", end=", ")
 
     return math.radians(horizontal_angle),math.radians(vertical_angle)
 
@@ -314,7 +316,7 @@ def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_ci
         # print("Kalman Filter updated Prediction to:",prediction)
 
     depth_amount = get_dist_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
-    print(" best_bounding_box:",best_bounding_box, " prediction:", prediction, " depth_amount: ", depth_amount, end=", ")
+    # print(" best_bounding_box:",best_bounding_box, " prediction:", prediction, " depth_amount: ", depth_amount, end=", ")
 
     # phi = communication.get_phi()
     # print("PHI:",phi)
@@ -324,6 +326,8 @@ def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_ci
     #     pixel_diff = bullet_drop_compensation(depth_image,best_bounding_box,depth_amount,screen_center,phi)
 
     pixel_diff = bullet_offset_compensation(depth_amount)
+    if config.aiming.disable_bullet_drop:
+        pixel_diff = None
     if pixel_diff is None:
         x_circular_buffer.clear()
         y_circular_buffer.clear()

@@ -10,8 +10,8 @@ sudo jetson_clocks --fan
 sudo usermod -a -G dialout "$(whoami)"
 
 # update everything as always
-sudo apt-get update -y
-sudo apt-get upgrade -y
+# sudo apt-get update -y
+# sudo apt-get upgrade -y
 
 # 
 # setup shell hooks

@@ -49,6 +49,7 @@
                 frequency: 30
                 input_dimension: 416
             aiming:
+                disable_bullet_drop: true
                 prediction_time: 2 # time interval in seconds to predict using kalman filters
                 
                 # depth camera

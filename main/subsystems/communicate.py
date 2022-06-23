@@ -2,6 +2,8 @@ from ctypes import *
 import serial
 import time
 
+from super_map import LazyDict
+
 from toolbox.globals import path_to, config, print, runtime
 
 # 
@@ -51,8 +53,12 @@ class Message(Structure):
         ("should_shoot"    , c_uint8   ),
     ]
 message = Message(ord('a'), 0.0, 0.0, 0)
-print(f'''sizeof(message) = {sizeof(message)}''')
 
+action = LazyDict(
+    track=0,
+    shoot=1,
+    patrol=2,
+)
 
 # 
 # 
@@ -62,15 +68,14 @@ print(f'''sizeof(message) = {sizeof(message)}''')
 def when_aiming_refreshes():
     message.horizontal_angle = float(runtime.aiming.horizontal_angle)
     message.vertical_angle   = float(runtime.aiming.vertical_angle)
-    message.should_shoot     = int(runtime.aiming.should_shoot)
-    
-    print(f'''horizontal_angle = {message.horizontal_angle}''', end=", ")
-    print(f'''vertical_angle = {message.vertical_angle}''', end=", ")
-    print(f'''should_shoot = {message.should_shoot}''', end=", ")
+    message.should_shoot     = action.shoot if runtime.aiming.should_shoot else action.track if (message.horizontal_angle != 0) or (message.vertical_angle != 0) else action.patrol
+    # UP = negative (for some reason)
+    # LEFT = negative
+    # values are in radians
+    print(f'''msg({f"{message.horizontal_angle:.4f}".rjust(7)},{f"{message.vertical_angle:.4f}".rjust(7)}, {message.should_shoot})''', end=", ")
     
     if port is not None:
         try:
-            print(f'''bytes(message) = {bytes(message)}''', end=", ")
             port.write(bytes(message))
         except Exception as error:
             print("error when writing over UART")
