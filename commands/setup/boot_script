@@ -16,6 +16,8 @@ else
         fi
 
         # then run main file
+        . "$HOME/.zshrc"
+        cd "$HOME/repos/cv_main/main"
         python3 "$HOME/repos/cv_main/main/main.py" &>"$HOME/MAIN_PY_LOGFILE.log" &
         export PID_OF_MAIN_PY=$!
         
@@ -23,7 +25,7 @@ else
         # if file exists
         if [ -f "/proc/$PID_OF_MAIN_PY/oom_adj" ]
         then
-            sudo -S echo '"'"'-16'"'"' > "/proc/$PID_OF_MAIN_PY/oom_adj" <<< '"'"'tamucv319
+            sudo -S echo '"'"'-10'"'"' > "/proc/$PID_OF_MAIN_PY/oom_adj" <<< '"'"'tamucv319
 '"'"'
         fi
         

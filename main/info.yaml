@@ -42,6 +42,7 @@
             hardware:
                 board: laptop
                 camera: realsense # "realsense" or "zed"
+                camera_is_upsidedown: false
             model:
                 hardware_acceleration: null # one of: [ null, "gpu", "tensor_rt" ]
                 minimum_confidence: 0.8 # should be a value between 0-1
@@ -50,6 +51,7 @@
                 input_dimension: 416
             aiming:
                 disable_bullet_drop: true
+                sec_till_lock_lost: 5
                 prediction_time: 2 # time interval in seconds to predict using kalman filters
                 
                 # depth camera
@@ -65,12 +67,9 @@
                 camera_gap: -.034
 
                 # Shooting Logic
-                std_buffer_size: 1
-                heat_buffer_size: 200
-                rate_of_fire: 8
-                idle_counter: 60
+                min_size_for_stdev: 5
                 std_error_bound: 60
-                min_range: 1
+                min_range: 1 # units? meters?
                 max_range: 5
 
                 #power rune
@@ -83,6 +82,7 @@
 
                 #bullet drop
                 barrel_camera_gap: 0.0364   # in meters
+                
             videostream:
                 simulation:
                     grab_method: 'next_frame' # 'next_frame', or 'latest_frame'
@@ -156,6 +156,7 @@
         CAMERA=REALSENSE:
             hardware:
                 camera: realsense
+                camera_is_upsidedown: true
         CAMERA=NONE:
             hardware:
                 camera: null

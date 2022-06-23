@@ -44,17 +44,14 @@ def display_information():
     prev_loop_time     = runtime.prev_loop_time
     found_robot        = runtime.modeling.found_robot
     current_confidence = runtime.modeling.current_confidence
+    best_bounding_box  = runtime.modeling.best_bounding_box
     should_shoot       = runtime.aiming.should_shoot
     horizontal_angle   = runtime.aiming.horizontal_angle
     vertical_angle     = runtime.aiming.vertical_angle
     depth_amount       = runtime.aiming.depth_amount
     pixel_diff         = runtime.aiming.pixel_diff
-    x_std              = runtime.aiming.x_std
-    y_std              = runtime.aiming.y_std
-
-    # If gui is enabled then draw bounding boxes around the selected robot
-    if display_live_frames and found_robot:
-        cv2.rectangle(found_robot, color_image, (best_bounding_box[0], best_bounding_box[1]), (best_bounding_box[0] + best_bounding_box[2], best_bounding_box[1] + best_bounding_box[3]), (255,0,0), 2)  
+    horizonal_stdev    = runtime.aiming.horizonal_stdev
+    vertical_stdev     = runtime.aiming.vertical_stdev
 
     # Display time taken for single iteration of loop
     now_in_miliseconds = int(now() * 1000)
@@ -66,19 +63,22 @@ def display_information():
 
     # Show live feed is gui is enabled
     if display_live_frames:
-        from toolbox.image_tools import add_text
-        add_text(text="horizontal_angle: "+str(round(horizontal_angle,2)     ), location=(30, 50), image=color_image)
-        add_text(text="vertical_angle: "  +str(round(vertical_angle,2)       ), location=(30,100), image=color_image)
-        add_text(text="depth_amount: "    +str(round(depth_amount,2)         ), location=(30,150), image=color_image)
-        add_text(text="pixel_diff: "      +str(round(pixel_diff,2)           ), location=(30,200), image=color_image)
-        add_text(text="x_std: "           +str(round(x_std,2)                ), location=(30,250), image=color_image)
-        add_text(text="y_std: "           +str(round(y_std,2)                ), location=(30,300), image=color_image)
-        add_text(text="confidence: "      +str(round(current_confidence,2)   ), location=(30,350), image=color_image)
-        add_text(text="fps: "             +str(round(1000/iteration_time,2)  ), location=(30,400), image=color_image)
-        add_text(text="shoot: "           +str(should_shoot                  ), location=(30,450), image=color_image)
-
-        cv2.imshow("RGB Feed",color_image)
-        cv2.waitKey(10)
+        import cv2
+        
+        image = Image(runtime.color_image)
+        if found_robot: image.add_bounding_box(best_bounding_box)
+        
+        image.add_text(text="horizontal_angle: "+str(round(horizontal_angle,2)     ), location=(30, 50))
+        image.add_text(text="vertical_angle: "  +str(round(vertical_angle,2)       ), location=(30,100))
+        image.add_text(text="depth_amount: "    +str(round(depth_amount,2)         ), location=(30,150))
+        image.add_text(text="pixel_diff: "      +str(round(pixel_diff,2)           ), location=(30,200))
+        image.add_text(text="x_std: "           +str(round(x_std,2)                ), location=(30,250))
+        image.add_text(text="y_std: "           +str(round(y_std,2)                ), location=(30,300))
+        image.add_text(text="confidence: "      +str(round(current_confidence,2)   ), location=(30,350))
+        image.add_text(text="fps: "             +str(round(1000/iteration_time,2)  ), location=(30,400))
+        image.add_text(text="shoot: "           +str(should_shoot                  ), location=(30,450))
+        
+        image.show()
 
 
 frames = []

@@ -1,7 +1,10 @@
-import numpy as np
 import math
 import collections
+from time import time as now
+
+import numpy as np
 from super_map import LazyDict
+from statistics import mean as average
 
 from toolbox.globals import path_to, config, print, runtime
 from subsystems.aiming.filter import Filter
@@ -20,10 +23,7 @@ model_fps           = config.aiming.model_fps
 bullet_velocity     = config.aiming.bullet_velocity
 length_barrel       = config.aiming.length_barrel
 camera_gap          = config.aiming.camera_gap
-std_buffer_size     = config.aiming.std_buffer_size
-heat_buffer_size    = config.aiming.heat_buffer_size
-rate_of_fire        = config.aiming.rate_of_fire
-idle_counter        = config.aiming.idle_counter
+min_size_for_stdev  = config.aiming.min_size_for_stdev
 std_error_bound     = config.aiming.std_error_bound
 min_range           = config.aiming.min_range
 max_range           = config.aiming.max_range
@@ -34,20 +34,23 @@ center_image_offset = config.aiming.center_image_offset
 min_area            = config.aiming.min_area
 r_timer             = config.aiming.r_timer
 barrel_camera_gap   = config.aiming.barrel_camera_gap
+sec_till_lock_lost  = config.aiming.sec_till_lock_lost
 
 # these are used to ensure we are locked on a target
-x_circular_buffer = collections.deque(maxlen=config.aiming.std_buffer_size)
-y_circular_buffer = collections.deque(maxlen=config.aiming.std_buffer_size)
+x_circular_buffer = collections.deque(maxlen=config.aiming.min_size_for_stdev)
+y_circular_buffer = collections.deque(maxlen=config.aiming.min_size_for_stdev)
 
 # 
 # shared data (imported by modeling and integration)
 # 
 runtime.aiming = LazyDict(
     should_shoot=False,
+    should_look_around=False,
+    last_target_time=0,
     horizontal_angle=0,
     vertical_angle=0,
-    x_std=0,
-    y_std=0,
+    horizonal_stdev=0,
+    vertical_stdev=0,
     depth_amount=0,
     pixel_diff=0,
 )
@@ -65,41 +68,107 @@ def when_bounding_boxes_refresh():
     confidence        = runtime.modeling.current_confidence
     screen_center     = runtime.screen_center
     
-    horizontal_angle, vertical_angle, should_shoot, x_std, y_std, depth_amount, pixel_diff = (0, 0, 0, 0, 0, 0, 0)
+    horizontal_angle, vertical_angle, should_shoot, horizonal_stdev, vertical_stdev, depth_amount, pixel_diff = (0, 0, 0, 0, 0, 0, 0)
     
-    
-    # If we detected robots, find bounding box closest to center of screen and determine angles to turn by
+    # 
+    # update core aiming data
+    # 
     if found_robot:
-        prediction, depth_amount, x_std, y_std, pixel_diff = decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, False)
+        prediction, depth_amount, pixel_diff = decide_shooting_location(best_bounding_box, screen_center, depth_image, using_tracker=False)
+        # If we detected robots, find bounding box closest to center of screen and determine angles to turn by
         horizontal_angle, vertical_angle = angle_from_center(prediction, screen_center)
-        # Send embedded the angles to turn to and the accuracy, make accuracy terrible if we dont have enough data in buffer 
-        if depth_amount < min_range or depth_amount > max_range:
-            x_circular_buffer.clear()
-            y_circular_buffer.clear()
-            should_shoot = 0
-        elif len(x_circular_buffer) == std_buffer_size:
-            should_shoot = send_shoot(x_std, y_std)
-    # no robots
-    else: 
+        
+        depth_out_of_bounds = depth_amount < min_range or depth_amount > max_range
+    
+    # 
+    # update circular buffers
+    # 
+    if not found_robot or depth_out_of_bounds:
         x_circular_buffer.clear()
         y_circular_buffer.clear()
-        # print(" bounding_boxes: []", end=", ")
+    else:
+        x_circular_buffer.append(prediction[0])
+        y_circular_buffer.append(prediction[1])
+        horizonal_stdev = np.std(x_circular_buffer)
+        vertical_stdev = np.std(y_circular_buffer)
         
+    # 
+    # should_shoot
+    # 
+    if not found_robot: # or depth_out_of_bounds
+        should_shoot = False
+    elif len(x_circular_buffer) >= min_size_for_stdev:
+        prediction_error = average((horizonal_stdev, vertical_stdev))
+        if prediction_error < std_error_bound:
+            should_shoot = True
+        else:
+            should_shoot = False
+    
+    # 
+    # should_look_around
+    # 
+    current_time = now()
+    if current_time - runtime.aiming.last_target_time < sec_till_lock_lost:
+        should_look_around = False
+    else:
+        should_look_around = True
+    if found_robot:
+        runtime.aiming.last_target_time = current_time
+    
+    # 
     # update the shared data
-    runtime.aiming.should_shoot      = should_shoot
-    runtime.aiming.horizontal_angle  = horizontal_angle
-    runtime.aiming.vertical_angle    = vertical_angle
-    runtime.aiming.x_std             = x_std
-    runtime.aiming.y_std             = y_std
-    runtime.aiming.depth_amount      = depth_amount
-    runtime.aiming.pixel_diff        = pixel_diff
+    # 
+    runtime.aiming.should_look_around = should_look_around
+    runtime.aiming.should_shoot       = should_shoot
+    runtime.aiming.horizontal_angle   = horizontal_angle
+    runtime.aiming.vertical_angle     = vertical_angle
+    runtime.aiming.horizonal_stdev    = horizonal_stdev
+    runtime.aiming.vertical_stdev     = vertical_stdev
+    runtime.aiming.depth_amount       = depth_amount
+    runtime.aiming.pixel_diff         = pixel_diff
 
 # 
 # 
 # helpers
 # 
 # 
-def get_dist_from_array(depth_frame_array, bbox):
+def decide_shooting_location(best_bounding_box, screen_center, depth_image, using_tracker):
+    """
+    Decide the shooting location based on the best bounding box. Find depth of detected robot. Update the circular buffers.
+
+    Input: All detected bounding boxes with their confidences, center of the screen, depth image, and the circular buffers.
+    Output: The predicted location to shoot, the depth, and how locked on we are.
+    """
+
+    # Location to shoot [x_obj_center, y_obj_center]
+    prediction = [best_bounding_box[0]+best_bounding_box[2]/2, best_bounding_box[1]+best_bounding_box[3]/2]
+
+    # Comment this if branch out in case kalman filters doesn't work
+    # if kalman_filters and using_tracker:
+    #     prediction[1] += getBulletDropPixels(depth_image,best_bounding_box)
+        # kalman_box = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
+        # prediction = kalman_filter.predict(kalman_box, frame) # figure out where to aim, returns (x_obj_center, y_obj_center)
+        # print("Kalman Filter updated Prediction to:",prediction)
+
+    depth_amount = get_distance_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
+    # print(" best_bounding_box:",best_bounding_box, " prediction:", prediction, " depth_amount: ", depth_amount, end=", ")
+
+    # phi = communication.get_phi()
+    # print("PHI:",phi)
+    # pixel_diff = 0
+    # if phi:
+    #     pixel_diff = 0 # Just here in case we comment out the next line
+    #     pixel_diff = bullet_drop_compensation(depth_image,best_bounding_box,depth_amount,screen_center,phi)
+
+    pixel_diff = bullet_offset_compensation(depth_amount)
+    if config.aiming.disable_bullet_drop:
+        pixel_diff = 0
+
+    prediction[1] -= pixel_diff
+
+    return prediction, depth_amount, pixel_diff
+
+def get_distance_from_array(depth_frame_array, bbox):
     """
     Determines the depth of a bounding box by choosing and filtering the depths of specific points in the bounding box.
 
@@ -147,6 +216,20 @@ def get_dist_from_array(depth_frame_array, bbox):
     except:
         return 1
 
+def bullet_offset_compensation(depth_amount):
+    """
+    Determines the bullet offset due to bullet drop and camera offset from shooter.
+    Utilizes a function fitted from varying depth amounts.
+
+    Input: Depth Amount of Bounding Box.
+    Output: Offset in Pixels.
+    """
+    if depth_amount > 1 and depth_amount < 5:
+        return (1.11208 * depth_amount ** 2) + (.1152 * depth_amount) + (-17.7672)
+    else:
+        return 0
+
+
 # bbox[x coordinate of the top left of the bounding box, y coordinate of the top left of the bounding box, width of box, height of box]
 def world_coordinate(depth_frame, bbox):
     """
@@ -158,7 +241,7 @@ def world_coordinate(depth_frame, bbox):
     if not depth_frame:                     # if there is no aligned_depth_frame or color_frame then leave the loop
         return None
     # depth_intrin = depth_frame.profile.as_video_stream_profile().intrinsics
-    depth_value = get_dist_from_array(depth_frame)
+    depth_value = get_distance_from_array(depth_frame)
     # depth_pixel = [depth_intrin.ppx, depth_intrin.ppy]
     # depth_pixel = [bbox[0] + .5 * bbox[2], bbox[1] + .5 * bbox[3]]
     depth_point =   rs.deproject_pixel_to_point(bbox, depth_value)
@@ -253,19 +336,6 @@ def bullet_drop_compensation2(depth_amount, gimbal_pitch, v_angle, proj_velocity
     final_gimbal_pitch = math.atan2(final_height, horizontal_dist)
     return final_gimbal_pitch
 
-def bullet_offset_compensation(depth_amount):
-    """
-    Determines the bullet offset due to bullet drop and camera offset from shooter.
-    Utilizes a function fitted from varying depth amounts.
-
-    Input: Depth Amount of Bounding Box.
-    Output: Offset in Pixels.
-    """
-    if depth_amount > 1 and depth_amount < 5:
-        return (1.11208 * depth_amount ** 2) + (.1152 * depth_amount) + (-17.7672)
-    else:
-        return None
-
 def distance(point_1: tuple, point_2: tuple):
     """
     Returns the distance between two points.
@@ -297,47 +367,6 @@ def angle_from_center(prediction, screen_center):
 
     return math.radians(horizontal_angle),math.radians(vertical_angle)
 
-def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, using_tracker):
-    """
-    Decide the shooting location based on the best bounding box. Find depth of detected robot. Update the circular buffers.
-
-    Input: All detected bounding boxes with their confidences, center of the screen, depth image, and the circular buffers.
-    Output: The predicted location to shoot, the depth, and how locked on we are.
-    """
-
-    # Location to shoot [x_obj_center, y_obj_center]
-    prediction = [best_bounding_box[0]+best_bounding_box[2]/2, best_bounding_box[1]+best_bounding_box[3]/2]
-
-    # Comment this if branch out in case kalman filters doesn't work
-    # if kalman_filters and using_tracker:
-    #     prediction[1] += getBulletDropPixels(depth_image,best_bounding_box)
-        # kalman_box = [prediction[0],prediction[1],z0] # Put data into format the kalman filter asks for
-        # prediction = kalman_filter.predict(kalman_box, frame) # figure out where to aim, returns (x_obj_center, y_obj_center)
-        # print("Kalman Filter updated Prediction to:",prediction)
-
-    depth_amount = get_dist_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
-    # print(" best_bounding_box:",best_bounding_box, " prediction:", prediction, " depth_amount: ", depth_amount, end=", ")
-
-    # phi = communication.get_phi()
-    # print("PHI:",phi)
-    # pixel_diff = 0
-    # if phi:
-    #     pixel_diff = 0 # Just here in case we comment out the next line
-    #     pixel_diff = bullet_drop_compensation(depth_image,best_bounding_box,depth_amount,screen_center,phi)
-
-    pixel_diff = bullet_offset_compensation(depth_amount)
-    if config.aiming.disable_bullet_drop:
-        pixel_diff = None
-    if pixel_diff is None:
-        x_circular_buffer.clear()
-        y_circular_buffer.clear()
-        pixel_diff = 0
-
-    prediction[1] -= pixel_diff
-    x_std, y_std = update_circular_buffers(x_circular_buffer,y_circular_buffer,prediction) # Update buffers and measures of accuracy
-
-    return prediction, depth_amount, x_std, y_std, pixel_diff
-
 def initialize_tracker_and_kalman(best_bounding_box, track, color_image, kalman_filters):
     """
     Kalman filter logic with a bounding box.
@@ -357,25 +386,4 @@ def initialize_tracker_and_kalman(best_bounding_box, track, color_image, kalman_
 
     return best_bounding_box, kalman_filter
 
-def update_circular_buffers(x_circular_buffer,y_circular_buffer,prediction):
-    """
-    Update circular buffers with latest prediction and recalculate accuracy through standard deviation.
 
-    Input: Circular buffers for both components and the new prediction.
-    Output: Standard deviations in both components.
-    """
-
-    x_circular_buffer.append(prediction[0])
-    y_circular_buffer.append(prediction[1])
-    x_std = np.std(x_circular_buffer)
-    y_std = np.std(y_circular_buffer)
-
-    return x_std, y_std
-
-def send_shoot(xstd,ystd):
-    """
-    Input: Standard Deviations for both x and y.
-    Output: True=shoot
-    """
-
-    return 1 if ((xstd+ystd)/2 < std_error_bound) else 0

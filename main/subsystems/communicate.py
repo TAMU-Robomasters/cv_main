@@ -43,6 +43,7 @@ else:
             parity=serial.PARITY_NONE,
             stopbits=serial.STOPBITS_ONE
         )
+
 # C++ struct
 class Message(Structure):
     _pack_ = 1
@@ -50,7 +51,7 @@ class Message(Structure):
         ("magic_number"    , c_uint8   ),
         ("horizontal_angle", c_float   ),
         ("vertical_angle"  , c_float   ),
-        ("should_shoot"    , c_uint8   ),
+        ("status"          , c_uint8   ),
     ]
 message = Message(ord('a'), 0.0, 0.0, 0)
 
@@ -66,13 +67,16 @@ action = LazyDict(
 # 
 # 
 def when_aiming_refreshes():
+    should_shoot       = runtime.aiming.should_shoot
+    should_look_around = runtime.aiming.should_look_around
+    
     message.horizontal_angle = float(runtime.aiming.horizontal_angle)
     message.vertical_angle   = float(runtime.aiming.vertical_angle)
-    message.should_shoot     = action.FIRE if runtime.aiming.should_shoot else action.LOOK_AT_COORDS if (message.horizontal_angle != 0) or (message.vertical_angle != 0) else action.LOOK_AROUND
+    message.status     = action.FIRE if should_shoot else (action.LOOK_AROUND if should_look_around else action.LOOK_AT_COORDS)
     # UP = negative (for some reason)
     # LEFT = negative
     # values are in radians
-    print(f'''msg({f"{message.horizontal_angle:.4f}".rjust(7)},{f"{message.vertical_angle:.4f}".rjust(7)}, {message.should_shoot})''', end=", ")
+    print(f'''msg({f"{message.horizontal_angle:.4f}".rjust(7)},{f"{message.vertical_angle:.4f}".rjust(7)}, {message.status})''', end=", ")
     
     if port is not None:
         try:
@@ -93,25 +97,3 @@ def read_input():
     """
     if port is not None:
         return port.readline()
-
-def get_phi():
-    """
-    Read phi value sent from dev board.
-
-    Input: None.
-    Output: Value read from serial.
-    """
-    import numpy as np
-    try:
-        port.flushInput() # Get rid of data stored in buffer since UART is FIFO.
-        phi = port.read(4)[1:3] # Read the first 4 bytes but only grab the middle two bytes which represent the value.
-
-        # Combine bytes to make the full phi value
-        p1 = np.uint16(phi[0])
-        p2 = np.uint16(phi[1])
-        unsigned_p = ((p1 << 8) + p2)
-        signed_p = np.int16((unsigned_p - 32768))/10000
-
-        return signed_p
-    except:
-        return None

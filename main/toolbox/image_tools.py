@@ -21,6 +21,10 @@ class Image(object):
         else:
             raise Exception('Not sure how to create an image using ' + str(arg1))
     
+    @property
+    def in_cv2_format(self):
+        return self.img
+    
     def save(self, to, image_type="png"):
         FS.makedirs(FS.dirname(to))
         result = cv2.imwrite(FS.absolute_path(to+"."+image_type), self.img)
@@ -37,6 +41,7 @@ class Image(object):
         elif name is None:
             name = "img"
         cv2.imshow(name, self.img)
+        cv2.waitKey(1) # doesn't actually wait
     
     def show_and_pause(self, name=None):
         """
@@ -62,6 +67,13 @@ class Image(object):
             cv2.circle(img_copy, (x, y), radius, color, thickness=-1, lineType=8, shift=0)
         return Image(img_copy)
     
+    def rotated_180_degrees(self):
+        return Image(cv2.rotate(self.img, cv2.ROTATE_180))
+    
+    def rotate_180_degrees(self):
+        self.img = cv2.rotate(self.img, cv2.ROTATE_180)
+        return self
+    
     def add_bounding_box(self, bounding_box, color=COLOR_GREEN, thickness=2):
         """
         @bounding_box:
@@ -82,11 +94,11 @@ class Image(object):
         self.img = cv2.rectangle(self.img, start, end, color, thickness)
         return self
 
-
-def add_text(*, image, text, location):
-    font = cv2.FONT_HERSHEY_SIMPLEX 
-    bottom_left_corner_of_text = (10,10) 
-    font_scale = .7
-    font_color = (255,255,255) 
-    line_type = 2
-    return cv2.putText(image, text, location, font, font_scale, font_color, line_type)
+    def add_text(self, *, text, location):
+        font = cv2.FONT_HERSHEY_SIMPLEX 
+        bottom_left_corner_of_text = (10,10) 
+        font_scale = .7
+        font_color = (255,255,255) 
+        line_type = 2
+        self.img = cv2.putText(self.img, text, location, font, font_scale, font_color, line_type)
+        return self

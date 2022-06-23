@@ -16,12 +16,12 @@ class KalmanFilter(object):
         :param u_x: acceleration in x-direction
         :param u_y: acceleration in y-direction
         :param std_acc: process noise magnitude
-        :param x_std_meas: standard deviation of the measurement in x-direction
-        :param y_std_meas: standard deviation of the measurement in y-direction
+        :param horizonal_stdev_meas: standard deviation of the measurement in x-direction
+        :param vertical_stdev_meas: standard deviation of the measurement in y-direction
         """
         self.std_acc = 1
-        self.x_std_meas = 1
-        self.y_std_meas = 1
+        self.horizonal_stdev_meas = 1
+        self.vertical_stdev_meas = 1
         self.z_std_meas = 1
 
         # Define sampling time
@@ -63,8 +63,8 @@ class KalmanFilter(object):
                             [0, 0, (self.dt**3)/2, 0, 0, self.dt**2]]) * self.std_acc**2
 
         #Initial Measurement Noise Covariance
-        self.R = np.matrix([[self.x_std_meas**2,0, 0],
-                           [0, self.y_std_meas**2, 0],
+        self.R = np.matrix([[self.horizonal_stdev_meas**2,0, 0],
+                           [0, self.vertical_stdev_meas**2, 0],
                            [0, 0, self.z_std_meas**2]])
 
         #Initial Covariance Matrix
