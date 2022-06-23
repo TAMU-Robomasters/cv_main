@@ -324,6 +324,8 @@ def decide_shooting_location(best_bounding_box, screen_center, depth_image, x_ci
     #     pixel_diff = bullet_drop_compensation(depth_image,best_bounding_box,depth_amount,screen_center,phi)
 
     pixel_diff = bullet_offset_compensation(depth_amount)
+    if config.aiming.disable_bullet_drop:
+        pixel_diff = None
     if pixel_diff is None:
         x_circular_buffer.clear()
         y_circular_buffer.clear()
