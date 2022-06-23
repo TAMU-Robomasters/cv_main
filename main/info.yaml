@@ -35,7 +35,6 @@
         (default):
             enable_on_boot: true
             our_team_color: 'blue' # 'red' or 'blue'
-            kalman_filters: false
             filter_team_color: true
             mode: development
             process_name: cv_main
@@ -51,6 +50,7 @@
                 input_dimension: 416
             aiming:
                 disable_bullet_drop: true
+                disable_kalman_filters: true
                 sec_till_lock_lost: 5
                 prediction_time: 2 # time interval in seconds to predict using kalman filters
                 

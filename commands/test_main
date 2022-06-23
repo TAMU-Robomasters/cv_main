@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-python main/main.py -- @CAMERA=NONE "$@"
+python main/main.py -- "$@"

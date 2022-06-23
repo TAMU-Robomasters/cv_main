@@ -1,4 +1,5 @@
 from toolbox.globals import path_to, config, print
+from toolbox.image_tools import Image
 
 # 
 # select which file to import from

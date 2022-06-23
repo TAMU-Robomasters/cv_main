@@ -138,11 +138,11 @@ def get_bounding_boxes(frame, minimum_confidence, threshold):
                 # of the current object detection
                 scores = detection[5:]
                 class_id = np.argmax(scores)
-                current_confidence = scores[class_id]
+                this_confidence = scores[class_id]
 
                 # filter out weak predictions by ensuring the detected
                 # probability is greater than the minimum probability
-                if current_confidence > minimum_confidence:
+                if this_confidence > minimum_confidence:
                     # scale the bounding box coordinates back relative to
                     # the size of the image, keeping in mind that YOLO
                     # actually returns the center (x, y)-coordinates of
@@ -160,7 +160,7 @@ def get_bounding_boxes(frame, minimum_confidence, threshold):
                     # confidences, and class IDs
                     boxes.append([x, y, int(width), int(height)])
 
-                    confidences.append(float(current_confidence))
+                    confidences.append(float(this_confidence))
                     class_ids.append(class_id)
        
     if config.filter_team_color:
