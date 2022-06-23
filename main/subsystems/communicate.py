@@ -55,9 +55,9 @@ class Message(Structure):
 message = Message(ord('a'), 0.0, 0.0, 0)
 
 action = LazyDict(
-    track=0,
-    shoot=1,
-    patrol=2,
+    LOOK_AT_COORDS=0,
+    FIRE=1,
+    LOOK_AROUND=2,
 )
 
 # 
@@ -68,7 +68,7 @@ action = LazyDict(
 def when_aiming_refreshes():
     message.horizontal_angle = float(runtime.aiming.horizontal_angle)
     message.vertical_angle   = float(runtime.aiming.vertical_angle)
-    message.should_shoot     = action.shoot if runtime.aiming.should_shoot else action.track if (message.horizontal_angle != 0) or (message.vertical_angle != 0) else action.patrol
+    message.should_shoot     = action.FIRE if runtime.aiming.should_shoot else action.LOOK_AT_COORDS if (message.horizontal_angle != 0) or (message.vertical_angle != 0) else action.LOOK_AROUND
     # UP = negative (for some reason)
     # LEFT = negative
     # values are in radians

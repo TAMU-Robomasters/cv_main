@@ -9,11 +9,19 @@
 // 
 // message specs
 // 
-struct {
-    uint8_t magic_number   = 'a'; // 97
-    float horizontal_angle = 0.0; // units=radians if target is to the left of camera-center, this will be negative
-    float vertical_angle   = 0.0; // units=radians if target is below camera-center, this will be positive for some reason
-    uint8_t status         = 0;   // 0 is track, 1 is shoot, 2 is patrol
+enum CVState : uint8_t {
+    LOOK_AT_COORDS = 0,
+    FIRE = 1,
+    LOOK_AROUND = 2,
+};
+
+static constexpr uint8_t JETSON_MESSAGE_MAGIC = 'a';
+
+struct JetsonMessage {
+    uint8_t magic;           // 97
+    float targetYawOffset;   // units=radians if target is to the left of camera-center, this will be negative
+    float targetPitchOffset; // units=radians if target is below camera-center, this will be positive for some reason
+    CVState cvState;         // 0 is LOOK_AT_COORDS, 1 is FIRE, 2 is LOOK_AROUND
 } __attribute__((packed));
 
 // read-message is probably as simple as: (assuming no interference)
