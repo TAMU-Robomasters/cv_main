@@ -50,6 +50,9 @@ runtime.aiming = LazyDict(
     y_std=0,
     depth_amount=0,
     pixel_diff=0,
+    smoothing_size=5,
+    horizontal_angles=[],
+    vertical_angles=[],
 )
 
 # 
@@ -66,6 +69,17 @@ def when_bounding_boxes_refresh():
     screen_center     = runtime.screen_center
     
     horizontal_angle, vertical_angle, should_shoot, x_std, y_std, depth_amount, pixel_diff = (0, 0, 0, 0, 0, 0, 0)
+    
+    runtime.aiming.horizontal_angles.append(horizontal_angle); runtime.aiming.horizontal_angles = runtime.aiming.horizontal_angles[-runtime.aiming.smoothing_size:]
+    runtime.aiming.vertical_angles.append(vertical_angle)    ; runtime.aiming.vertical_angles   = runtime.aiming.vertical_angles[-runtime.aiming.smoothing_size:]
+    
+    # 
+    # smooth angles
+    # 
+    from statistics import mean as average
+    horizontal_angle = average(horizontal_angle, average(runtime.aiming.horizontal_angles))
+    vertical_angle   = average(vertical_angle  , average(runtime.aiming.vertical_angles  ))
+    
     # If we detected robots, find bounding box closest to center of screen and determine angles to turn by
     if found_robot:
         prediction, depth_amount, x_std, y_std, pixel_diff = decide_shooting_location(best_bounding_box, screen_center, depth_image, x_circular_buffer, y_circular_buffer, False)
