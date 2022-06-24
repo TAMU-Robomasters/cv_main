@@ -4,11 +4,8 @@ import cv2
 from toolbox.globals import path_to, config, print
 from toolbox.file_system_tools import FS
 
-COLOR_GREEN  = (0, 255, 0)
-COLOR_YELLOW = (255, 255, 00)
-
-
-rgb = lambda *args: tuple((*args,)) # for syntax highlighting, not actually useful within python
+rgb = lambda red,blue,green: tuple((red, green, blue))
+rgb_to_bgr = lambda red,blue,green: tuple((blue, green, red)) # <- cause cv2 is dumb
 
 red    = rgb(240, 113, 120)
 cyan   = rgb(137, 221, 255)
@@ -69,14 +66,16 @@ class Image(object):
                 break
         cv2.destroyWindow(name)
 
-    def with_points(self, array_of_points, color=COLOR_YELLOW, radius=3):
+    def with_points(self, array_of_points, color=yellow, radius=3):
+        color = rgb_to_bgr(*color)
         img_copy = self.img.copy()
         for x, y, in array_of_points:
             # I believe thickness=-1 means the object should be filled
             cv2.circle(img_copy, (x, y), radius, color, thickness=-1, lineType=8, shift=0)
         return Image(img_copy)
     
-    def add_point(self, *, x, y, color=COLOR_YELLOW, radius=3):
+    def add_point(self, *, x, y, color=yellow, radius=3):
+        color = rgb_to_bgr(*color)
         self.img = cv2.circle(self.img, (int(x), int(y)), radius, tuple(int(each) for each in color), thickness=-1, lineType=8, shift=0)
         return self
     
@@ -87,7 +86,7 @@ class Image(object):
         self.img = cv2.rotate(self.img, cv2.ROTATE_180)
         return self
     
-    def add_bounding_box(self, bounding_box, color=COLOR_GREEN, thickness=2):
+    def add_bounding_box(self, bounding_box, color=green, thickness=2):
         """
         @bounding_box:
             should be (x, y, width, height)
@@ -97,6 +96,7 @@ class Image(object):
         @color: tuple of RGB values, each are 0-255
         @thickness: int of how many pixels
         """
+        color = rgb_to_bgr(*color)
         
         # Starting cordinate
         start = (int (bounding_box[0]), int(bounding_box[1]))
@@ -107,11 +107,9 @@ class Image(object):
         self.img = cv2.rectangle(self.img, start, end, color, thickness)
         return self
 
-    def add_text(self, *, text, location):
-        font = cv2.FONT_HERSHEY_SIMPLEX 
-        bottom_left_corner_of_text = (10,10) 
-        font_scale = .7
-        font_color = (255,255,255) 
+    def add_text(self, *, text, location, color=(255, 255, 255), size=0.7):
+        color = rgb_to_bgr(*color)
+        font = cv2.FONT_HERSHEY_SIMPLEX
         line_type = 2
-        self.img = cv2.putText(self.img, text, location, font, font_scale, font_color, line_type)
+        self.img = cv2.putText(self.img, text, location, font, size, color, line_type)
         return self

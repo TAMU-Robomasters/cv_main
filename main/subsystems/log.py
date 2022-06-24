@@ -1,6 +1,6 @@
 from time import time as now
 
-from toolbox.globals import path_to, config, print, runtime
+from toolbox.globals import path_to, config, print, runtime, absolute_path_to
 from toolbox.video_tools import Video
 from toolbox.image_tools import Image, rgb
 
@@ -24,7 +24,23 @@ runtime.prev_loop_time = 0 # init time value
 def when_finished_processing_frame():
     # import data
     frame_number       = runtime.frame_number
+    color_image        = runtime.color_image
+    depth_image        = runtime.depth_image
     prev_loop_time     = runtime.prev_loop_time
+    found_robot        = runtime.modeling.found_robot
+    current_confidence = runtime.modeling.current_confidence
+    best_bounding_box  = runtime.modeling.best_bounding_box
+    bounding_boxes     = runtime.modeling.bounding_boxes
+    should_shoot       = runtime.aiming.should_shoot
+    horizontal_angle   = runtime.aiming.horizontal_angle
+    vertical_angle     = runtime.aiming.vertical_angle
+    depth_amount       = runtime.aiming.depth_amount
+    pixel_diff         = runtime.aiming.pixel_diff
+    horizonal_stdev    = runtime.aiming.horizonal_stdev
+    vertical_stdev     = runtime.aiming.vertical_stdev
+    center_point       = runtime.aiming.center_point
+    bullet_drop_point  = runtime.aiming.bullet_drop_point
+    kalman_point       = runtime.aiming.kalman_point
     
     # 
     # compute loop time
@@ -54,7 +70,7 @@ def when_finished_processing_frame():
 
 def when_iteration_stops():
     save_frames_as_video(
-        path=path_to.video_output,
+        path=absolute_path_to.video_output,
     )
 
 # 
@@ -71,7 +87,7 @@ if config.testing.disable_all_logging:
 # 
 # 
 def save_frames_as_video(path):
-    if config.testing.save_frame_to_file:
+    if save_frame_to_file:
         # save all the frames as a video
         Video.create_from_frames(frames, save_to=path)
         print(f"\n\nvideo output has been saved to {path}")
@@ -126,8 +142,8 @@ def generate_image(fps=0):
         for each in bounding_boxes:
             image.add_bounding_box(each, color=rgb(130, 170, 255))
         image.add_bounding_box(best_bounding_box, color=rgb(137,221,255))
-        image.add_point(x=center_point.x     , y=center_point.y     , color=rgb(240, 113, 120), radius=3)
-        image.add_point(x=bullet_drop_point.x, y=bullet_drop_point.y, color=rgb(254, 195,  85), radius=3)
+        image.add_point(x=center_point.x     , y=center_point.y     , color=rgb(240, 113, 120), radius=8)
+        image.add_point(x=bullet_drop_point.x, y=bullet_drop_point.y, color=rgb(254, 195,  85), radius=5)
         image.add_point(x=kalman_point.x     , y=kalman_point.y     , color=rgb(195, 232, 141), radius=3)
     
     x_location = 30
