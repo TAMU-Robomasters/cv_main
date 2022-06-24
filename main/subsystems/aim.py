@@ -103,7 +103,8 @@ def when_bounding_boxes_refresh():
     # 
     if not disable_kalman_filters and found_robot:
         position_in_space = Position([
-            *prediction, # value from original code was NOT influcenced by bullet drop, but this one is 
+            prediction.x, # x,y value from original kalman code was NOT influcenced by bullet drop, but this one is
+            prediction.y,
             depth_amount,
         ])
         # create if doesnt exist
@@ -111,7 +112,7 @@ def when_bounding_boxes_refresh():
             runtime.aiming.kalman_filter = KalmanFilter(model_fps)
             # TODO: calculate FPS on the fly
         
-        # FIXME: where is the kalman filter updated? this is only prediciton 
+        # FIXME: where is the kalman filter updated? this is only prediciton
         kalman_prediction = runtime.aiming.kalman_filter.predict(
             data_for_imu=position_in_space, 
             realsense_frame=runtime.realsense.frame,
