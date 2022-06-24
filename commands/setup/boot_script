@@ -42,7 +42,7 @@ else
         . '$kinda_escaped_home'"/.zshrc"
         echo "trying to run cv_main"
         cd '$kinda_escaped_home'"/repos/cv_main"
-        { sleep 60 && python3 '$kinda_escaped_home'"/repos/cv_main/main/main.py" } &
+        { sleep 1 && python3 '$kinda_escaped_home'"/repos/cv_main/main/main.py" } &
         export PID_OF_MAIN_PY=$!
         
         echo "python stuff is running on: $PID_OF_MAIN_PY"
