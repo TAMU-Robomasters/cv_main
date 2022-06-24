@@ -118,7 +118,7 @@ def yolo_v5_bounding_boxes(model, frame, minimum_confidence, threshold):
                 # confidences, and class IDs
                 boxes.append(detection[0:4])
 
-                confidences.append(float(current_confidence))
+                confidences.append(float(this_confidence))
                 class_ids.append(class_id)
     
     # make each box a proper class instead of just a list
