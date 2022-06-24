@@ -77,7 +77,7 @@ def yolo_v5_bounding_boxes(model, frame, minimum_confidence, threshold):
     confidences = []
     class_ids   = []
 
-    if should_use_tensor_rt:
+    if hardware_acceleration == 'tensor_rt':
         boxes, confidences, class_ids = model.trt_yolo.detect(frame, threshold)
         new_boxes = []
         new_confidences = []
