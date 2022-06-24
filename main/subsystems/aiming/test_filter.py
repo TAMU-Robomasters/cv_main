@@ -1,6 +1,6 @@
 import cv2
 import time
-from filter import Filter
+from filter import KalmanFilter
 
 tracker = cv2.TrackerMedianFlow_create()
 video = cv2.VideoCapture("test.mp4")
@@ -10,7 +10,7 @@ bbox = cv2.selectROI(frame, False)
 ok = tracker.init(frame, bbox)
 last_predicted_pt=None
 t = 0.1
-filter = Filter(t)
+kalman_filter = KalmanFilter(t)
 
 while True:
     # Read a new frame
@@ -30,8 +30,8 @@ while True:
         cv2.putText(frame, "Predicted point not in the bbox", (100, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 255), 2)
 
 
-    #TODO: Kalman filter predicts next position
-    new_x = filter.predict(bbox)
+    #TODO: Kalman kalman_filter predicts next position
+    new_x = kalman_filter.predict(bbox)
     predicted_point=(int(new_x[0]), int(new_x[2]))
     #predicted_point=(300,300)
     last_predicted_pt=predicted_point

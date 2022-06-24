@@ -7,7 +7,6 @@ from super_map import LazyDict
 from statistics import mean as average
 
 from toolbox.globals import path_to, config, print, runtime
-from subsystems.aiming.filter import Filter
 
 # 
 # config
@@ -38,7 +37,10 @@ sec_till_lock_lost     = config.aiming.sec_till_lock_lost
 disable_bullet_drop    = config.aiming.disable_bullet_drop
 disable_kalman_filters = config.aiming.disable_kalman_filters
 
-# these are used to ensure we are locked on a target
+# 
+# init
+# 
+if not disable_kalman_filters: from subsystems.aiming.filter import KalmanFilter
 x_circular_buffer = collections.deque(maxlen=config.aiming.min_size_for_stdev)
 y_circular_buffer = collections.deque(maxlen=config.aiming.min_size_for_stdev)
 
@@ -55,6 +57,7 @@ runtime.aiming = LazyDict(
     vertical_stdev=0,
     depth_amount=0,
     pixel_diff=0,
+    kalman_filter=None,
 )
 
 # 
@@ -71,12 +74,14 @@ def when_bounding_boxes_refresh():
     screen_center     = runtime.screen_center
     
     horizontal_angle, vertical_angle, should_shoot, horizonal_stdev, vertical_stdev, depth_amount, pixel_diff = (0, 0, 0, 0, 0, 0, 0)
+    center_point, bullet_drop_point, kalman_point = (None, None, None)
     
     # 
     # update core aiming data
     # 
     if found_robot:
-        prediction = [ best_bounding_box[0]+best_bounding_box[2]/2, best_bounding_box[1]+best_bounding_box[3]/2 ]
+        prediction = get_center_of_bounding_box(best_bounding_box)
+        center_point = tuple(prediction)
         depth_amount = get_distance_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
         depth_out_of_bounds = depth_amount < min_range or depth_amount > max_range
     
@@ -86,6 +91,7 @@ def when_bounding_boxes_refresh():
     if not disable_bullet_drop and found_robot:
         pixel_diff = bullet_drop_compensation_1(depth_amount)
         prediction[1] -= pixel_diff
+        bullet_drop_point = tuple(prediction)
     else:
         pixel_diff = 0
     
@@ -93,10 +99,29 @@ def when_bounding_boxes_refresh():
     # kalman filters
     # 
     if not disable_kalman_filters and found_robot:
-        pass # TODO: kalman filters
+        position_in_space = [
+            *prediction, # value from original code was NOT influcenced by bullet drop, but this one is 
+            depth_amount,
+        ]
+        # create if doesnt exist
+        if runtime.aiming.kalman_filter is None:
+            runtime.aiming.kalman_filter = KalmanFilter(model_fps)
+            # TODO: calculate FPS on the fly
+        
+        # FIXME: where is the kalman filter updated? this is only prediciton 
+        kalman_prediction = runtime.aiming.kalman_filter.predict(
+            data_for_imu=position_in_space, 
+            realsense_frame=runtime.realsense.frame,
+        )
+        
+        prediction = kalman_prediction[0:2]
+        kalman_point = tuple(prediction)
+    else:
+        # reset whenever robot is lost (maybe make fake boxes for a few frames to prevent easily dropping a lock)
+        runtime.aiming.kalman_filter = None
     
     # 
-    # select exact point to aim at
+    # compute offset (decide how much movement we need)
     # 
     if found_robot:
         horizontal_angle, vertical_angle = angle_from_center(prediction, screen_center)
@@ -147,12 +172,21 @@ def when_bounding_boxes_refresh():
     runtime.aiming.vertical_stdev     = vertical_stdev
     runtime.aiming.depth_amount       = depth_amount
     runtime.aiming.pixel_diff         = pixel_diff
+    runtime.aiming.center_point       = center_point
+    runtime.aiming.bullet_drop_point  = bullet_drop_point
+    runtime.aiming.kalman_point       = kalman_point
 
 # 
 # 
 # helpers
 # 
 # 
+def get_center_of_bounding_box(bounding_box):
+    return [
+        bounding_box[0] + (bounding_box[2] / 2),
+        bounding_box[1] + (bounding_box[3] / 2), 
+    ]
+
 def get_distance_from_array(depth_frame_array, bbox):
     """
     Determines the depth of a bounding box by choosing and filtering the depths of specific points in the bounding box.

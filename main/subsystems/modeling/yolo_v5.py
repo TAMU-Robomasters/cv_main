@@ -83,7 +83,7 @@ def yolo_v5_bounding_boxes(model, frame, minimum_confidence, threshold):
         new_confidences = []
         new_class_ids = []
 
-        # Filter bounding boxes based on minimum_confidence
+        # filter bounding boxes based on minimum_confidence
         for i in range(len(boxes)):
             if confidences[i] >= minimum_confidence:
                 box = boxes[i]

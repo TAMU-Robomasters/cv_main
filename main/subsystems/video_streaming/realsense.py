@@ -1,10 +1,16 @@
 # relative imports
 from toolbox.video_tools import Video
-from toolbox.globals import path_to, config, print
+from toolbox.globals import path_to, config, print, runtime
+
+from super_map import LazyDict
 
 videostream     = config.videostream
 aiming          = config.aiming
 record_interval = videostream.testing.record_interval
+
+runtime.realsense = LazyDict(
+    frame=None,
+)
 
 class VideoStream:
     def __init__(self):
@@ -44,22 +50,14 @@ class VideoStream:
         video_output_write = self.video_output and self.video_output.write
         
         def generator():
-            success_number = 0
-            while True:
+            for frame_number in count(1): # starting at 1
                 try:
-                    success_number += 1
-                    frame = wait_for_frames()
-                    yield success_number, array(frame.get_color_frame().get_data()), array(frame.get_depth_frame().get_data())
-                    if success_number > (60*5): # 60fps for 5sec
-                        break # use more efficient loop below without try-catch
+                    frame = runtime.realsense.frame = wait_for_frames()
+                    yield frame_number, array(frame.get_color_frame().get_data()), array(frame.get_depth_frame().get_data())
                 except Exception as error: # failure to connect to realsense
                     import sys
                     print("VideoStream: error while getting frames:", error, sys.exc_info()[0])
                     print('(retrying)')
-            
-            for frame_number in count(success_number): # starting at success_number
-                frame = wait_for_frames()
-                yield frame_number, array(frame.get_color_frame().get_data()), array(frame.get_depth_frame().get_data())
         
         if not video_output_write:
             return generator()

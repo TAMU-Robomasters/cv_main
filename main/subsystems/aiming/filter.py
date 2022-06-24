@@ -1,31 +1,36 @@
 import numpy as np
 import filterpy
 from statistics import stdev
-from filterpy.kalman import KalmanFilter
+from filterpy.kalman import KalmanFilter as KalmanFilterClass
 from filterpy.common import Q_discrete_white_noise
 
-class Filter:
+class KalmanFilter:
     def __init__(self, FPS):  # t = time interval
         t = 1 / FPS
-        self.f = KalmanFilter(dim_x=6, dim_z=3)
+        self.filter_object = KalmanFilterClass(dim_x=6, dim_z=3)
 
-        self.f.x = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])  # x_pos, x_vel, y_pos, y_vel, z_pos, z_vel
-        self.f.F = np.array([
+        # x_pos, x_vel, y_pos, y_vel, z_pos, z_vel
+        self.filter_object.x = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+        
+        # prediction matrix
+        self.filter_object.F = np.array([
             [1, t, 0, 0, 0, 0],
             [0, 1, 0, 0, 0, 0],
             [0, 0, 1, t, 0, 0],
             [0, 0, 0, 1, 0, 0],
             [0, 0, 0, 0, 1, t],
             [0, 0, 0, 0, 0, 1],
-        ])  # prediction matrix
-        self.f.H = np.array([
+        ])
+        
+        # models to sensor data
+        self.filter_object.H = np.array([
             [1, 0, 0, 0, 0, 0],
             [0, 0, 1, 0, 0, 0],
             [0, 0, 0, 0, 1, 0]
-        ])  # models to sensor data
+        ])
 
-        self.f.u = np.array([0.0, 0.0, 0.0])  # x_acc, y_acc, z_acc
-        self.f.B = np.array([
+        self.filter_object.u = np.array([0.0, 0.0, 0.0])  # x_acc, y_acc, z_acc
+        self.filter_object.B = np.array([
             [0.5 * t**2, 0, 0],
             [t, 0, 0],
             [0, 0.5 * t**2, 0],
@@ -34,9 +39,9 @@ class Filter:
             [0, 0, t],
         ])
 
-        self.f.P *= 0.5  # covariance matrix
-        self.f.R = np.full((3, 3), 0.125)  # sensor noise
-        # self.f.Q = Q_discrete_white_noise(dim=2, dt=t, var=2, block_size=3, order_by_dim = True) + 1   # uncertainty
+        self.filter_object.P *= 0.5  # covariance matrix
+        self.filter_object.R = np.full((3, 3), 0.125)  # sensor noise
+        # self.filter_object.Q = Q_discrete_white_noise(dim=2, dt=t, var=2, block_size=3, order_by_dim = True) + 1   # uncertainty
         # The error should be small compared to the actual value. How do we accomodate for that?    -- Carson
 
         # TODO: -- Carson
@@ -50,16 +55,16 @@ class Filter:
         self.euler    = np.array([[0], [0], [0]])  # subject to change -- what is the initial roll/pitch/yaw of the turret?
         self.velocity = np.array([[0], [0], [0]])
 
-        self.f.predict()
+        self.filter_object.predict()
 
     def time_predict(self, depth):
-        return depth / 26
+        return depth / 26 # why 26?? -- Jeff
 
-    def process_imu(self, data, frame):
-        import pyrealsense2.pyrealsense2 as rs
+    def process_imu(self, data, realsense_frame):
+        import pyrealsense2 as rs
 
-        gyro_frame  = frame.first_or_default(rs.stream.gyro)
-        accel_frame = frame.first_or_default(rs.stream.accel)
+        gyro_frame  = realsense_frame.first_or_default(rs.stream.gyro)
+        accel_frame = realsense_frame.first_or_default(rs.stream.accel)
 
         if accel_frame is not None or gyro_frame is not None:
             if accel_frame is not None:
@@ -119,7 +124,7 @@ class Filter:
             [           0,               0,             1],
         ])
 
-        # subtract gravity in IMU-frame from accelerometer data to get acceleration in navigation-frame
+        # subtract gravity in IMU-realsense_frame from accelerometer data to get acceleration in navigation-realsense_frame
         acceleration = accel_vector - R_x @ R_y @ R_z @ g
 
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~ CALCULATE IMU VELOCITY ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
@@ -146,27 +151,27 @@ class Filter:
             self.velocity[2],
         ]
 
-    def predict(self, data, frame):
+    def predict(self, data_for_imu, realsense_frame):
         import subsystems.aim as aiming
         
         # center of bounding box given by (x, y, z) (x,y) in pixels z in meters
-        pos_x = int(data[0])
-        pos_y = int(data[1])
-        pos_z = data[2]
+        pos_x = int(data_for_imu[0])
+        pos_y = int(data_for_imu[1])
+        pos_z = data_for_imu[2]
 
-        vel_data = self.process_imu(data, frame)
+        vel_data = self.process_imu(data_for_imu, realsense_frame)
         if vel_data is None:
             vel_data = [0, 0, 0, 0, 0, 0]
 
         # convert to v from w (v = r*w)
-        self.f.update(np.array([[pos_x], [pos_y], [pos_z]]))
-        self.f.predict()
+        self.filter_object.update(np.array([[pos_x], [pos_y], [pos_z]]))
+        self.filter_object.predict()
 
-        X = self.f.x
-        U = self.f.u
+        X = self.filter_object.x
+        U = self.filter_object.u
 
         time = self.time_predict(pos_z)
-        depth_frame = frame.getDepthFrame()
+        depth_frame = realsense_frame.getDepthFrame()
         x_in_meters = aiming.world_coordinate(depth_frame, [X[0], X[2]])
 
         X = [
