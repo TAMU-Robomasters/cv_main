@@ -101,7 +101,6 @@ def yolo_v5_bounding_boxes(model, frame, minimum_confidence, threshold):
         
         layer_outputs = model.net(frame)
         labels = layer_outputs.xyxy[0]
-        print('labels - ', labels)
 
         # loop over each of the detections
         for detection in labels:
