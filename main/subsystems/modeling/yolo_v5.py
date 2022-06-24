@@ -47,8 +47,8 @@ def init_yolo_v5(model):
     elif hardware_acceleration == 'gpu':
         print("[modeling]     gpu: ENABLED\n")
         import torch
-        device = torch.device("cuda")
         normal_model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_to.yolo_v5.pytorch_model)
+        normal_model = normal_model.to(torch.device("cuda"))
         normal_model.eval()
         torch.no_grad()
     # 
@@ -57,7 +57,6 @@ def init_yolo_v5(model):
     else:
         print("[modeling]     falling back on CPU\n")
         import torch
-        device = torch.device("cpu")
         normal_model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_to.yolo_v5.pytorch_model)
         normal_model.eval()
         torch.no_grad()
