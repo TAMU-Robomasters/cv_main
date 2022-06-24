@@ -52,7 +52,7 @@ def when_finished_processing_frame():
     # 
     # print
     # 
-    print(f'\nframe#:{f"{frame_number}".rjust(5)},{f"{iteration_time}".rjust(4)}ms,', sep='', end='', flush=True)
+    print(f'\nframe#:{f"{frame_number}".rjust(5)},{f"{iteration_time}".rjust(4)}ms, targets={len(bounding_boxes)} ', sep='', end='', flush=True)
     
     # 
     # handle image
