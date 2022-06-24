@@ -24,7 +24,7 @@ assert hardware_acceleration in ['tensor_rt', 'gpu', None]
 # 
 # 
 def init_yolo_v5(model):
-    print("[modeling] YOLO v5 loading")
+    print("\n[modeling] YOLO v5 loading")
     yolo_model   = None
     normal_model = None
         

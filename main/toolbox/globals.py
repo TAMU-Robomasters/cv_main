@@ -25,7 +25,7 @@ runtime = LazyDict()
 # print (so we can disable it in production for performance)
 # 
 original_print = print
-if config.testing.disable_print:
+if config.log.disable_print:
     def print(*args,**kwargs): pass # do nothing
 else:
     def print(*args,**kwargs):

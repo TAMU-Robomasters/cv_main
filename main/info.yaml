@@ -8,17 +8,18 @@
     
     # a central place for filepaths
     (path_to):
-        main_folder: ./
-        project_root: "../"
+        main_folder:  ./
+        project_root: ../
         main_test_video: &main_test_video ../data/test.avi
-        video_output: ../result.do_not_sync.mp4
-        record_video_output_color: ./recorded_videos/recorded_video_with_color.do_not_sync.mp4
-        kalman_video: ./kalman_video.do_not_sync.mp4
-        npy_frames: ./scripts/data1 # replace with whichever frame set you want to use in the source/scripts/data<num> directory
+        video_output:              ../result.do_not_sync.mp4
+        permanent_storage:         ./subsystems/log/permanent_storage.json
+        record_video_output_color: ./subsystems/log/videos/competition_2022_
+        kalman_video:              ./kalman_video.do_not_sync.mp4
+        npy_frames:                ./scripts/data1 # replace with whichever frame set you want to use in the source/scripts/data<num> directory
         # model
         datasets: ./subsystems/modeling/datasets.ignore/
         model: ./subsystems/modeling/model/yolov4-tiny-416
-        yolo_to_onnx: main/subsystems/modeling/model/yolo_to_onnx.py
+        yolo_to_onnx: ./subsystems/modeling/model/yolo_to_onnx.py
         tensorrt_so_file: ./subsystems/modeling/plugins/libyolo_layer.so
         yolo_v4:
             model_weights: ./subsystems/modeling/model/yolov4-tiny-416.weights
@@ -42,7 +43,7 @@
             process_name: cv_main
             hardware:
                 board: laptop
-                camera: realsense # "realsense" or "zed"
+                camera: null # "realsense" or "zed"
                 camera_is_upsidedown: false
             model:
                 which_model: yolo_v4 # yolo_v5 or yolo_v4
@@ -95,16 +96,19 @@
                 testing:
                     record_time: 10 # seconds to record for
                     record_interval: 0 # records one out of every x frames, <1 to not record
-            testing:
+            log:
                 disable_all_logging: false
                 disable_print: false
                 save_frame_to_file: true
                 display_live_frames: false
+                save_rate: 30 # once every __ frames
+                save_to_disk_after: 1200 # 1200 frames is about 20 min at 1 frame per second
                 max_number_of_frames: 4000 # 5000 is consumes about 6GB of ram
             communication:
                 timeout: 0.05
                 serial_baudrate: 115200
                 serial_port: null
+                
             zed:
                 resolution: "HD720"       # HD2K, HD1080, HD720, VGA, LAST
                 depth_mode: "PERFORMANCE" # ULTRA, QUALITY, NEURAL, PERFORMANCE, NONE, LAST
@@ -144,13 +148,13 @@
                 hardware_acceleration: "tensor_rt"
             communication:
                 serial_port: "/dev/ttyTHS0" # UART serial 0 works but try 1
-            testing:
+            log:
                 save_frame_to_file: false
                 
         BOARD=LAPTOP:
             communication:
                 serial_port: null
-            testing:
+            log:
                 save_frame_to_file: true
             
         CAMERA=ZED:
@@ -166,10 +170,10 @@
         
         SHOWTIME:
             mode: production
-            testing:
-                disable_all_logging: true
+            log:
+                disable_all_logging: false
                 disable_print: true
-                save_frame_to_file: false
+                save_frame_to_file: true
                 display_live_frames: false
         WE_RED:
             our_team_color: 'red'

@@ -1,19 +1,42 @@
+import json
 from time import time as now
 
 from toolbox.globals import path_to, config, print, runtime, absolute_path_to
 from toolbox.video_tools import Video
 from toolbox.image_tools import Image, rgb
+from toolbox.pickle_tools import large_pickle_save
 
 # 
 # config
 # 
-display_live_frames = config.testing.display_live_frames
-save_frame_to_file  = config.testing.save_frame_to_file
+display_live_frames       = config.log.display_live_frames
+save_frame_to_file        = config.log.save_frame_to_file
+save_rate                 = config.log.save_rate
+save_to_disk_after        = config.log.save_to_disk_after
+record_video_output_color = absolute_path_to.record_video_output_color
+max_number_of_frames      = config.log.max_number_of_frames
 
 # 
 # init
 # 
-frames = []
+video_depth_output_path = None
+if save_frame_to_file:
+    color_frames = []
+    depth_frames = []
+    
+    # use different output for competiion
+    if config.mode == 'production':
+        # read json
+        with open(absolute_path_to.permanent_storage, 'r') as in_file:    permanent_storage = json.load(in_file)
+        # increment
+        permanent_storage["video_count"] += 1
+        # write json
+        with open(absolute_path_to.permanent_storage, 'w') as outfile: json.dump(permanent_storage, outfile)
+        
+        # create incremented storage path
+        video_count = permanent_storage["video_count"]
+        video_color_output_path = f'{absolute_path_to.record_video_output_color}{video_count}.mp4'
+        video_depth_output_path = f'{absolute_path_to.record_video_output_color}{video_count}.depth.pickle'
 
 # 
 # 
@@ -57,26 +80,37 @@ def when_finished_processing_frame():
     # 
     # handle image
     # 
-    if display_live_frames or save_frame_to_file:
+    if display_live_frames or (save_frame_to_file and (frame_number % save_rate == 0)):
         image = generate_image(1000/iteration_time)
     
     if display_live_frames:
         image.show()
     
-    if save_frame_to_file:
-        global frames
-        frames.append(image.img)
-        frames = frames[-config.testing.max_number_of_frames:] # limit the number of frames in ram
+    if save_frame_to_file and (frame_number % save_rate == 0):
+        global color_frames
+        global depth_frames
+        color_frames.append(image.in_cv2_format)
+        color_frames = color_frames[-config.log.max_number_of_frames:] # hard limit the number of color_frames in ram
+        
+        depth_frames.append(runtime.depth_image)
+        depth_frames = depth_frames[-config.log.max_number_of_frames:] # hard limit the number of color_frames in ram
+        
+        # 
+        # check for saving to disk
+        # 
+        if len(color_frames) > save_to_disk_after:
+            save_frames_as_video(path=video_color_output_path)
+        
 
 def when_iteration_stops():
     save_frames_as_video(
-        path=absolute_path_to.video_output,
+        path=video_color_output_path,
     )
 
 # 
 # disable log check
 # 
-if config.testing.disable_all_logging:
+if config.log.disable_all_logging:
     # override above definition and disable
     def when_finished_processing_frame():
         pass # do nothing intentionally
@@ -88,9 +122,12 @@ if config.testing.disable_all_logging:
 # 
 def save_frames_as_video(path):
     if save_frame_to_file:
-        # save all the frames as a video
-        Video.create_from_frames(frames, save_to=path)
+        # save all the color_frames as a video
+        Video.create_from_frames(color_frames, save_to=path)
         print(f"\n\nvideo output has been saved to {path}")
+        
+        if video_depth_output_path:
+            large_pickle_save(variable=depth_frames, file_path=video_depth_output_path)
 
 def visualize_depth_frame(depth_frame_array):
     """
