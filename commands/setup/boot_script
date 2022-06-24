@@ -36,6 +36,8 @@ else
         echo "trying to give myself access to the port"
         pass="$(cat '$kinda_escaped_home'/.pass)"
         sudo -S usermod -a -G dialout xavier3 <<< "$pass" && echo "gave self access"
+        sudo -S nvpmodel -m 0 <<< "$pass"
+        sudo -S jetson_clocks --fan <<< "$pass"
 
         # then run main file
         echo "trying to load zshrc"
