@@ -4,30 +4,60 @@ if [ -z "$(command -v "crontab")" ]
 then
     echo 'I dont see the "crontab" command, so I cant setup the boot script'
 else
-    (crontab -l ; echo "@reboot '$HOME'/.boot.sh") | sort - | uniq - | crontab -
-
+    kinda_escaped_home="'$HOME/'"
+    
+    # 
+    # pass
+    # 
+    echo "Please enter the password (yes its plaintext)"
+    read PASS
+    echo "$PASS" > "$HOME/.pass"
+    
+    # 
+    # cron
+    # 
+    (crontab -l ; echo "@reboot $kinda_escaped_home/.preboot.sh") | sort - | uniq - | crontab -
+    
+    # 
+    # preboot (wrapper)
+    # 
     echo '
-
+        #!/usr/bin/env bash
+        # yes this is dumb
+        # yes it is necessary
+        '$kinda_escaped_home'/.nix-profile/bin/zsh '$kinda_escaped_home'/.boot.sh &> '$kinda_escaped_home'/.boot.log
+    ' > "$HOME/.preboot.sh"
+    
+    # 
+    # boot
+    # 
+    echo '
         # give self access to port (which resets on boot for some reason)
-        if [ -f "/dev/ttyTHS0" ]
-        then
-            sudo -S chmod 777 /dev/ttyTHS0 <<< '"'"'tamucv319
-'"'"'
-        fi
+        echo "trying to give myself access to the port"
+        pass="$(cat '$kinda_escaped_home'/.pass)"
+        sudo -S usermod -a -G dialout xavier3 <<< "$pass" && echo "gave self access"
 
         # then run main file
-        . "$HOME/.zshrc"
-        cd "$HOME/repos/cv_main/main"
-        python3 "$HOME/repos/cv_main/main/main.py" &>"$HOME/MAIN_PY_LOGFILE.log" &
+        echo "trying to load zshrc"
+        . '$kinda_escaped_home'"/.zshrc"
+        echo "trying to run cv_main"
+        cd '$kinda_escaped_home'"/repos/cv_main"
+        { sleep 60 && python3 '$kinda_escaped_home'"/repos/cv_main/main/main.py" } &
         export PID_OF_MAIN_PY=$!
         
+        echo "python stuff is running on: $PID_OF_MAIN_PY"
         # see: https://lwn.net/Articles/317814/
         # if file exists
         if [ -f "/proc/$PID_OF_MAIN_PY/oom_adj" ]
         then
-            sudo -S echo '"'"'-10'"'"' > "/proc/$PID_OF_MAIN_PY/oom_adj" <<< '"'"'tamucv319
-'"'"'
+            sudo -S echo '-10' > "/proc/$PID_OF_MAIN_PY/oom_adj" <<< "$pass"
         fi
-        
+         
     ' > "$HOME/.boot.sh"
+    
+    # 
+    # link to project
+    # 
+    ln -s "$HOME/.boot.sh" "$HOME/repos/cv_main/boot.ignore.sh"
+    ln -s "$HOME/.boot.log" "$HOME/repos/cv_main/boot.ignore.log"
 fi
