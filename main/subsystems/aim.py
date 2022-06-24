@@ -7,6 +7,7 @@ from super_map import LazyDict
 from statistics import mean as average
 
 from toolbox.globals import path_to, config, print, runtime
+from toolbox.geometry_tools import Position
 
 # 
 # config
@@ -80,10 +81,12 @@ def when_bounding_boxes_refresh():
     # update core aiming data
     # 
     if found_robot:
-        prediction = get_center_of_bounding_box(best_bounding_box)
-        center_point = tuple(prediction)
+        prediction = best_bounding_box.center
+        center_point = Position(prediction)
         depth_amount = get_distance_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
         depth_out_of_bounds = depth_amount < min_range or depth_amount > max_range
+    else:
+        prediction = Position([0,0])
     
     # 
     # bullet drop
@@ -91,18 +94,18 @@ def when_bounding_boxes_refresh():
     if not disable_bullet_drop and found_robot:
         pixel_diff = bullet_drop_compensation_1(depth_amount)
         prediction[1] -= pixel_diff
-        bullet_drop_point = tuple(prediction)
     else:
         pixel_diff = 0
+    bullet_drop_point = Position(prediction) # for exporting 
     
     # 
     # kalman filters
     # 
     if not disable_kalman_filters and found_robot:
-        position_in_space = [
+        position_in_space = Position([
             *prediction, # value from original code was NOT influcenced by bullet drop, but this one is 
             depth_amount,
-        ]
+        ])
         # create if doesnt exist
         if runtime.aiming.kalman_filter is None:
             runtime.aiming.kalman_filter = KalmanFilter(model_fps)
@@ -115,10 +118,10 @@ def when_bounding_boxes_refresh():
         )
         
         prediction = kalman_prediction[0:2]
-        kalman_point = tuple(prediction)
     else:
         # reset whenever robot is lost (maybe make fake boxes for a few frames to prevent easily dropping a lock)
         runtime.aiming.kalman_filter = None
+    kalman_point = Position(prediction) # for exporting 
     
     # 
     # compute offset (decide how much movement we need)
@@ -181,12 +184,6 @@ def when_bounding_boxes_refresh():
 # helpers
 # 
 # 
-def get_center_of_bounding_box(bounding_box):
-    return [
-        bounding_box[0] + (bounding_box[2] / 2),
-        bounding_box[1] + (bounding_box[3] / 2), 
-    ]
-
 def get_distance_from_array(depth_frame_array, bbox):
     """
     Determines the depth of a bounding box by choosing and filtering the depths of specific points in the bounding box.
@@ -195,30 +192,32 @@ def get_distance_from_array(depth_frame_array, bbox):
     Output: Single depth value.
     """
     try:
-        x_top_left = bbox[0] 
-        y_top_left = bbox[1]
-        width = bbox[2]
-        height = bbox[3]
         # this is used to add to the current_x and current_y so that we can get the different points in the 9x9 grid
-        x_interval = width/grid_size
-        y_interval = height/grid_size
+        x_interval = bbox.width  / grid_size
+        y_interval = bbox.height / grid_size
         # stores the x and y of the last point in the grid we got the distance from
         curr_x = 0
         curr_y = 0
         distances = np.array([])
         # double for loop to go through 2D array of 9x9 grid
-        for i in range(grid_size):
+        for _ in range(grid_size):
             curr_x += x_interval # add the interval you calculated to traverse through the 9x9 grid
             # print(curr_x)
-            if (x_top_left+curr_x >= len(depth_frame_array[0])):
+            if bbox.x_top_left+curr_x >= len(depth_frame_array[0]):
                 break
-            for j in range(grid_size):
+            for _ in range(grid_size):
                 curr_y += y_interval # add the interval you calculated to traverse through the 9x9 grid
                 # gets the distance of the point from the depth frame on the grid and appends to the array
                 # print(curr_y)
-                if (y_top_left+curr_y >= len(depth_frame_array)):
+                if bbox.y_top_left+curr_y >= len(depth_frame_array):
                     break
-                distances = np.append(distances, depth_frame_array[int(y_top_left+curr_y)][int(x_top_left+curr_x)]/1000)
+                    
+                depth_y = int(bbox.y_top_left+curr_y)
+                depth_x = int(bbox.x_top_left+curr_x)
+                distances = np.append(
+                    distances, 
+                    depth_frame_array[depth_y][depth_x]  /  1000,
+                )
             curr_y = 0
         
         distances = distances[distances!=0.0]   # removes all occurances of 0.0 (areas where there is not enough data return 0.0 as depth)

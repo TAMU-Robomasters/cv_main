@@ -7,6 +7,7 @@ from super_map import LazyDict
 
 # project imports
 from toolbox.globals import path_to, config, print, runtime
+from toolbox.geometry_tools import BoundingBox, Position
 import subsystems.aim as aiming
 
 # 
@@ -54,7 +55,7 @@ def when_frame_arrives():
     # 
     # all boxes
     # 
-    boxes, confidences, class_ids = model.get_bounding_boxes(
+    all_boxes, confidences, class_ids = model.get_bounding_boxes(
         frame=runtime.color_image,
         minimum_confidence=config.model.minimum_confidence,
         threshold=config.model.threshold,
@@ -65,7 +66,7 @@ def when_frame_arrives():
     # remove our-team
     # 
     if config.filter_team_color:
-        boxes, confidences, class_ids = filter_team(boxes, confidences, class_ids)
+        boxes, confidences, class_ids = filter_team(list(all_boxes), confidences, class_ids)
     
     # best box
     best_bounding_box, current_confidence = get_optimal_bounding_box(
@@ -77,7 +78,7 @@ def when_frame_arrives():
     
     # export data
     runtime.screen_center               = screen_center
-    runtime.modeling.boxes              = boxes
+    runtime.modeling.bounding_boxes     = all_boxes
     runtime.modeling.confidences        = confidences
     runtime.modeling.best_bounding_box  = best_bounding_box
     runtime.modeling.current_confidence = current_confidence

@@ -7,6 +7,15 @@ from toolbox.file_system_tools import FS
 COLOR_GREEN  = (0, 255, 0)
 COLOR_YELLOW = (255, 255, 00)
 
+
+rgb = lambda *args: tuple((*args,)) # for syntax highlighting, not actually useful within python
+
+red    = rgb(240, 113, 120)
+cyan   = rgb(137, 221, 255)
+blue   = rgb(130, 170, 255)
+green  = rgb(195, 232, 141)
+yellow = rgb(254, 195,  85)
+
 class Image(object):
     def __init__(self, arg1):
         """
@@ -66,6 +75,10 @@ class Image(object):
             # I believe thickness=-1 means the object should be filled
             cv2.circle(img_copy, (x, y), radius, color, thickness=-1, lineType=8, shift=0)
         return Image(img_copy)
+    
+    def add_point(self, *, x, y, color=COLOR_YELLOW, radius=3):
+        self.img = cv2.circle(self.img, (int(x), int(y)), radius, tuple(int(each) for each in color), thickness=-1, lineType=8, shift=0)
+        return self
     
     def rotated_180_degrees(self):
         return Image(cv2.rotate(self.img, cv2.ROTATE_180))

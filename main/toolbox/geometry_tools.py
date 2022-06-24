@@ -1,5 +1,62 @@
 import numpy as np
 
+class Position(list):
+    @property
+    def x(self): return self[0]
+    
+    @x.setter
+    def x(self, value): self[0] = value
+    
+    @property
+    def y(self): return self[1]
+    
+    @y.setter
+    def y(self, value): self[1] = value
+    
+    @property
+    def z(self): return self[2]
+    
+    @z.setter
+    def z(self, value): self[2] = value
+    
+    def __repr__(self):
+        return f'(x={self.x},y={self.y},z={self.z})'
+
+class BoundingBox(list):
+    @property
+    def x_top_left(self): return self[0]
+    
+    @x_top_left.setter
+    def x_top_left(self, value): self[0] = value
+    
+    @property
+    def y_top_left(self): return self[1]
+    
+    @y_top_left.setter
+    def y_top_left(self, value): self[1] = value
+    
+    @property
+    def width(self): return self[2]
+    
+    @width.setter
+    def width(self, value): self[2] = value
+    
+    @property
+    def height(self): return self[3]
+    
+    @height.setter
+    def height(self, value): self[3] = value
+    
+    @property
+    def center(self):
+        return Position([
+            self.x_top_left + (self.width / 2),
+            self.y_top_left + (self.height / 2),
+        ])
+    
+    def __repr__(self):
+        return f'[x_top_left={f"{self.x_top_left:.2f}".rjust(5)},y_top_left={f"{self.y_top_left:.2f}".rjust(5)},width={f"{self.width:.2f}".rjust(5)},height={f"{self.height:.2f}".rjust(5)}]'
+
 class Geometry():
     @classmethod
     def bounds_to_points(self, max_x, max_y, min_x, min_y):

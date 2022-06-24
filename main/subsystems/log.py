@@ -2,12 +2,18 @@ from time import time as now
 
 from toolbox.globals import path_to, config, print, runtime
 from toolbox.video_tools import Video
-from toolbox.image_tools import Image
+from toolbox.image_tools import Image, rgb
 
 # 
 # config
 # 
 display_live_frames = config.testing.display_live_frames
+save_frame_to_file  = config.testing.save_frame_to_file
+
+# 
+# init
+# 
+frames = []
 
 # 
 # 
@@ -16,8 +22,35 @@ display_live_frames = config.testing.display_live_frames
 # 
 runtime.prev_loop_time = 0 # init time value
 def when_finished_processing_frame():
-    display_information()
-    record_images_if_needed()
+    # import data
+    frame_number       = runtime.frame_number
+    prev_loop_time     = runtime.prev_loop_time
+    
+    # 
+    # compute loop time
+    # 
+    now_in_miliseconds = int(now() * 1000)
+    iteration_time = now_in_miliseconds-prev_loop_time
+    runtime.prev_loop_time = now_in_miliseconds
+    
+    # 
+    # print
+    # 
+    print(f'\nframe#:{f"{frame_number}".rjust(5)},{f"{iteration_time}".rjust(4)}ms,', sep='', end='', flush=True)
+    
+    # 
+    # handle image
+    # 
+    if display_live_frames or save_frame_to_file:
+        image = generate_image(1000/iteration_time)
+    
+    if display_live_frames:
+        image.show()
+    
+    if save_frame_to_file:
+        global frames
+        frames.append(image.img)
+        frames = frames[-config.testing.max_number_of_frames:] # limit the number of frames in ram
 
 def when_iteration_stops():
     save_frames_as_video(
@@ -37,67 +70,6 @@ if config.testing.disable_all_logging:
 # helpers
 # 
 # 
-def display_information():  
-    frame_number       = runtime.frame_number
-    color_image        = runtime.color_image
-    depth_image        = runtime.depth_image
-    prev_loop_time     = runtime.prev_loop_time
-    found_robot        = runtime.modeling.found_robot
-    current_confidence = runtime.modeling.current_confidence
-    best_bounding_box  = runtime.modeling.best_bounding_box
-    should_shoot       = runtime.aiming.should_shoot
-    horizontal_angle   = runtime.aiming.horizontal_angle
-    vertical_angle     = runtime.aiming.vertical_angle
-    depth_amount       = runtime.aiming.depth_amount
-    pixel_diff         = runtime.aiming.pixel_diff
-    horizonal_stdev    = runtime.aiming.horizonal_stdev
-    vertical_stdev     = runtime.aiming.vertical_stdev
-
-    # Display time taken for single iteration of loop
-    now_in_miliseconds = int(now() * 1000)
-    iteration_time = now_in_miliseconds-prev_loop_time
-    runtime.prev_loop_time = now_in_miliseconds
-    
-    # relase all print info on one line
-    print(f'\nframe#:{f"{frame_number}".rjust(5)},{f"{iteration_time}".rjust(4)}ms,', sep='', end='', flush=True)
-
-    # Show live feed is gui is enabled
-    if display_live_frames:
-        import cv2
-        
-        image = Image(runtime.color_image)
-        if found_robot: image.add_bounding_box(best_bounding_box)
-        
-        image.add_text(text="horizontal_angle: "+str(round(horizontal_angle,2)     ), location=(30, 50))
-        image.add_text(text="vertical_angle: "  +str(round(vertical_angle,2)       ), location=(30,100))
-        image.add_text(text="depth_amount: "    +str(round(depth_amount,2)         ), location=(30,150))
-        image.add_text(text="pixel_diff: "      +str(round(pixel_diff,2)           ), location=(30,200))
-        image.add_text(text="x_std: "           +str(round(horizonal_stdev,2)      ), location=(30,250))
-        image.add_text(text="y_std: "           +str(round(vertical_stdev,2)       ), location=(30,300))
-        image.add_text(text="confidence: "      +str(round(current_confidence,2)   ), location=(30,350))
-        image.add_text(text="fps: "             +str(round(1000/iteration_time,2)  ), location=(30,400))
-        image.add_text(text="shoot: "           +str(should_shoot                  ), location=(30,450))
-        
-        image.show()
-
-
-frames = []
-def record_images_if_needed():
-    """
-    this function is designed to be called every time main() processes a frame
-    its only purpose is to bundle all of the debugging output
-    """
-    global frames
-    
-    if config.testing.save_frame_to_file:
-        image = Image(runtime.color_image)
-        for each in runtime.modeling.boxes:
-            image.add_bounding_box(each)
-        
-        frames.append(image.img)
-        # limit the number of frames in ram
-        frames = frames[-config.testing.max_number_of_frames:]
-
 def save_frames_as_video(path):
     if config.testing.save_frame_to_file:
         # save all the frames as a video
@@ -122,3 +94,52 @@ def visualize_depth_frame(depth_frame_array):
     print("press escape to cancel")
     if key & 0xFF == ord('q') or key == 27:
         cv2.destroyAllWindows()
+
+
+def generate_image(fps=0):
+    frame_number       = runtime.frame_number
+    color_image        = runtime.color_image
+    depth_image        = runtime.depth_image
+    prev_loop_time     = runtime.prev_loop_time
+    found_robot        = runtime.modeling.found_robot
+    current_confidence = runtime.modeling.current_confidence
+    best_bounding_box  = runtime.modeling.best_bounding_box
+    bounding_boxes     = runtime.modeling.bounding_boxes
+    should_shoot       = runtime.aiming.should_shoot
+    horizontal_angle   = runtime.aiming.horizontal_angle
+    vertical_angle     = runtime.aiming.vertical_angle
+    depth_amount       = runtime.aiming.depth_amount
+    pixel_diff         = runtime.aiming.pixel_diff
+    horizonal_stdev    = runtime.aiming.horizonal_stdev
+    vertical_stdev     = runtime.aiming.vertical_stdev
+    center_point       = runtime.aiming.center_point
+    bullet_drop_point  = runtime.aiming.bullet_drop_point
+    kalman_point       = runtime.aiming.kalman_point
+
+    image = Image(runtime.color_image)
+    if found_robot:
+        red    = rgb(240, 113, 120)
+        cyan   = rgb(137, 221, 255)
+        blue   = rgb(130, 170, 255)
+        green  = rgb(195, 232, 141)
+        yellow = rgb(254, 195,  85)
+        for each in bounding_boxes:
+            image.add_bounding_box(each, color=rgb(130, 170, 255))
+        image.add_bounding_box(best_bounding_box, color=rgb(137,221,255))
+        image.add_point(x=center_point.x     , y=center_point.y     , color=rgb(240, 113, 120), radius=3)
+        image.add_point(x=bullet_drop_point.x, y=bullet_drop_point.y, color=rgb(254, 195,  85), radius=3)
+        image.add_point(x=kalman_point.x     , y=kalman_point.y     , color=rgb(195, 232, 141), radius=3)
+    
+    x_location = 30
+    y_location = 50
+    image.add_text(text=f"horizontal_angle: { horizontal_angle   :.2f}", location=(x_location, y_location)); y_location += 50
+    image.add_text(text=f"vertical_angle: {   vertical_angle     :.2f}", location=(x_location, y_location)); y_location += 50
+    image.add_text(text=f"depth_amount: {     depth_amount       :.2f}", location=(x_location, y_location)); y_location += 50
+    image.add_text(text=f"pixel_diff: {       pixel_diff         :.2f}", location=(x_location, y_location)); y_location += 50
+    image.add_text(text=f"horizonal_stdev: {  horizonal_stdev    :.2f}", location=(x_location, y_location)); y_location += 50
+    image.add_text(text=f"vertical_stdev: {   vertical_stdev     :.2f}", location=(x_location, y_location)); y_location += 50
+    image.add_text(text=f"confidence: {       current_confidence :.2f}", location=(x_location, y_location)); y_location += 50
+    image.add_text(text=f"fps: {              fps                :.2f}", location=(x_location, y_location)); y_location += 50
+    image.add_text(text=f"shoot: {            should_shoot           }", location=(x_location, y_location)); y_location += 50
+        
+    return image
