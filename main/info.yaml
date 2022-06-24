@@ -45,7 +45,7 @@
                 camera: realsense # "realsense" or "zed"
                 camera_is_upsidedown: false
             model:
-                which_model: yolo_v5 # yolo_v5 or yolo_v4
+                which_model: yolo_v4 # yolo_v5 or yolo_v4
                 hardware_acceleration: null # one of: [ null, "gpu", "tensor_rt" ]
                 minimum_confidence: 0.8 # should be a value between 0-1
                 threshold: 0.3  # should be a value between 0-1
