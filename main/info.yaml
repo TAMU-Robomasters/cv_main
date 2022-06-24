@@ -102,8 +102,7 @@
                 save_frame_to_file: true
                 display_live_frames: false
                 save_rate: 30 # once every __ frames
-                # save_to_disk_after: 1200 # 1200 frames is about 20 min at 1 frame per second
-                save_to_disk_after: 7 # 1200 frames is about 20 min at 1 frame per second
+                save_to_disk_after: 1200 # 1200 frames is about 20 min at 1 frame per second
                 max_number_of_frames: 4000 # 5000 is consumes about 6GB of ram
             communication:
                 timeout: 0.05
@@ -173,7 +172,7 @@
             mode: production
             log:
                 disable_all_logging: false
-                disable_print: false
+                disable_print: true
                 save_frame_to_file: true
                 display_live_frames: false
         WE_RED:
