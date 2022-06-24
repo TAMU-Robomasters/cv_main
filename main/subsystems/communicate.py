@@ -33,7 +33,7 @@ else:
         )
     except Exception as error:
         import subprocess
-        subprocess.run([ "bash", "-c", f"sudo -S chmod 777 '{serial_port}' <<<  'tamucv319' ",])
+        subprocess.run([ "bash", "-c", f"sudo -S chmod 777 '{serial_port}' <<<  \"$(cat \"$HOME/pass\")\" ",])
         port = serial.Serial(
             serial_port,
             baudrate=baudrate,
