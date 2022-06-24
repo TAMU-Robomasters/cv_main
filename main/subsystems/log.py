@@ -121,6 +121,7 @@ def generate_image(fps=0):
     current_confidence = runtime.modeling.current_confidence
     best_bounding_box  = runtime.modeling.best_bounding_box
     bounding_boxes     = runtime.modeling.bounding_boxes
+    enemy_boxes        = runtime.modeling.enemy_boxes
     should_shoot       = runtime.aiming.should_shoot
     horizontal_angle   = runtime.aiming.horizontal_angle
     vertical_angle     = runtime.aiming.vertical_angle
@@ -133,18 +134,22 @@ def generate_image(fps=0):
     kalman_point       = runtime.aiming.kalman_point
 
     image = Image(runtime.color_image)
-    if found_robot:
+    if len(bounding_boxes) > 0:
+        white  = rgb(255, 255, 255)
         red    = rgb(240, 113, 120)
-        cyan   = rgb(137, 221, 255)
         blue   = rgb(130, 170, 255)
+        cyan   = rgb(137, 221, 255)
         green  = rgb(195, 232, 141)
         yellow = rgb(254, 195,  85)
         for each in bounding_boxes:
-            image.add_bounding_box(each, color=rgb(130, 170, 255))
-        image.add_bounding_box(best_bounding_box, color=rgb(137,221,255))
-        image.add_point(x=center_point.x     , y=center_point.y     , color=rgb(240, 113, 120), radius=8)
-        image.add_point(x=bullet_drop_point.x, y=bullet_drop_point.y, color=rgb(254, 195,  85), radius=5)
-        image.add_point(x=kalman_point.x     , y=kalman_point.y     , color=rgb(195, 232, 141), radius=3)
+            image.add_bounding_box(each, color=rgb(255, 255, 255))
+        for each in enemy_boxes:
+            image.add_bounding_box(each, color=rgb(254, 195,  85))
+        if found_robot:
+            image.add_bounding_box(best_bounding_box, color=rgb(240, 113, 120))
+            image.add_point(x=center_point.x     , y=center_point.y     , color=rgb(130, 170, 255), radius=10)
+            image.add_point(x=bullet_drop_point.x, y=bullet_drop_point.y, color=rgb(137, 221, 255), radius=7)
+            image.add_point(x=kalman_point.x     , y=kalman_point.y     , color=rgb(195, 232, 141), radius=5)
     
     x_location = 30
     y_location = 50

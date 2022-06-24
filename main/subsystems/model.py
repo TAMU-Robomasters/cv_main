@@ -23,7 +23,8 @@ assert hardware_acceleration in ['tensor_rt', 'gpu', None]
 # shared data (imported by aiming and integration)
 # 
 runtime.modeling = LazyDict(
-    boxes=[],
+    bounding_boxes=[],
+    enemy_boxes=[],
     confidences=[],
     best_bounding_box=[],
     current_confidence=0,
@@ -66,11 +67,11 @@ def when_frame_arrives():
     # remove our-team
     # 
     if config.filter_team_color:
-        boxes, confidences, class_ids = filter_team(list(all_boxes), confidences, class_ids)
+        enemy_boxes, confidences, class_ids = filter_team(list(all_boxes), confidences, class_ids)
     
     # best box
     best_bounding_box, current_confidence = get_optimal_bounding_box(
-        boxes=boxes,
+        boxes=enemy_boxes,
         confidences=confidences,
         screen_center=screen_center,
         distance=aiming.distance,
@@ -79,6 +80,7 @@ def when_frame_arrives():
     # export data
     runtime.screen_center               = screen_center
     runtime.modeling.bounding_boxes     = all_boxes
+    runtime.modeling.enemy_boxes        = enemy_boxes
     runtime.modeling.confidences        = confidences
     runtime.modeling.best_bounding_box  = best_bounding_box
     runtime.modeling.current_confidence = current_confidence
