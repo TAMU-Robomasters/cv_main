@@ -263,12 +263,12 @@ class TrtYOLO(object):
     """TrtYOLO class encapsulates things needed to run TRT YOLO."""
 
     def _load_engine(self):
-        TRTbin = path_to.model_trt
-        with open(TRTbin, 'rb') as f, trt.Runtime(self.trt_logger) as runtime:
+        with open(self.path_to_model, 'rb') as f, trt.Runtime(self.trt_logger) as runtime:
             return runtime.deserialize_cuda_engine(f.read())
 
-    def __init__(self,input_shape, category_num=80, letter_box=False, cuda_ctx=None):
+    def __init__(self, path_to_model, input_shape, category_num=80, letter_box=False, cuda_ctx=None):
         """Initialize TensorRT plugins, engine and conetxt."""
+        self.path_to_model = path_to_model
         self.outputs = None
         self.inputs = None
         self.stream = None

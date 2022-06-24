@@ -19,12 +19,14 @@
         datasets: ./subsystems/modeling/datasets.ignore/
         model: ./subsystems/modeling/model/yolov4-tiny-416
         yolo_to_onnx: main/subsystems/modeling/model/yolo_to_onnx.py
-        model_weights: ./subsystems/modeling/model/yolov4-tiny-416.weights
-        model_config: ./subsystems/modeling/model/yolov4-tiny-416.cfg
-        model_labels: ./subsystems/modeling/model/yolov4-tiny-416.names
-        model_trt: ./subsystems/modeling/model/yolov4-tiny-416.do_not_sync.trt
         tensorrt_so_file: ./subsystems/modeling/plugins/libyolo_layer.so
-        yolov5_pt: ./subsystems/modeling/model/best.pt
+        yolo_v4:
+            model_weights: ./subsystems/modeling/model/yolov4-tiny-416.weights
+            model_config: ./subsystems/modeling/model/yolov4-tiny-416.cfg
+            tensor_rt_file: ./subsystems/modeling/model/yolov4-tiny-416.do_not_sync.trt
+        yolo_v5:
+            pytorch_model: ./subsystems/modeling/model/yolo_v5.pt
+            tensor_rt_file: ./subsystems/modeling/model/yolo_v5.engine
     
     # this file will be generated automatically
     (local_data): ./local_data.ignore.yaml
