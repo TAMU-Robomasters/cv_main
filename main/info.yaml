@@ -53,10 +53,15 @@
                 frequency: 30
                 input_dimension: 416
             aiming:
+                prediction_method: linear # null, linear, kalman
+                linear_tracking_confidence_threshold: 0.65 # 0=dont_care 1=must be a perfect line
+                linear_buffer_size: 30
+                skip_allowance: 2 # number of frames that can be skipped/missed
+                
                 disable_bullet_drop: true
-                disable_kalman_filters: true
                 sec_till_lock_lost: 5
                 prediction_time: 2 # time interval in seconds to predict using kalman filters
+                
                 
                 # depth camera
                 stream_width: 848
