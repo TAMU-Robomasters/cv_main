@@ -83,17 +83,17 @@ def when_bounding_boxes_refresh():
     horizontal_angle, vertical_angle, should_shoot, horizonal_stdev, vertical_stdev, depth_amount, pixel_diff = (0, 0, 0, 0, 0, 0, 0)
     center_point, bullet_drop_point, prediction_point = (None, None, None)
     current_time = now()
+    point_to_aim_at = Position([0,0])
     
     # 
     # update core aiming data
     # 
     if found_robot:
         point_to_aim_at = best_bounding_box.center
-        center_point = Position(point_to_aim_at)
         depth_amount = get_distance_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
         depth_out_of_bounds = depth_amount < min_range or depth_amount > max_range
-    else:
-        point_to_aim_at = Position([0,0])
+    center_point = Position(point_to_aim_at) # for displaying
+        
     
     # 
     # bullet drop
@@ -103,7 +103,7 @@ def when_bounding_boxes_refresh():
         point_to_aim_at[1] -= pixel_diff
     else:
         pixel_diff = 0
-    bullet_drop_point = Position(point_to_aim_at) # for exporting 
+    bullet_drop_point = Position(point_to_aim_at) # for displaying 
     
     # 
     # prediction
@@ -157,8 +157,7 @@ def when_bounding_boxes_refresh():
             else:
                 # reset whenever robot is lost (maybe make fake boxes for a few frames to prevent easily dropping a lock)
                 runtime.aiming.kalman_filter = None
-        
-        prediction_point = Position(point_to_aim_at) # for exporting 
+    prediction_point = Position(point_to_aim_at) # for displaying 
     
     # 
     # compute offset (decide how much movement we need)
