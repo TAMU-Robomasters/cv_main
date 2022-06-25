@@ -188,6 +188,8 @@ def generate_image(fps=0):
             image.add_point(x=bullet_drop_point.x, y=bullet_drop_point.y, color=rgb(137, 221, 255), radius=7)
             image.add_point(x=prediction_point.x , y=prediction_point.y , color=rgb(195, 232, 141), radius=5)
     
+    runtime.image = image
+    
     x_location = 30
     y_location = 50
     image.add_text(text=f"horizontal_angle: { horizontal_angle   :.2f}", location=(x_location, y_location)); y_location += 50
