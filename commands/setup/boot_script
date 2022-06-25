@@ -16,7 +16,7 @@ else
     # 
     # cron
     # 
-    (crontab -l ; echo "@reboot $kinda_escaped_home/.preboot.sh") | sort - | uniq - | crontab -
+    (crontab -l ; echo "@reboot $HOME/.preboot.sh >> .boot.log") | sort - | uniq - | crontab -
     
     # 
     # preboot (wrapper)
