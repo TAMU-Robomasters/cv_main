@@ -92,7 +92,6 @@ def when_bounding_boxes_refresh():
         depth_amount = get_distance_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
         depth_out_of_bounds = depth_amount < min_range or depth_amount > max_range
     center_point = Position(point_to_aim_at) # for displaying
-        
     
     # 
     # bullet drop
