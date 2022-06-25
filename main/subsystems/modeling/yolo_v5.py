@@ -6,7 +6,7 @@ import time
 from super_map import LazyDict
 
 # project imports
-from toolbox.globals import path_to, config, print, runtime
+from toolbox.globals import path_to, absolute_path_to, config, print, runtime
 from toolbox.geometry_tools import BoundingBox, Position
 
 # 
@@ -36,9 +36,9 @@ def init_yolo_v5(model):
         import pycuda.autoinit  # This is needed for initializing CUDA driver
         try:
             import ctypes
-            ctypes.cdll.LoadLibrary(path_to.yolo_v5.tensor_rt_file)
+            ctypes.cdll.LoadLibrary(absolute_path_to.yolo_v5.tensor_rt_file)
         except OSError as error:
-            raise SystemExit(f'ERROR: failed to load {path_to.yolo_v5.tensor_rt_file}  Did you forget to do a "make" in the "./plugins/" subdirectory?') from error
+            raise SystemExit(f'ERROR: failed to load {absolute_path_to.yolo_v5.tensor_rt_file}  Did you forget to do a "make" in the "./plugins/" subdirectory?') from error
         
         from subsystems.modeling.yolo_with_plugins import TrtYOLO
         
@@ -105,10 +105,15 @@ def yolo_v5_bounding_boxes(model, frame, minimum_confidence, threshold):
         if model.W is None or model.H is None:
             (model.H, model.W) = frame.shape[:2]
         
-        layer_outputs = model.net(frame)
-        labels = layer_outputs.xyxy[0]
+        labels = []
+        try:
+            layer_outputs = model.net(frame)
+            labels = layer_outputs.xyxy[0]
+        except Exception as error:
+            print(error)
 
         # loop over each of the detections
+        labels = labels.cpu()
         for detection in labels:
             detection = detection.numpy()
             # extract the class ID and minimum_confidence (i.e., probability)

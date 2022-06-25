@@ -92,9 +92,7 @@ def _nms_boxes(detections, nms_threshold):
     return keep
 
 
-def _postprocess_yolo(
-    trt_outputs, img_w, img_h, conf_th, nms_threshold, input_shape, letter_box=False
-):
+def _postprocess_yolo(trt_outputs, img_w, img_h, conf_th, nms_threshold, input_shape, letter_box=False):
     """Postprocess TensorRT outputs.
 
     # Args
@@ -200,8 +198,8 @@ def allocate_buffers(engine):
     return inputs, outputs, bindings, stream
 
 
-def do_inference(context, bindings, inputs, outputs, stream, batch_size=1):
-    """do_inference (for TensorRT 6.x or lower)
+def do_inference_v1(context, bindings, inputs, outputs, stream, batch_size=1):
+    """do_inference_v1 (for TensorRT 6.x or lower)
 
     This function is generalized for multiple inputs/outputs.
     Inputs and outputs are expected to be lists of HostDeviceMem objects.
@@ -239,29 +237,12 @@ def do_inference_v2(context, bindings, inputs, outputs, stream):
     return [out.host for out in outputs]
 
 
-def get_yolo_grid_sizes(model_name, h, w):
-    """Get grid sizes (w*h) for all yolo layers in the model."""
-    if "yolov3" in model_name:
-        if "tiny" in model_name:
-            return [(h // 32) * (w // 32), (h // 16) * (w // 16)]
-        else:
-            return [(h // 32) * (w // 32), (h // 16) * (w // 16), (h // 8) * (w // 8)]
-    elif "yolov4" in model_name:
-        if "tiny" in model_name:
-            return [(h // 32) * (w // 32), (h // 16) * (w // 16)]
-        else:
-            return [(h // 8) * (w // 8), (h // 16) * (w // 16), (h // 32) * (w // 32)]
-    else:
-        raise ValueError("ERROR: unknown model (%s)!" % args.model)
-
 
 class TrtYOLO(object):
     """TrtYOLO class encapsulates things needed to run TRT YOLO."""
 
     def _load_engine(self):
-        with open(self.path_to_model, "rb") as f, trt.Runtime(
-            self.trt_logger
-        ) as runtime:
+        with open(self.path_to_model, "rb") as f, trt.Runtime(self.trt_logger) as runtime:
             return runtime.deserialize_cuda_engine(f.read())
 
     def __init__(
@@ -287,7 +268,7 @@ class TrtYOLO(object):
             self.cuda_ctx.push()
 
         self.inference_fn = (
-            do_inference if trt.__version__[0] < "7" else do_inference_v2
+            do_inference_v1 if trt.__version__[0] < "7" else do_inference_v2
         )
         self.trt_logger = trt.Logger(trt.Logger.INFO)
         self.engine = self._load_engine()
@@ -322,7 +303,7 @@ class TrtYOLO(object):
         letter_box = self.letter_box if letter_box is None else letter_box
         img_resized = _preprocess_yolo(img, self.input_shape, letter_box)
 
-        # Set host input to the image. The do_inference() function
+        # Set host input to the image. The do_inference_v1() function
         # will copy the input to the GPU before executing.
         self.inputs[0].host = np.ascontiguousarray(img_resized)
         if self.cuda_ctx:

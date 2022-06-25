@@ -443,10 +443,11 @@ def relative_coordinate(depth_frame, bbox):
     """
     if not depth_frame:                     # if there is no aligned_depth_frame or color_frame then leave the loop
         return None
-
+    # depth_intrin = depth_frame.profile.as_video_stream_profile().intrinsics
     depth_value = get_distance_from_array(depth_frame)
-    depth_point =  rs.deproject_pixel_to_point(runtime.realsense.intrins, bbox, depth_value)
-
+    # depth_pixel = [depth_intrin.ppx, depth_intrin.ppy]
+    # depth_pixel = [bbox[0] + .5 * bbox[2], bbox[1] + .5 * bbox[3]]
+    depth_point =   rs.deproject_pixel_to_point(bbox, depth_value)
     return depth_point
 
 def pixel_coordinate(point):
