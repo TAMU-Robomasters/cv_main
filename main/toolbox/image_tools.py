@@ -41,7 +41,6 @@ class Image(object):
         """
         this will open the image in a GUI but allow the code to keep executing
         """
-        print("Press ESC (on the image window) to exit the image")
         if self.path != None:
             name = self.path
         elif name is None:
