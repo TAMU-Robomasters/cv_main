@@ -39,9 +39,9 @@ def init_yolo_v4(model):
         
         try:
             import ctypes
-            ctypes.cdll.LoadLibrary(absolute_path_to.yolo_v4.tensor_rt_file)
+            ctypes.cdll.LoadLibrary(absolute_path_to.tensorrt_so_file)
         except OSError as error:
-            raise SystemExit(f'ERROR: failed to load {absolute_path_to.yolo_v4.tensor_rt_file}  Did you forget to do a "make" in the "./plugins/" subdirectory?') from error
+            raise SystemExit(f'ERROR: failed to load {absolute_path_to.tensorrt_so_file}  Did you forget to do a "make" in the "./plugins/" subdirectory?') from error
         
         from subsystems.modeling.yolo_with_plugins import TrtYOLO
         trt_yolo = TrtYOLO(
