@@ -43,6 +43,7 @@ action = LazyDict(
 # 
 # 
 def when_aiming_refreshes():
+    global port
     should_shoot       = runtime.aiming.should_shoot
     should_look_around = runtime.aiming.should_look_around
     
