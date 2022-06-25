@@ -106,6 +106,11 @@ def when_bounding_boxes_refresh():
         pixel_diff = 0
     bullet_drop_point = Position(point_to_aim_at) # for displaying 
     
+    print("GYROOOOOOO", gyro.x, gyro.y, gyro.z)
+
+
+
+
     # 
     # prediction
     # 
@@ -406,8 +411,36 @@ def angle_from_center(point_to_aim_at, screen_center):
 
     return math.radians(horizontal_angle),math.radians(vertical_angle)
 
+
+def angles_to_shoot(depth_frame, bbox, vx, vy, vz, ax, ay, az, phi, theta ):
+
+    # constants
+    L = 0
+    v0 = 0
+    x, y, z = world_coordinate(bbox, relative_coordinate(depth_frame, bbox)[0], phi, theta)
+    
+    # solving for t
+    c4 = 0.25*ax**2 + (0.5*ay)**2 + (0.5*az+g)**2   # For for coefficient of t^4
+    c3 = vx*ax + vy*ay + 2*vz*(0.5*az+g)   # For coefficient of t^3 
+    c2 = (vx**2 +ax*x) + (vy**2 +ay*y) + (vz**2 + 2*(az+g)*z) - v0**2    # For coefficient of t^2
+    c1 = 2*x*vx + 2*y*vy + 2*z*vz - 2*v0*l   # For coefficient of t
+    c0 = x**2 + y**2 + z**2 - l**2   # Just Standalone numbers
+    equation_coef = [c4, c3, c2, c1, c0] # listing all coefficients
+    roots = np.roots(equation_coef)
+    result = [elem for elem in roots if elem > 0]
+    t = min(result)
+
+    # solving for phee
+    phee = np.arcsin((y + vy*t + 0.5*ay*(t**2) - g*(t**2))/(L + v0*t))
+
+    # solving for theta
+    theta = np.arcsin((x + vx*t + 0.5*ax*(t**2))/(l + v0*t))/np.cos(p)
+
+    return (theta, phee)
+
+
 # bbox[x coordinate of the top left of the bounding box, y coordinate of the top left of the bounding box, width of box, height of box]
-def world_coordinate(depth_frame, bbox):
+def relative_coordinate(depth_frame, bbox):
     """
     Returns an estimate in position relative to the world.
 
@@ -416,12 +449,48 @@ def world_coordinate(depth_frame, bbox):
     """
     if not depth_frame:                     # if there is no aligned_depth_frame or color_frame then leave the loop
         return None
-    # depth_intrin = depth_frame.profile.as_video_stream_profile().intrinsics
+
     depth_value = get_distance_from_array(depth_frame)
-    # depth_pixel = [depth_intrin.ppx, depth_intrin.ppy]
-    # depth_pixel = [bbox[0] + .5 * bbox[2], bbox[1] + .5 * bbox[3]]
-    depth_point =   rs.deproject_pixel_to_point(bbox, depth_value)
+    depth_point =  rs.deproject_pixel_to_point(runtime.realsense.intrins, bbox, depth_value)
+
     return depth_point
 
 def pixel_coordinate(point):
     return rs.project_point_to_pixel(point)
+
+
+def world_coordinate(cam_pos, depth, phi, theta):
+    c_vec = np.array([
+        (bar_len2 + cam_gap2)0.5 * np.cos(np.arctan(cam_gap/bar_len) + phi) * np.sin(theta),
+        (bar_len2 + cam_gap2)0.5 * np.cos(np.arctan(cam_gap/bar_len) + phi) * np.cos(theta),
+        (bar_len2 + cam_gap2)*0.5 np.sin(np.arctan(cam_gap/bar_len) + phi)
+    ]).reshape(-1, 1)
+
+    print(f"CAMERA VECTOR:\n{c_vec}\n")
+
+    d_vec = np.array([
+        depth * np.cos(phi) * np.sin(theta),
+        depth * np.cos(phi) * np.cos(theta),
+        depth * np.sin(phi)
+    ]).reshape(-1, 1)
+
+    print(f"DISTANCE VECTOR:\n{d_vec}\n")
+
+    p_vec = np.array([
+        2 * depth * np.tan(np.radians(fov[0])/2) * (cam_pos[0]/cam_dims[0] - 0.5),
+        0,
+        2 * depth * np.tan(np.radians(fov[1])/2) * (cam_pos[1]/cam_dims[1] - 0.5)
+    ]).reshape(-1, 1)
+
+    print(f"POSITION VECTOR (CAMERA FRAME):\n{p_vec}\n")
+
+    R = np.array([
+        [np.cos(theta), np.cos(phi)np.sin(theta), -np.sin(phi)np.sin(theta)],
+        [-np.sin(theta), np.cos(phi)np.cos(theta), -np.sin(phi)np.cos(theta)],
+        [0, np.sin(phi), np.cos(phi)]
+    ])
+
+    print(f"POSITION VECTOR (ROBOT FRAME):\n{R @ p_vec}\n")
+    print(f"OUTPUT VECTOR:\n{c_vec + d_vec + (R@p_vec)}")
+
+    return tuple((c_vec + d_vec + (R@p_vec)).flatten())

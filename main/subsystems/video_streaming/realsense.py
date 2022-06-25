@@ -10,6 +10,7 @@ record_interval = videostream.testing.record_interval
 
 runtime.realsense = LazyDict(
     frame=None,
+    intrins=None
     acceleration=LazyDict(x=0,y=0,z=0),
     gyro=LazyDict(x=0,y=0,z=0),
 )
@@ -39,7 +40,9 @@ class VideoStream:
         
         while True:
             try:
-                self.pipeline.start(conf)
+                cfg = self.pipeline.start(rs_config)
+                profile = cfg.get_stream(rs.stream.depth)
+                runtime.realsense.intrins = profile.as_video_stream_profile().get_intrinsics()
             except Exception as error:
                 print("")
                 print(error)
