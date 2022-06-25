@@ -21,12 +21,15 @@ else
     # 
     # preboot (wrapper)
     # 
+    zsh_location="'$(which zsh)'"
     echo '
         #!/usr/bin/env bash
         # yes this is dumb
         # yes it is necessary
-        '$kinda_escaped_home'/.nix-profile/bin/zsh '$kinda_escaped_home'/.boot.sh &> '$kinda_escaped_home'/.boot.log
+        '$zsh_location' '$kinda_escaped_home'/.boot.sh &> '$kinda_escaped_home'/.boot.log
     ' > "$HOME/.preboot.sh"
+    chmod 777 "$HOME/.preboot.sh"
+    
     
     # 
     # boot
