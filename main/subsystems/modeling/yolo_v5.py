@@ -133,6 +133,12 @@ def yolo_v5_bounding_boxes(model, frame, minimum_confidence, threshold):
                 class_ids.append(class_id)
     
     # make each box a proper class instead of just a list
-    boxes = [ BoundingBox(each) for each in boxes ]
+    boxes = [ 
+        BoundingBox.from_points(
+            top_left=(each[0], each[1]),
+            bottom_right=(each[2],each[3])
+        )
+            for each in boxes 
+    ]
     
     return boxes, confidences, class_ids

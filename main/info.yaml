@@ -169,6 +169,7 @@
             communication:
                 serial_port: null
             log:
+                save_rate: 1 # every frame (1 frame per frame)
                 save_frame_to_file: true
         
             

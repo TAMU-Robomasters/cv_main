@@ -30,6 +30,18 @@ class Position(list):
             return '[]'
 
 class BoundingBox(list):
+    """
+    x_top_left, y_top_left, width, height format
+    """
+    
+    @classmethod
+    def from_points(cls, *, top_left, bottom_right):
+        top_left = Position(top_left)
+        bottom_right = Position(bottom_right)
+        width  = abs(top_left.x - bottom_right.x)
+        height = abs(top_left.y - bottom_right.y)
+        return BoundingBox([ top_left.x, top_left.y, width, height ])
+    
     @property
     def x_top_left(self): return self[0]
     

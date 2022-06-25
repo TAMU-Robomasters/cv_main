@@ -62,7 +62,7 @@ runtime.aiming = LazyDict(
     vertical_stdev=0,
     depth_amount=0,
     pixel_diff=0,
-    predictor=None,
+    predictor=Predictor(linear_buffer_size),
     predictor_skip_count=0,
     kalman_filter=None,
 )
@@ -111,9 +111,6 @@ def when_bounding_boxes_refresh():
     # 
     if True:
         if prediction_method == 'linear':
-            if runtime.aiming.predictor is None: runtime.aiming.predictor = Predictor() # init if needed
-            predictor = runtime.aiming.predictor
-            
             # 
             # skip count
             # 
@@ -123,18 +120,18 @@ def when_bounding_boxes_refresh():
                 runtime.aiming.predictor_skip_count = 0
             # full reset predictor
             if runtime.aiming.predictor_skip_count > skip_allowance:
-                predictor = Predictor(linear_buffer_size)
+                runtime.aiming.predictor = Predictor(linear_buffer_size)
             
             # 
             # prediction
             # 
             if found_robot:
-                predictor.add_data(time=current_time, values=point_to_aim_at) # values can be anything, 3D coords, pixels, etc
-                if len(predictor) > 2:
-                    (next_x, next_y), total_confidence, _  = predictor.predict_next(timesteps=1)
-                    (next_x, next_y), _, _  = predictor.predict_next(timesteps=total_confidence) # scale by confidence
+                runtime.aiming.predictor.add_data(time=current_time, values=point_to_aim_at) # values can be anything, 3D coords, pixels, etc
+                if len(runtime.aiming.predictor) > 2:
+                    (next_x, next_y), total_confidence, _  = runtime.aiming.predictor.predict_next(timesteps=1)
+                    (next_x, next_y),                _, _  = runtime.aiming.predictor.predict_next(timesteps=total_confidence) # scale by confidence
                     if total_confidence < linear_tracking_confidence_threshold:
-                        predictor.reset() # reset (keeps only the current point)
+                        runtime.aiming.predictor.reset() # reset (keeps only the current point)
                     else:
                         # update the point to aim at with the prediction
                         point_to_aim_at = (next_x, next_y)
