@@ -36,7 +36,6 @@
     
     (profiles):
         (default):
-            enable_on_boot: true
             our_team_color: 'blue' # 'red' or 'blue'
             filter_team_color: true
             mode: development
@@ -135,12 +134,23 @@
         GPU=NONE:
             model:
                 hardware_acceleration: null
-        GPU=TENSOR_RT:
+        GPU=TENSOR_RT: &tensor_rt
             model:
                 hardware_acceleration: "tensor_rt"
-        GPU=REGULAR:
+        GPU=REGULAR: &gpu
             model:
                 hardware_acceleration: "gpu"
+        GPU: *gpu
+        TRT: *tensor_rt
+        
+        
+        V4:
+            model:
+                which_model: yolo_v4
+        V5:
+            model:
+                which_model: yolo_v5
+        
         
         BOARD=TX2:
             model:
@@ -155,12 +165,12 @@
                 serial_port: "/dev/ttyTHS0" # UART serial 0 works but try 1
             log:
                 save_frame_to_file: false
-                
         BOARD=LAPTOP:
             communication:
                 serial_port: null
             log:
                 save_frame_to_file: true
+        
             
         CAMERA=ZED:
             hardware:
@@ -172,9 +182,12 @@
         CAMERA=NONE:
             hardware:
                 camera: null
+        
+        
         GUI:
             log:
                 display_live_frames: true
+        
         
         SHOWTIME:
             mode: production
@@ -183,6 +196,8 @@
                 disable_print: true
                 save_frame_to_file: true
                 display_live_frames: false
+        
+        
         WE_RED:
             our_team_color: 'red'
         WE_BLUE:
