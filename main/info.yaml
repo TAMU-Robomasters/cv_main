@@ -47,7 +47,7 @@
             model:
                 which_model: yolo_v5 # yolo_v5 or yolo_v4
                 hardware_acceleration: null # one of: [ null, "gpu", "tensor_rt" ]
-                minimum_confidence: 0.8 # should be a value between 0-1
+                minimum_confidence: 0.4 # should be a value between 0-1
                 threshold: 0.3  # should be a value between 0-1
                 frequency: 30
                 input_dimension: 416
@@ -60,8 +60,6 @@
                 disable_bullet_drop: false
                 sec_till_lock_lost: 5
                 prediction_time: 2 # time interval in seconds to predict using kalman filters
-                
-                yolo_v5_min_bounding_box_area: 400 # units=pixels
                 
                 # depth camera
                 stream_width: 848

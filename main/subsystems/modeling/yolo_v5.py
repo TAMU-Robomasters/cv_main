@@ -15,7 +15,6 @@ from toolbox.geometry_tools import BoundingBox, Position
 hardware_acceleration         = config.model.hardware_acceleration
 input_dimension               = config.model.input_dimension
 which_model                   = config.model.which_model
-yolo_v5_min_bounding_box_area = config.aiming.yolo_v5_min_bounding_box_area
 
 # config check
 assert hardware_acceleration in ['tensor_rt', 'gpu', None]
@@ -117,33 +116,17 @@ def yolo_v5_bounding_boxes(model, frame, minimum_confidence, threshold):
         # loop over each of the detections
         labels = labels.cpu()
         for detection in labels:
-            detection = detection.numpy()
-            # extract the class ID and minimum_confidence (i.e., probability)
-            # of the current object detection
-            scores = detection[5:]
-            class_id = np.argmax(scores)
-            this_confidence = scores[class_id]
+            x_top_left, y_top_left, x_bottom_right, y_bottom_right, box_confidence, class_id = detection
 
-            # filter out weak predictions by ensuring the detected
-            # probability is greater than the minimum probability
-            if this_confidence > minimum_confidence:
-                # update our list of bounding box coordinates,
-                # confidences, and class IDs
-                boxes.append(detection[0:4])
-
-                confidences.append(float(this_confidence))
+            # filter out weak predictions
+            if box_confidence > minimum_confidence:
+                boxes.append(
+                    BoundingBox.from_points(
+                        top_left=(x_top_left, y_top_left),
+                        bottom_right=(x_bottom_right, y_bottom_right),
+                    )
+                )
+                confidences.append(float(box_confidence))
                 class_ids.append(class_id)
-    
-    # make each box a proper class instead of just a list
-    boxes = [ 
-        BoundingBox.from_points(
-            top_left=(each[0], each[1]),
-            bottom_right=(each[2],each[3])
-        )
-            for each in boxes 
-    ]
-    
-    # filter out boxes that are way too small
-    boxes = [ each for each in boxes if each.area > yolo_v5_min_bounding_box_area ]
     
     return boxes, confidences, class_ids
