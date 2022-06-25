@@ -54,6 +54,7 @@ else
         fi
          
     ' > "$HOME/.boot.sh"
+    chmod 777 "$HOME/.boot.sh"
     
     # 
     # link to project
