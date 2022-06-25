@@ -229,6 +229,8 @@ def get_distance_from_array(depth_frame_array, bbox):
     Input: Depth frame and bounding box.
     Output: Single depth value.
     """
+    if depth_frame_array is None:
+        return 1
     try:
         # this is used to add to the current_x and current_y so that we can get the different points in the 9x9 grid
         x_interval = bbox.width  / grid_size
