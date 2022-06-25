@@ -106,11 +106,6 @@ def when_bounding_boxes_refresh():
         pixel_diff = 0
     bullet_drop_point = Position(point_to_aim_at) # for displaying 
     
-    print("GYROOOOOOO", gyro.x, gyro.y, gyro.z)
-
-
-
-
     # 
     # prediction
     # 
@@ -135,7 +130,6 @@ def when_bounding_boxes_refresh():
             # 
             if found_robot:
                 predictor.add_data(time=current_time, values=point_to_aim_at) # values can be anything, 3D coords, pixels, etc
-                print(f'''len(predictor) = {len(predictor)}''')
                 if len(predictor) > 2:
                     try:
                         (next_x, next_y), total_confidence, _  = predictor.predict_next(timesteps=1)
@@ -461,9 +455,9 @@ def pixel_coordinate(point):
 
 def world_coordinate(cam_pos, depth, phi, theta):
     c_vec = np.array([
-        (bar_len2 + cam_gap2)0.5 * np.cos(np.arctan(cam_gap/bar_len) + phi) * np.sin(theta),
-        (bar_len2 + cam_gap2)0.5 * np.cos(np.arctan(cam_gap/bar_len) + phi) * np.cos(theta),
-        (bar_len2 + cam_gap2)*0.5 np.sin(np.arctan(cam_gap/bar_len) + phi)
+        (bar_len2 + cam_gap2)*0.5 * np.cos(np.arctan(cam_gap/bar_len) + phi) * np.sin(theta),
+        (bar_len2 + cam_gap2)*0.5 * np.cos(np.arctan(cam_gap/bar_len) + phi) * np.cos(theta),
+        (bar_len2 + cam_gap2)*0.5 * np.sin(np.arctan(cam_gap/bar_len) + phi)
     ]).reshape(-1, 1)
 
     print(f"CAMERA VECTOR:\n{c_vec}\n")
@@ -485,8 +479,8 @@ def world_coordinate(cam_pos, depth, phi, theta):
     print(f"POSITION VECTOR (CAMERA FRAME):\n{p_vec}\n")
 
     R = np.array([
-        [np.cos(theta), np.cos(phi)np.sin(theta), -np.sin(phi)np.sin(theta)],
-        [-np.sin(theta), np.cos(phi)np.cos(theta), -np.sin(phi)np.cos(theta)],
+        [np.cos(theta), np.cos(phi) *np.sin(theta), -np.sin(phi)*np.sin(theta)],
+        [-np.sin(theta), np.cos(phi) *np.cos(theta), -np.sin(phi)*np.cos(theta)],
         [0, np.sin(phi), np.cos(phi)]
     ])
 
