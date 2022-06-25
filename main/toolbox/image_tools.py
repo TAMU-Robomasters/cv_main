@@ -79,7 +79,7 @@ class Image(object):
         try:
             self.img = cv2.circle(self.img, (int(x), int(y)), radius, tuple(int(each) for each in color), thickness=-1, lineType=8, shift=0)
         except Exception as error:
-            pass
+            print(f"error doing .add_point() on image. Probably out of bounds: x={x},y={y}")
         return self
     
     def rotated_180_degrees(self):

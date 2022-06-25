@@ -92,7 +92,10 @@ def distance_in_box(bbox):
 
             # velocity is the integral of acceleration, this is the best we can do lmao
             velocity += delta_t_accel * acceleration
-
+    
+    except Exception as error:
+        print(f'''[imu test]: error = {error}''')
+    
     finally:
         pipeline.stop()
 

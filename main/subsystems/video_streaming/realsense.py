@@ -32,9 +32,6 @@ class VideoStream:
         conf.enable_stream(rs.stream.color, stream_width, stream_height, rs.format.bgr8, framerate) # this starts the color stream and set the size and format
         conf.enable_stream(rs.stream.accel)
         conf.enable_stream(rs.stream.gyro)
-        
-        # config.enable_stream(rs.stream.accel,rs.format.motion_xyz32f,250)
-        # config.enable_stream(rs.stream.gyro,rs.format.motion_xyz32f,200)
         # config.enable_stream(rs.stream.pose,rs.format.motion_xyz32f,200)
         
         while True:
@@ -44,7 +41,6 @@ class VideoStream:
                 print("")
                 print(error)
                 print("trying again")
-                exit()
                 continue
             # exit loop if successful
             break
