@@ -275,6 +275,27 @@ def get_distance_from_array(depth_frame_array, bbox):
     except:
         return 1
 
+def bullet_drop_compensation_0(depth_amount):
+    """
+    Determines the bullet offset due to bullet drop and camera offset from shooter.
+    Utilizes a function fitted from varying depth amounts.
+
+    Input: Depth Amount of Bounding Box.
+    Output: Offset in Pixels.
+    """
+    if depth_amount < 1:
+        return 0
+    elif depth_amount < 2:
+        return 0
+    elif depth_amount < 3:
+        return 0
+    elif depth_amount < 4:
+        return 0
+    elif depth_amount < 5: # units = meters?
+        return 0
+    else: # really far away
+        return 0
+
 def bullet_drop_compensation_1(depth_amount):
     """
     Determines the bullet offset due to bullet drop and camera offset from shooter.
