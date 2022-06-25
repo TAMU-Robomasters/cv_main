@@ -12,13 +12,6 @@ import tensorrt as trt
 import pycuda.driver as cuda
 from toolbox.globals import path_to, config, print, runtime
 
-try:
-    ctypes.cdll.LoadLibrary(path_to.tensorrt_so_file)
-except OSError as e:
-    raise SystemExit(f'ERROR: failed to load {path_to.tensorrt_so_file}  '
-                     'Did you forget to do a "make" in the "./plugins/" '
-                     'subdirectory?') from e
-
 
 def _preprocess_yolo(img, input_shape, letter_box=False):
     """Preprocess an image before TRT YOLO inferencing.
@@ -44,7 +37,7 @@ def _preprocess_yolo(img, input_shape, letter_box=False):
             offset_w = (input_shape[1] - new_w) // 2
         resized = cv2.resize(img, (new_w, new_h))
         img = np.full((input_shape[0], input_shape[1], 3), 127, dtype=np.uint8)
-        img[offset_h:(offset_h + new_h), offset_w:(offset_w + new_w), :] = resized
+        img[offset_h : (offset_h + new_h), offset_w : (offset_w + new_w), :] = resized
     else:
         img = cv2.resize(img, (input_shape[1], input_shape[0]))
 
@@ -80,13 +73,17 @@ def _nms_boxes(detections, nms_threshold):
         keep.append(i)
         xx1 = np.maximum(x_coord[i], x_coord[ordered[1:]])
         yy1 = np.maximum(y_coord[i], y_coord[ordered[1:]])
-        xx2 = np.minimum(x_coord[i] + width[i], x_coord[ordered[1:]] + width[ordered[1:]])
-        yy2 = np.minimum(y_coord[i] + height[i], y_coord[ordered[1:]] + height[ordered[1:]])
+        xx2 = np.minimum(
+            x_coord[i] + width[i], x_coord[ordered[1:]] + width[ordered[1:]]
+        )
+        yy2 = np.minimum(
+            y_coord[i] + height[i], y_coord[ordered[1:]] + height[ordered[1:]]
+        )
 
         width1 = np.maximum(0.0, xx2 - xx1 + 1)
         height1 = np.maximum(0.0, yy2 - yy1 + 1)
         intersection = width1 * height1
-        union = (areas[i] + areas[ordered[1:]] - intersection)
+        union = areas[i] + areas[ordered[1:]] - intersection
         iou = intersection / union
         indexes = np.where(iou <= nms_threshold)[0]
         ordered = ordered[indexes + 1]
@@ -95,8 +92,9 @@ def _nms_boxes(detections, nms_threshold):
     return keep
 
 
-def _postprocess_yolo(trt_outputs, img_w, img_h, conf_th, nms_threshold,
-                      input_shape, letter_box=False):
+def _postprocess_yolo(
+    trt_outputs, img_w, img_h, conf_th, nms_threshold, input_shape, letter_box=False
+):
     """Postprocess TensorRT outputs.
 
     # Args
@@ -110,8 +108,7 @@ def _postprocess_yolo(trt_outputs, img_w, img_h, conf_th, nms_threshold,
         boxes, scores, classes (after NMS)
     """
     # concatenate outputs of all yolo layers
-    detections = np.concatenate(
-        [o.reshape(-1, 7) for o in trt_outputs], axis=0)
+    detections = np.concatenate([o.reshape(-1, 7) for o in trt_outputs], axis=0)
 
     # drop detections with score lower than conf_th
     box_scores = detections[:, 4] * detections[:, 6]
@@ -140,8 +137,7 @@ def _postprocess_yolo(trt_outputs, img_w, img_h, conf_th, nms_threshold,
         idxs = np.where(detections[:, 5] == class_id)
         cls_detections = detections[idxs]
         keep = _nms_boxes(cls_detections, nms_threshold)
-        nms_detections = np.concatenate(
-            [nms_detections, cls_detections[keep]], axis=0)
+        nms_detections = np.concatenate([nms_detections, cls_detections[keep]], axis=0)
 
     if len(nms_detections) == 0:
         boxes = np.zeros((0, 4), dtype=np.int)
@@ -155,7 +151,7 @@ def _postprocess_yolo(trt_outputs, img_w, img_h, conf_th, nms_threshold,
             yy = yy - offset_h
         ww = nms_detections[:, 2].reshape(-1, 1)
         hh = nms_detections[:, 3].reshape(-1, 1)
-        boxes = np.concatenate([xx, yy, xx+ww, yy+hh], axis=1) + 0.5
+        boxes = np.concatenate([xx, yy, xx + ww, yy + hh], axis=1) + 0.5
         boxes = boxes.astype(np.int)
         scores = nms_detections[:, 4] * nms_detections[:, 6]
         classes = nms_detections[:, 5]
@@ -164,6 +160,7 @@ def _postprocess_yolo(trt_outputs, img_w, img_h, conf_th, nms_threshold,
 
 class HostDeviceMem(object):
     """Simple helper data class that's a little nicer to use than a 2-tuple."""
+
     def __init__(self, host_mem, device_mem):
         self.host = host_mem
         self.device = device_mem
@@ -184,8 +181,7 @@ def allocate_buffers(engine):
     stream = cuda.Stream()
     assert 3 <= len(engine) <= 4  # expect 1 input, plus 2 or 3 outpus
     for binding in engine:
-        size = trt.volume(engine.get_binding_shape(binding)) * \
-               engine.max_batch_size
+        size = trt.volume(engine.get_binding_shape(binding)) * engine.max_batch_size
         dtype = trt.nptype(engine.get_binding_dtype(binding))
         # Allocate host and device buffers
         host_mem = cuda.pagelocked_empty(size, dtype)
@@ -213,9 +209,9 @@ def do_inference(context, bindings, inputs, outputs, stream, batch_size=1):
     # Transfer input data to the GPU.
     [cuda.memcpy_htod_async(inp.device, inp.host, stream) for inp in inputs]
     # Run inference.
-    context.execute_async(batch_size=batch_size,
-                          bindings=bindings,
-                          stream_handle=stream.handle)
+    context.execute_async(
+        batch_size=batch_size, bindings=bindings, stream_handle=stream.handle
+    )
     # Transfer predictions back from the GPU.
     [cuda.memcpy_dtoh_async(out.host, out.device, stream) for out in outputs]
     # Synchronize the stream
@@ -245,35 +241,44 @@ def do_inference_v2(context, bindings, inputs, outputs, stream):
 
 def get_yolo_grid_sizes(model_name, h, w):
     """Get grid sizes (w*h) for all yolo layers in the model."""
-    if 'yolov3' in model_name:
-        if 'tiny' in model_name:
+    if "yolov3" in model_name:
+        if "tiny" in model_name:
             return [(h // 32) * (w // 32), (h // 16) * (w // 16)]
         else:
             return [(h // 32) * (w // 32), (h // 16) * (w // 16), (h // 8) * (w // 8)]
-    elif 'yolov4' in model_name:
-        if 'tiny' in model_name:
+    elif "yolov4" in model_name:
+        if "tiny" in model_name:
             return [(h // 32) * (w // 32), (h // 16) * (w // 16)]
         else:
             return [(h // 8) * (w // 8), (h // 16) * (w // 16), (h // 32) * (w // 32)]
     else:
-        raise ValueError('ERROR: unknown model (%s)!' % args.model)
+        raise ValueError("ERROR: unknown model (%s)!" % args.model)
 
 
 class TrtYOLO(object):
     """TrtYOLO class encapsulates things needed to run TRT YOLO."""
 
     def _load_engine(self):
-        with open(self.path_to_model, 'rb') as f, trt.Runtime(self.trt_logger) as runtime:
+        with open(self.path_to_model, "rb") as f, trt.Runtime(
+            self.trt_logger
+        ) as runtime:
             return runtime.deserialize_cuda_engine(f.read())
 
-    def __init__(self, path_to_model, input_shape, category_num=80, letter_box=False, cuda_ctx=None):
+    def __init__(
+        self,
+        path_to_model,
+        input_shape,
+        category_num=80,
+        letter_box=False,
+        cuda_ctx=None,
+    ):
         """Initialize TensorRT plugins, engine and conetxt."""
         self.path_to_model = path_to_model
         self.outputs = None
         self.inputs = None
         self.stream = None
         self.has_been_deleted = False
-        
+
         self.input_shape = input_shape
         self.category_num = category_num
         self.letter_box = letter_box
@@ -281,16 +286,22 @@ class TrtYOLO(object):
         if self.cuda_ctx:
             self.cuda_ctx.push()
 
-        self.inference_fn = do_inference if trt.__version__[0] < '7' else do_inference_v2
+        self.inference_fn = (
+            do_inference if trt.__version__[0] < "7" else do_inference_v2
+        )
         self.trt_logger = trt.Logger(trt.Logger.INFO)
         self.engine = self._load_engine()
-        
+
         try:
-            runtime.tensorrt_context = self.context = self.engine.create_execution_context()
+            runtime.tensorrt_context = (
+                self.context
+            ) = self.engine.create_execution_context()
             # runtime.tensorrt_context is only for tring to fix: https://community.stereolabs.com/t/zed-tensorrt-problems-invalidating-cuda-context-handle/1099/3
-            self.inputs, self.outputs, self.bindings, self.stream = allocate_buffers(self.engine)
+            self.inputs, self.outputs, self.bindings, self.stream = allocate_buffers(
+                self.engine
+            )
         except Exception as e:
-            raise RuntimeError('fail to allocate CUDA resources') from e
+            raise RuntimeError("fail to allocate CUDA resources") from e
         finally:
             if self.cuda_ctx:
                 self.cuda_ctx.pop()
@@ -298,16 +309,19 @@ class TrtYOLO(object):
     def __del__(self):
         """Free CUDA memories."""
         if not self.has_been_deleted:
-            if self.outputs: del self.outputs
-            if self.inputs : del self.inputs
-            if self.stream : del self.stream
+            if self.outputs:
+                del self.outputs
+            if self.inputs:
+                del self.inputs
+            if self.stream:
+                del self.stream
         self.has_been_deleted = True
 
     def detect(self, img, conf_th=0.3, letter_box=None):
         """Detect objects in the input image."""
         letter_box = self.letter_box if letter_box is None else letter_box
         img_resized = _preprocess_yolo(img, self.input_shape, letter_box)
-        
+
         # Set host input to the image. The do_inference() function
         # will copy the input to the GPU before executing.
         self.inputs[0].host = np.ascontiguousarray(img_resized)
@@ -318,17 +332,22 @@ class TrtYOLO(object):
             bindings=self.bindings,
             inputs=self.inputs,
             outputs=self.outputs,
-            stream=self.stream
+            stream=self.stream,
         )
         if self.cuda_ctx:
             self.cuda_ctx.pop()
 
         boxes, scores, classes = _postprocess_yolo(
-            trt_outputs, img.shape[1], img.shape[0], conf_th,
-            nms_threshold=0.5, input_shape=self.input_shape,
-            letter_box=letter_box)
+            trt_outputs,
+            img.shape[1],
+            img.shape[0],
+            conf_th,
+            nms_threshold=0.5,
+            input_shape=self.input_shape,
+            letter_box=letter_box,
+        )
 
         # clip x1, y1, x2, y2 within original image
-        boxes[:, [0, 2]] = np.clip(boxes[:, [0, 2]], 0, img.shape[1]-1)
-        boxes[:, [1, 3]] = np.clip(boxes[:, [1, 3]], 0, img.shape[0]-1)
+        boxes[:, [0, 2]] = np.clip(boxes[:, [0, 2]], 0, img.shape[1] - 1)
+        boxes[:, [1, 3]] = np.clip(boxes[:, [1, 3]], 0, img.shape[0] - 1)
         return boxes, scores, classes

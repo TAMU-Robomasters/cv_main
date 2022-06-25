@@ -11,6 +11,8 @@ record_interval = videostream.testing.record_interval
 runtime.realsense = LazyDict(
     frame=None,
     intrins=None
+    acceleration=LazyDict(x=0,y=0,z=0),
+    gyro=LazyDict(x=0,y=0,z=0),
 )
 
 class VideoStream:
@@ -26,12 +28,16 @@ class VideoStream:
             self.video_output = self.begin_video_recording()
 
         self.pipeline = rs.pipeline()                                                               # declares and initializes the pipeline variable
-        rs_config = rs.config()                                                                        # declares and initializes the config variable for the pipeline
-        rs_config.enable_stream(rs.stream.depth, stream_width, stream_height, rs.format.z16, framerate)  # this starts the depth stream and sets the size and format
-        rs_config.enable_stream(rs.stream.color, stream_width, stream_height, rs.format.bgr8, framerate) # this starts the color stream and set the size and format
+        conf = rs.config()
+        conf.enable_stream(rs.stream.depth, stream_width, stream_height, rs.format.z16, framerate)  # this starts the depth stream and sets the size and format
+        conf.enable_stream(rs.stream.color, stream_width, stream_height, rs.format.bgr8, framerate) # this starts the color stream and set the size and format
+        conf.enable_stream(rs.stream.accel)
+        conf.enable_stream(rs.stream.gyro)
+        
         # config.enable_stream(rs.stream.accel,rs.format.motion_xyz32f,250)
         # config.enable_stream(rs.stream.gyro,rs.format.motion_xyz32f,200)
         # config.enable_stream(rs.stream.pose,rs.format.motion_xyz32f,200)
+        
         while True:
             try:
                 cfg = self.pipeline.start(rs_config)
@@ -41,6 +47,7 @@ class VideoStream:
                 print("")
                 print(error)
                 print("trying again")
+                exit()
                 continue
             # exit loop if successful
             break
@@ -49,13 +56,14 @@ class VideoStream:
         from numpy import array
         from itertools import count
         
-        wait_for_frames    = self.pipeline.wait_for_frames
         video_output_write = self.video_output and self.video_output.write
         
         def generator():
             for frame_number in count(1): # starting at 1
                 try:
-                    frame = runtime.realsense.frame = wait_for_frames()
+                    frame = runtime.realsense.frame = self.pipeline.wait_for_frames()
+                    runtime.realsense.acceleration = frame[2].as_motion_frame().get_motion_data()
+                    runtime.realsense.gyro         = frame[3].as_motion_frame().get_motion_data()
                     yield frame_number, array(frame.get_color_frame().get_data()), array(frame.get_depth_frame().get_data())
                 except Exception as error: # failure to connect to realsense
                     import sys
