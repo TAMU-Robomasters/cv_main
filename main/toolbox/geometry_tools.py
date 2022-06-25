@@ -20,7 +20,14 @@ class Position(list):
     def z(self, value): self[2] = value
     
     def __repr__(self):
-        return f'(x={self.x},y={self.y},z={self.z})'
+        if len(self) >= 3:
+            return f'(x={self.x},y={self.y},z={self.z})'
+        elif len(self) == 2:
+            return f'(x={self.x},y={self.y})'
+        elif len(self) == 1:
+            return f'(x={self.x})'
+        else:
+            return '[]'
 
 class BoundingBox(list):
     @property

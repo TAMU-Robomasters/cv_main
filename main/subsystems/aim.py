@@ -78,7 +78,6 @@ def when_bounding_boxes_refresh():
     depth_image       = runtime.depth_image
     confidence        = runtime.modeling.current_confidence
     screen_center     = runtime.screen_center
-    predictor         = runtime.aiming.predictor
     
     horizontal_angle, vertical_angle, should_shoot, horizonal_stdev, vertical_stdev, depth_amount, pixel_diff = (0, 0, 0, 0, 0, 0, 0)
     center_point, bullet_drop_point, prediction_point = (None, None, None)
@@ -110,7 +109,8 @@ def when_bounding_boxes_refresh():
     # 
     if True:
         if prediction_method == 'linear':
-            if predictor is None: predictor = Predictor() # init if needed
+            if runtime.aiming.predictor is None: runtime.aiming.predictor = Predictor() # init if needed
+            predictor = runtime.aiming.predictor
             
             # 
             # skip count
@@ -128,13 +128,18 @@ def when_bounding_boxes_refresh():
             # 
             if found_robot:
                 predictor.add_data(time=current_time, values=point_to_aim_at) # values can be anything, 3D coords, pixels, etc
-                if len(predictor) > 1:
-                    (next_x, next_y), total_confidence, _  = predictor.predict_next()
-                    if total_confidence < linear_tracking_confidence_threshold:
-                        predictor.reset() # reset (keeps only the current point)
-                    else:
-                        # update the point to aim at with the prediction
-                        point_to_aim_at = (next_x, next_y)
+                print(f'''len(predictor) = {len(predictor)}''')
+                if len(predictor) > 2:
+                    try:
+                        (next_x, next_y), total_confidence, _  = predictor.predict_next(timesteps=1)
+                        (next_x, next_y), _, _  = predictor.predict_next(timesteps=total_confidence) # scale by confidence
+                        if total_confidence < linear_tracking_confidence_threshold:
+                            predictor.reset() # reset (keeps only the current point)
+                        else:
+                            # update the point to aim at with the prediction
+                            point_to_aim_at = (next_x, next_y)
+                    except Exception as error:
+                        raise error
         elif prediction_method == 'kalman':
             if not disable_kalman_filters and found_robot:
                 position_in_space = Position([
