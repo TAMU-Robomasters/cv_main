@@ -131,16 +131,13 @@ def when_bounding_boxes_refresh():
             if found_robot:
                 predictor.add_data(time=current_time, values=point_to_aim_at) # values can be anything, 3D coords, pixels, etc
                 if len(predictor) > 2:
-                    try:
-                        (next_x, next_y), total_confidence, _  = predictor.predict_next(timesteps=1)
-                        (next_x, next_y), _, _  = predictor.predict_next(timesteps=total_confidence) # scale by confidence
-                        if total_confidence < linear_tracking_confidence_threshold:
-                            predictor.reset() # reset (keeps only the current point)
-                        else:
-                            # update the point to aim at with the prediction
-                            point_to_aim_at = (next_x, next_y)
-                    except Exception as error:
-                        raise error
+                    (next_x, next_y), total_confidence, _  = predictor.predict_next(timesteps=1)
+                    (next_x, next_y), _, _  = predictor.predict_next(timesteps=total_confidence) # scale by confidence
+                    if total_confidence < linear_tracking_confidence_threshold:
+                        predictor.reset() # reset (keeps only the current point)
+                    else:
+                        # update the point to aim at with the prediction
+                        point_to_aim_at = (next_x, next_y)
         elif prediction_method == 'kalman':
             if not disable_kalman_filters and found_robot:
                 position_in_space = Position([
@@ -272,7 +269,8 @@ def get_distance_from_array(depth_frame_array, bbox):
 
         distance = (np.mean(modified_distances)+np.median(modified_distances))/2
         return distance if (distance and distance>0 and distance<10) else 1
-    except:
+    except Exception as error:
+        print(f'''[aiming:get_distance_from_array] error/warning = {error}''')
         return 1
 
 def bullet_drop_compensation_0(depth_amount):
