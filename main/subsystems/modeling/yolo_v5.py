@@ -12,9 +12,11 @@ from toolbox.geometry_tools import BoundingBox, Position
 # 
 # config
 # 
-hardware_acceleration = config.model.hardware_acceleration
-input_dimension       = config.model.input_dimension
-which_model           = config.model.which_model
+hardware_acceleration         = config.model.hardware_acceleration
+input_dimension               = config.model.input_dimension
+which_model                   = config.model.which_model
+yolo_v5_min_bounding_box_area = config.aiming.yolo_v5_min_bounding_box_area
+
 # config check
 assert hardware_acceleration in ['tensor_rt', 'gpu', None]
 
@@ -140,5 +142,8 @@ def yolo_v5_bounding_boxes(model, frame, minimum_confidence, threshold):
         )
             for each in boxes 
     ]
+    
+    # filter out boxes that are way too small
+    boxes = [ each for each in boxes if each.area > yolo_v5_min_bounding_box_area ]
     
     return boxes, confidences, class_ids

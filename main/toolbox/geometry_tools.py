@@ -73,6 +73,10 @@ class BoundingBox(list):
             self.y_top_left + (self.height / 2),
         ])
     
+    @property
+    def area(self):
+        return self.width * self.height
+    
     def __repr__(self):
         return f'[x_top_left={f"{self.x_top_left:.2f}".rjust(5)},y_top_left={f"{self.y_top_left:.2f}".rjust(5)},width={f"{self.width:.2f}".rjust(5)},height={f"{self.height:.2f}".rjust(5)}]'
 
