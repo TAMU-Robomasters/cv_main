@@ -40,6 +40,7 @@ prediction_method                    = config.aiming.prediction_method
 linear_tracking_confidence_threshold = config.aiming.linear_tracking_confidence_threshold
 linear_buffer_size                   = config.aiming.linear_buffer_size
 skip_allowance                       = config.aiming.skip_allowance
+camera                               = config.hardware.camera
 
 # 
 # init
@@ -78,6 +79,8 @@ def when_bounding_boxes_refresh():
     depth_image       = runtime.depth_image
     confidence        = runtime.modeling.current_confidence
     screen_center     = runtime.screen_center
+    acceleration      = runtime.realsense.acceleration if camera == 'realsense' else None
+    gyro              = runtime.realsense.gyro         if camera == 'realsense' else None
     
     horizontal_angle, vertical_angle, should_shoot, horizonal_stdev, vertical_stdev, depth_amount, pixel_diff = (0, 0, 0, 0, 0, 0, 0)
     center_point, bullet_drop_point, prediction_point = (None, None, None)

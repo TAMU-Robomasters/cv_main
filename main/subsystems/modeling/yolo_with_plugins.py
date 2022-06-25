@@ -12,12 +12,6 @@ import tensorrt as trt
 import pycuda.driver as cuda
 from toolbox.globals import path_to, config, print, runtime
 
-try:
-    ctypes.cdll.LoadLibrary(path_to.tensorrt_so_file)
-except OSError as e:
-    raise SystemExit(f'ERROR: failed to load {path_to.tensorrt_so_file}  '
-                     'Did you forget to do a "make" in the "./plugins/" '
-                     'subdirectory?') from e
 
 
 def _preprocess_yolo(img, input_shape, letter_box=False):
