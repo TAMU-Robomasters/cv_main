@@ -8,6 +8,7 @@ from super_map import LazyDict
 # project imports
 from toolbox.globals import path_to, config, print, runtime
 from toolbox.geometry_tools import BoundingBox, Position
+from toolbox.image_tools import Image
 import subsystems.aim as aiming
 
 # 
@@ -53,6 +54,9 @@ else:
 # 
 # 
 def when_frame_arrives():
+    # img = runtime.color_image 
+    # runtime.color_image = Image(runtime.color_image).shift_hue(82).in_cv2_format
+    
     # 
     # all boxes
     # 
