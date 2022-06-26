@@ -64,9 +64,9 @@
                 # depth camera
                 stream_width: 848
                 stream_height: 480
-                stream_framerate: 30
+                stream_framerate: 60
                 grid_size: 4
-                horizontal_fov: 86
+                horizontal_fov: 87
                 vertical_fov: 57
                 model_fps: 30
                 bullet_velocity: 26

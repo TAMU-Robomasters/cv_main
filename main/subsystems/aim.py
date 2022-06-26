@@ -49,6 +49,8 @@ if prediction_method == 'kalman': from subsystems.aiming.filter import KalmanFil
 x_circular_buffer = collections.deque(maxlen=config.aiming.min_size_for_stdev)
 y_circular_buffer = collections.deque(maxlen=config.aiming.min_size_for_stdev)
 
+time_circular_buffer = collections.deque(maxlen=config.aiming.min_size_for_stdev)
+
 # 
 # shared data (imported by modeling and integration)
 # 
@@ -95,17 +97,9 @@ def when_bounding_boxes_refresh():
         depth_amount = get_distance_from_array(depth_image, best_bounding_box) # Find depth from camera to robot
         depth_out_of_bounds = depth_amount < min_range or depth_amount > max_range
     center_point = Position(point_to_aim_at) # for displaying
-    
-    # 
-    # bullet drop
-    # 
-    if not disable_bullet_drop and found_robot:
-        pixel_diff = bullet_drop_compensation_1(depth_amount)
-        point_to_aim_at[1] -= pixel_diff
-    else:
-        pixel_diff = 0
-    bullet_drop_point = Position(point_to_aim_at) # for displaying 
-    
+    time_circular_buffer.append(current_time)
+        
+
     # 
     # prediction
     # 
@@ -165,6 +159,15 @@ def when_bounding_boxes_refresh():
     if found_robot:
         horizontal_angle, vertical_angle = angle_from_center(point_to_aim_at, screen_center)
         
+        #
+        # bullet drop (bandaid method)
+        #
+        if not disable_bullet_drop:
+            angle_adjustment = bullet_drop_6_bandaid()
+            horizontal_angle += angle_adjustment[0]
+            vertical_angle += angle_adjustment[1]
+        
+                
     # 
     # update circular buffers
     # 
@@ -461,11 +464,9 @@ def relative_coordinate(depth_frame, bbox):
     """
     if not depth_frame:                     # if there is no aligned_depth_frame or color_frame then leave the loop
         return None
-    # depth_intrin = depth_frame.profile.as_video_stream_profile().intrinsics
+
     depth_value = get_distance_from_array(depth_frame)
-    # depth_pixel = [depth_intrin.ppx, depth_intrin.ppy]
-    # depth_pixel = [bbox[0] + .5 * bbox[2], bbox[1] + .5 * bbox[3]]
-    depth_point =   rs.deproject_pixel_to_point(bbox, depth_value)
+    depth_point = rs.deproject_pixel_to_point(runtime.realsense.intrins ,bbox, depth_value)
     return depth_point
 
 def pixel_coordinate(point):
@@ -507,3 +508,30 @@ def world_coordinate(cam_pos, depth, phi, theta):
     print(f"OUTPUT VECTOR:\n{c_vec + d_vec + (R@p_vec)}")
 
     return tuple((c_vec + d_vec + (R@p_vec)).flatten())
+
+
+
+
+# returns adjustment to vertical pixels
+def bullet_drop_6_bandaid():
+    depth = get_distance_from_array(runtime.depth_image)
+    # print(f"DEPTH VALUE {depth}")
+    if depth < 1:
+        return (0, 0)
+    elif depth < 2:
+        return (-0.07, 0.00)
+    elif depth < 3:
+        return (-0.05, 0)
+    elif depth < 4:
+        return (-0.05, -0.03)
+    elif depth < 5:
+        return (-0.05, -0.04)
+    else:
+        return (-0.05, -(depth-1)/100)
+    
+    # elif depth < 1.5:
+    #     return 0.7
+    # elif depth < 2:
+    #     return 0.75
+    # else:
+    #     return 0.8
