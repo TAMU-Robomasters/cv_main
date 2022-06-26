@@ -41,8 +41,8 @@ linear_tracking_confidence_threshold = config.aiming.linear_tracking_confidence_
 linear_buffer_size                   = config.aiming.linear_buffer_size
 skip_allowance                       = config.aiming.skip_allowance
 camera                               = config.hardware.camera
-should_shoot_box_height              = config.aiming.should_shoot_box_height
-should_shoot_box_width               = config.aiming.should_shoot_box_width
+confidence_box_height              = config.aiming.confidence_box_height
+confidence_box_width               = config.aiming.confidence_box_width
 
 # 
 # init
@@ -67,7 +67,7 @@ runtime.aiming = LazyDict(
     depth_amount=0,
     pixel_diff=0,
     predictor=Predictor(linear_buffer_size),
-    should_shoot_box=None,
+    confidence_box=None,
     predictor_skip_count=0,
     kalman_filter=None,
 )
@@ -188,22 +188,22 @@ def when_bounding_boxes_refresh():
     # 
     if not found_robot: 
         should_shoot = False
-        runtime.aiming.should_shoot_box = None
+        runtime.aiming.confidence_box = None
     else:
         width = runtime.color_image.shape[1]
         height = runtime.color_image.shape[0]
         # print(f"width {width}, height {height}")
-        x_top_left = (width - (should_shoot_box_width*width))/2
-        y_top_left = (height - (should_shoot_box_height*height))/2
+        x_top_left = (width - (confidence_box_width*width))/2
+        y_top_left = (height - (confidence_box_height*height))/2
         
-        should_shoot_box = BoundingBox([
+        confidence_box = BoundingBox([
             x_top_left, 
             y_top_left,
             (width-(x_top_left*2)),
             (height-(y_top_left*2)) + 10,
         ])
-        runtime.aiming.should_shoot_box = should_shoot_box
-        should_shoot = should_shoot_box.contains(best_bounding_box.center)
+        runtime.aiming.confidence_box = confidence_box
+        should_shoot = confidence_box.contains(best_bounding_box.center)
         
 
     # 
