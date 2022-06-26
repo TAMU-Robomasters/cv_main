@@ -53,7 +53,7 @@ def when_aiming_refreshes():
     # UP = negative (for some reason)
     # LEFT = negative
     # values are in radians
-    print(f'''msg({f"{message.horizontal_angle:.4f}".rjust(7)},{f"{message.vertical_angle:.4f}".rjust(7)}, {message.status})''', end=", ")
+    print(f'''msg({f"horizontal{message.horizontal_angle:.4f}".rjust(7)},{f"vertical{message.vertical_angle:.4f}".rjust(7)}, {message.status})''', end=", ")
     
     try:
         port.write(bytes(message))
