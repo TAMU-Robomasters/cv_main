@@ -539,4 +539,4 @@ def bullet_drop_6_bandaid(depth):
     elif depth < 5:
         return (-0.05, -0.04)
     else:
-        return (-0.05, -(depth-1)/100)
+        return (-0.05, -(depth)/100)
