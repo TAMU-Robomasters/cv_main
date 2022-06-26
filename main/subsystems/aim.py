@@ -41,6 +41,8 @@ linear_tracking_confidence_threshold = config.aiming.linear_tracking_confidence_
 linear_buffer_size                   = config.aiming.linear_buffer_size
 skip_allowance                       = config.aiming.skip_allowance
 camera                               = config.hardware.camera
+should_shoot_box_height              = config.aiming.should_shoot_box_height
+should_shoot_box_width               = config.aiming.should_shoot_box_width
 
 # 
 # init
@@ -85,7 +87,7 @@ def when_bounding_boxes_refresh():
     gyro              = runtime.realsense.gyro         if camera == 'realsense' else None
     
     horizontal_angle, vertical_angle, should_shoot, horizonal_stdev, vertical_stdev, depth_amount, pixel_diff = (0, 0, 0, 0, 0, 0, 0)
-    center_point, bullet_drop_point, prediction_point = (None, None, None)
+    center_point, bullet_drop_point, prediction_point = (None, Position([0,0]), None)
     current_time = now()
     point_to_aim_at = Position([0,0])
     
@@ -163,8 +165,8 @@ def when_bounding_boxes_refresh():
         # bullet drop (bandaid method)
         #
         if not disable_bullet_drop:
-            angle_adjustment = bullet_drop_6_bandaid()
-            horizontal_angle += angle_adjustment[0]
+            angle_adjustment = bullet_drop_6_bandaid(depth_amount)
+            # horizontal_angle += angle_adjustment[0]
             vertical_angle += angle_adjustment[1]
         
                 
@@ -185,12 +187,14 @@ def when_bounding_boxes_refresh():
     # 
     if not found_robot: # or depth_out_of_bounds
         should_shoot = False
-    elif len(x_circular_buffer) >= min_size_for_stdev:
-        point_to_aim_at_error = average((horizonal_stdev, vertical_stdev))
-        if point_to_aim_at_error < std_error_bound:
-            should_shoot = True
-        else:
-            should_shoot = False
+    else:
+        width, height = color_frame.shape
+        left_side = (width - (should_shoot_box_width*width))/2
+        right_side = width - left_side
+        top_side = (height - (should_shoot_box_height*height))/2
+        bottom_side = height - top_side
+        
+        if 
     
     # 
     # should_look_around
@@ -513,8 +517,7 @@ def world_coordinate(cam_pos, depth, phi, theta):
 
 
 # returns adjustment to vertical pixels
-def bullet_drop_6_bandaid():
-    depth = get_distance_from_array(runtime.depth_image)
+def bullet_drop_6_bandaid(depth):
     # print(f"DEPTH VALUE {depth}")
     if depth < 1:
         return (0, 0)
@@ -528,10 +531,3 @@ def bullet_drop_6_bandaid():
         return (-0.05, -0.04)
     else:
         return (-0.05, -(depth-1)/100)
-    
-    # elif depth < 1.5:
-    #     return 0.7
-    # elif depth < 2:
-    #     return 0.75
-    # else:
-    #     return 0.8
