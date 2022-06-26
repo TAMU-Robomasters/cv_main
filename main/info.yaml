@@ -57,11 +57,11 @@
                 linear_buffer_size: 30
                 skip_allowance: 2 # number of frames that can be skipped/missed
                 
-                confidence_box_height: 0.4 # 0.4 = 40% percent of image height
-                confidence_box_width: 0.4  # percent
+                confidence_box_height: 0.3 # 0.4 = 40% percent of image height
+                confidence_box_width: 0.3 # percent
                 
                 disable_bullet_drop: false
-                sec_till_lock_lost: 5
+                sec_till_lock_lost: 2
                 prediction_time: 2 # time interval in seconds to predict using kalman filters
                 
                 # depth camera

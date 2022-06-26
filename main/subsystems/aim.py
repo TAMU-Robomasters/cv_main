@@ -529,7 +529,7 @@ def world_coordinate(cam_pos, depth, phi, theta):
 # returns adjustment to vertical pixels
 def bullet_drop_6_bandaid(depth):
     if depth < 1:
-        return (0, 0.01)
+        return (0, 0.02)
     elif depth < 2:
         return (-0.07, 0.01)
     elif depth < 3:
