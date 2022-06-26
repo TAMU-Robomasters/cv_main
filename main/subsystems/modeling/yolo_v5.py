@@ -8,6 +8,8 @@ from super_map import LazyDict
 # project imports
 from toolbox.globals import path_to, absolute_path_to, config, print, runtime
 from toolbox.geometry_tools import BoundingBox, Position
+from toolbox.pickle_tools import large_pickle_save, large_pickle_load
+
 
 # 
 # config
@@ -65,9 +67,20 @@ def init_yolo_v5(model):
     else:
         print("[modeling]     falling back on CPU\n")
         import torch
-        normal_model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_to.yolo_v5.pytorch_model)
+        from yolov5.models.common import AutoShape
+
+        # normal_model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_to.yolo_v5.pytorch_model)
+        # print(normal_model.__class__)
+        # large_pickle_save(normal_model, 'C:/Users/saiju/Documents/Robotics/cv_main/torch_model.ignore.model')
+        
+
+        normal_model = large_pickle_load('C:/Users/saiju/Documents/Robotics/cv_main/torch_model.ignore.model')
+        # AutoShape(model)
+        # weights = load_state_dict()
+
         normal_model.eval()
         torch.no_grad()
+
     
     # 
     # export data
