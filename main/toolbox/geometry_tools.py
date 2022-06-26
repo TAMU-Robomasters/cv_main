@@ -77,6 +77,16 @@ class BoundingBox(list):
     def area(self):
         return self.width * self.height
     
+    def contains(self, x, y):
+        left_side   = self.x_top_left
+        right_side  = self.width - left_side
+        top_side    = self.y_top_left
+        bottom_side = self.height - top_side
+        if x > left_side and x < right_side and y > top_side and y < bottom_side:
+            return True
+        else:
+            return False
+    
     def __repr__(self):
         return f'[x_top_left={f"{self.x_top_left:.2f}".rjust(5)},y_top_left={f"{self.y_top_left:.2f}".rjust(5)},width={f"{self.width:.2f}".rjust(5)},height={f"{self.height:.2f}".rjust(5)}]'
 

@@ -183,11 +183,17 @@ def when_bounding_boxes_refresh():
     # 
     # should_shoot
     # 
-    if not found_robot: # or depth_out_of_bounds
+    if not found_robot: 
         should_shoot = False
-    elif len(x_circular_buffer) >= min_size_for_stdev:
-        point_to_aim_at_error = average((horizonal_stdev, vertical_stdev))
-        if point_to_aim_at_error < std_error_bound:
+    else:
+        width = runtime.color_image.shape[1]
+        height = runtime.color_image.shape[0]
+        # print(f"width {width}, height {height}")
+        x_top_left = (width - (should_shoot_box_width*width))/2
+        y_top_left = (height - (should_shoot_box_height*height))/2
+        should_shoot_box = BoundingBox([ x_top_left, y_top_left, width, height ])
+        
+        if should_shoot_box.contains(best_bounding_box.center.x, best_bounding_box.center.y):
             should_shoot = True
         else:
             should_shoot = False
