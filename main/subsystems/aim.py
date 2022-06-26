@@ -41,6 +41,8 @@ linear_tracking_confidence_threshold = config.aiming.linear_tracking_confidence_
 linear_buffer_size                   = config.aiming.linear_buffer_size
 skip_allowance                       = config.aiming.skip_allowance
 camera                               = config.hardware.camera
+should_shoot_box_height              = config.aiming.should_shoot_box_height
+should_shoot_box_width               = config.aiming.should_shoot_box_width
 
 # 
 # init
@@ -85,7 +87,7 @@ def when_bounding_boxes_refresh():
     gyro              = runtime.realsense.gyro         if camera == 'realsense' else None
     
     horizontal_angle, vertical_angle, should_shoot, horizonal_stdev, vertical_stdev, depth_amount, pixel_diff = (0, 0, 0, 0, 0, 0, 0)
-    center_point, bullet_drop_point, prediction_point = (None, None, None)
+    center_point, bullet_drop_point, prediction_point = (None, Position([0,0]), None)
     current_time = now()
     point_to_aim_at = Position([0,0])
     
@@ -181,16 +183,38 @@ def when_bounding_boxes_refresh():
         vertical_stdev = np.std(y_circular_buffer)
         
     # 
-    # should_shoot
+    # should_shoot method #1
     # 
-    if not found_robot: # or depth_out_of_bounds
+    # if not found_robot: # or depth_out_of_bounds
+    #     should_shoot = False
+    # elif len(x_circular_buffer) >= min_size_for_stdev:
+    #     point_to_aim_at_error = average((horizonal_stdev, vertical_stdev))
+    #     if point_to_aim_at_error < std_error_bound:
+    #         should_shoot = True
+    #     else:
+    #         should_shoot = False
+    
+    #
+    # should_shoot trigger_box
+    #
+    if not found_robot: 
         should_shoot = False
-    elif len(x_circular_buffer) >= min_size_for_stdev:
-        point_to_aim_at_error = average((horizonal_stdev, vertical_stdev))
-        if point_to_aim_at_error < std_error_bound:
+    else:
+        width = runtime.color_image.shape[1]
+        height = runtime.color_image.shape[0]
+        # print(f"width {width}, height {height}")
+        left_side = (width - (should_shoot_box_width*width))/2
+        right_side = width - left_side
+        top_side = (height - (should_shoot_box_height*height))/2
+        bottom_side = height - top_side
+        
+        if best_bounding_box.center[0] > left_side and best_bounding_box.center[0] < right_side and best_bounding_box.center[1] > top_side and best_bounding_box.center[1] < bottom_side:
+            print(f"left{left_side}, right{right_side}, top{top_side}, bottom{bottom_side}, bbox {best_bounding_box.center}")
             should_shoot = True
         else:
             should_shoot = False
+
+
     
     # 
     # should_look_around
