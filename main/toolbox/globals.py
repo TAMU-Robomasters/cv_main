@@ -1,5 +1,8 @@
 from quik_config import find_and_load
 from super_map import LazyDict
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
+
 
 # load the info.yaml
 info = find_and_load(
