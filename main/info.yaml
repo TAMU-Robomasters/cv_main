@@ -28,7 +28,7 @@
         yolo_v5:
             pytorch_model: ./subsystems/modeling/model/yolo_v5.pt
             tensor_rt_file: ./subsystems/modeling/model/yolo_v5.engine
-            pickle: yolo_v5.pickle
+            pickle: ../yolo_v5.pickle
     
     # this file will be generated automatically
     (local_data): ./local_data.ignore.yaml

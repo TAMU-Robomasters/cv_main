@@ -71,7 +71,7 @@ def init_yolo_v5(model):
         
         
         
-        # # generating model pickle file (uncomment to remake pickle file)
+        # generating model pickle file (uncomment to remake pickle file)
         # normal_model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_to.yolo_v5.pytorch_model)
         # large_pickle_save(normal_model, absolute_path_to.yolo_v5.pickle)
         
