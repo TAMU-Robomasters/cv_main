@@ -12,6 +12,7 @@ runtime.realsense = LazyDict(
     frame=None,
     acceleration=LazyDict(x=0,y=0,z=0),
     gyro=LazyDict(x=0,y=0,z=0),
+    pose=LazyDict(x=0,y=0,z=0)
 )
 
 class VideoStream:
@@ -32,7 +33,7 @@ class VideoStream:
         conf.enable_stream(rs.stream.color, stream_width, stream_height, rs.format.bgr8, framerate) # this starts the color stream and set the size and format
         conf.enable_stream(rs.stream.accel)
         conf.enable_stream(rs.stream.gyro)
-        # config.enable_stream(rs.stream.pose,rs.format.motion_xyz32f,200)
+        conf.enable_stream(rs.stream.pose,rs.format.motion_xyz32f,200)
         
         while True:
             try:
@@ -57,6 +58,7 @@ class VideoStream:
                     frame = runtime.realsense.frame = self.pipeline.wait_for_frames()
                     runtime.realsense.acceleration = frame[2].as_motion_frame().get_motion_data()
                     runtime.realsense.gyro         = frame[3].as_motion_frame().get_motion_data()
+                    runtime.realsense.pose         = frame[4].as_motion_frame().get_motion_data()
                     yield frame_number, array(frame.get_color_frame().get_data()), array(frame.get_depth_frame().get_data())
                 except Exception as error: # failure to connect to realsense
                     import sys

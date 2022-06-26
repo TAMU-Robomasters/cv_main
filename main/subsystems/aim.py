@@ -81,6 +81,11 @@ def when_bounding_boxes_refresh():
     screen_center     = runtime.screen_center
     acceleration      = runtime.realsense.acceleration if camera == 'realsense' else None
     gyro              = runtime.realsense.gyro         if camera == 'realsense' else None
+    pose              = runtime.realsense.pose         if camera == 'realsense' else None
+
+    print(f"acceleration:\n{acceleration}\n")
+    print(f"gyro:\n{gyro}\n")
+    print(f"pose:\n{pose}\n")
     
     horizontal_angle, vertical_angle, should_shoot, horizonal_stdev, vertical_stdev, depth_amount, pixel_diff = (0, 0, 0, 0, 0, 0, 0)
     center_point, bullet_drop_point, prediction_point = (None, None, None)
