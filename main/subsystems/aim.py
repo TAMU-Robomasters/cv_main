@@ -41,6 +41,8 @@ linear_tracking_confidence_threshold = config.aiming.linear_tracking_confidence_
 linear_buffer_size                   = config.aiming.linear_buffer_size
 skip_allowance                       = config.aiming.skip_allowance
 camera                               = config.hardware.camera
+should_shoot_box_height              = config.aiming.should_shoot_box_height
+should_shoot_box_width               = config.aiming.should_shoot_box_width
 
 # 
 # init
@@ -85,7 +87,7 @@ def when_bounding_boxes_refresh():
     gyro              = runtime.realsense.gyro         if camera == 'realsense' else None
     
     horizontal_angle, vertical_angle, should_shoot, horizonal_stdev, vertical_stdev, depth_amount, pixel_diff = (0, 0, 0, 0, 0, 0, 0)
-    center_point, bullet_drop_point, prediction_point = (None, None, None)
+    center_point, bullet_drop_point, prediction_point = (None, Position([0,0]), None)
     current_time = now()
     point_to_aim_at = Position([0,0])
     
@@ -197,7 +199,7 @@ def when_bounding_boxes_refresh():
             should_shoot = True
         else:
             should_shoot = False
-    
+
     # 
     # should_look_around
     # 
