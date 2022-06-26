@@ -121,10 +121,16 @@ def get_optimal_bounding_box(boxes, confidences, screen_center, distance):
     return best_bounding_box, confidence
 
 
-color_to_class_id = dict(
-    red=0,
-    blue=1,
-)
+if which_model == 'yolo_v5':
+    color_to_class_id = dict(
+        blue=0,
+        red=1,
+    )
+else:
+    color_to_class_id = dict(
+        red=0,
+        blue=1,
+    )
 def filter_team(boxes, confidences, class_ids):
     """
     Filter bounding boxes based on team color.

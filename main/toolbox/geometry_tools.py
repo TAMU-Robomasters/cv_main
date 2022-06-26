@@ -20,9 +20,28 @@ class Position(list):
     def z(self, value): self[2] = value
     
     def __repr__(self):
-        return f'(x={self.x},y={self.y},z={self.z})'
+        if len(self) >= 3:
+            return f'(x={self.x},y={self.y},z={self.z})'
+        elif len(self) == 2:
+            return f'(x={self.x},y={self.y})'
+        elif len(self) == 1:
+            return f'(x={self.x})'
+        else:
+            return '[]'
 
 class BoundingBox(list):
+    """
+    x_top_left, y_top_left, width, height format
+    """
+    
+    @classmethod
+    def from_points(cls, *, top_left, bottom_right):
+        top_left = Position(top_left)
+        bottom_right = Position(bottom_right)
+        width  = abs(top_left.x - bottom_right.x)
+        height = abs(top_left.y - bottom_right.y)
+        return BoundingBox([ top_left.x, top_left.y, width, height ])
+    
     @property
     def x_top_left(self): return self[0]
     
@@ -53,6 +72,10 @@ class BoundingBox(list):
             self.x_top_left + (self.width / 2),
             self.y_top_left + (self.height / 2),
         ])
+    
+    @property
+    def area(self):
+        return self.width * self.height
     
     def __repr__(self):
         return f'[x_top_left={f"{self.x_top_left:.2f}".rjust(5)},y_top_left={f"{self.y_top_left:.2f}".rjust(5)},width={f"{self.width:.2f}".rjust(5)},height={f"{self.height:.2f}".rjust(5)}]'

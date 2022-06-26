@@ -6,7 +6,7 @@ import time
 from super_map import LazyDict
 
 # project imports
-from toolbox.globals import path_to, config, print, runtime
+from toolbox.globals import path_to, absolute_path_to, config, print, runtime
 from toolbox.geometry_tools import BoundingBox, Position
 
 # 
@@ -36,6 +36,13 @@ def init_yolo_v4(model):
     if hardware_acceleration == 'tensor_rt':
         print("[modeling]     tensor_rt: ENABLED\n")
         import pycuda.autoinit  # This is needed for initializing CUDA driver
+        
+        try:
+            import ctypes
+            ctypes.cdll.LoadLibrary(absolute_path_to.tensorrt_so_file)
+        except OSError as error:
+            raise SystemExit(f'ERROR: failed to load {absolute_path_to.tensorrt_so_file}  Did you forget to do a "make" in the "./plugins/" subdirectory?') from error
+        
         from subsystems.modeling.yolo_with_plugins import TrtYOLO
         trt_yolo = TrtYOLO(
             path_to_model=path_to.yolo_v4.tensor_rt_file,

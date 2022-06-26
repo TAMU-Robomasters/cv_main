@@ -16,17 +16,20 @@ else
     # 
     # cron
     # 
-    (crontab -l ; echo "@reboot $kinda_escaped_home/.preboot.sh") | sort - | uniq - | crontab -
+    (crontab -l ; echo "@reboot $HOME/.preboot.sh >> .boot.log") | sort - | uniq - | crontab -
     
     # 
     # preboot (wrapper)
     # 
+    zsh_location="'$(which zsh)'"
     echo '
         #!/usr/bin/env bash
         # yes this is dumb
         # yes it is necessary
-        '$kinda_escaped_home'/.nix-profile/bin/zsh '$kinda_escaped_home'/.boot.sh &> '$kinda_escaped_home'/.boot.log
+        '$zsh_location' '$kinda_escaped_home'/.boot.sh &> '$kinda_escaped_home'/.boot.log
     ' > "$HOME/.preboot.sh"
+    chmod 777 "$HOME/.preboot.sh"
+    
     
     # 
     # boot
@@ -56,6 +59,7 @@ else
         fi
          
     ' > "$HOME/.boot.sh"
+    chmod 777 "$HOME/.boot.sh"
     
     # 
     # link to project

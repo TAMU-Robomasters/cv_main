@@ -5,6 +5,7 @@ import time
 from super_map import LazyDict
 
 from toolbox.globals import path_to, config, print, runtime
+from subsystems.communicating.serial_help import setup_serial_port
 
 # 
 # config
@@ -17,31 +18,7 @@ baudrate     = config.communication.serial_baudrate
 # initialize
 # 
 # 
-if not serial_port:
-    print('Embedded Communication: Port is set to None. No communication will be established.')
-    port = None # disable port
-else:
-    print("Embedded Communication: Port is set to", serial_port)
-    try:
-        port = serial.Serial(
-            serial_port,
-            baudrate=baudrate,
-            timeout=config.communication.timeout,
-            bytesize=serial.EIGHTBITS,
-            parity=serial.PARITY_NONE,
-            stopbits=serial.STOPBITS_ONE
-        )
-    except Exception as error:
-        import subprocess
-        subprocess.run([ "bash", "-c", f"sudo -S chmod 777 '{serial_port}' <<<  \"$(cat \"$HOME/pass\")\" ",])
-        port = serial.Serial(
-            serial_port,
-            baudrate=baudrate,
-            timeout=config.communication.timeout,
-            bytesize=serial.EIGHTBITS,
-            parity=serial.PARITY_NONE,
-            stopbits=serial.STOPBITS_ONE
-        )
+port = setup_serial_port()
 
 # C++ struct
 class Message(Structure):
@@ -66,23 +43,28 @@ action = LazyDict(
 # 
 # 
 def when_aiming_refreshes():
+    global port
     should_shoot       = runtime.aiming.should_shoot
     should_look_around = runtime.aiming.should_look_around
     
     message.horizontal_angle = float(runtime.aiming.horizontal_angle)
     message.vertical_angle   = float(runtime.aiming.vertical_angle)
-    message.status     = action.FIRE if should_shoot else (action.LOOK_AROUND if should_look_around else action.LOOK_AT_COORDS)
+    message.status           = action.FIRE if should_shoot else (action.LOOK_AROUND if should_look_around else action.LOOK_AT_COORDS)
     # UP = negative (for some reason)
     # LEFT = negative
     # values are in radians
     print(f'''msg({f"{message.horizontal_angle:.4f}".rjust(7)},{f"{message.vertical_angle:.4f}".rjust(7)}, {message.status})''', end=", ")
     
-    if port is not None:
-        try:
-            port.write(bytes(message))
-        except Exception as error:
-            print("error when writing over UART")
+    try:
+        port.write(bytes(message))
+    except Exception as error:
+        print(f"\n[Communication]: error when writing over UART: {error}")
+        port = setup_serial_port() # attempt re-setup
 
+# overwrite function if port is None
+if port is None:
+    def when_aiming_refreshes():
+        pass # do nothing intentionally
 
 # 
 # 

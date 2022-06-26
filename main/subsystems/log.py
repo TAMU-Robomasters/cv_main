@@ -14,12 +14,14 @@ save_frame_to_file        = config.log.save_frame_to_file
 save_rate                 = config.log.save_rate
 save_to_disk_after        = config.log.save_to_disk_after
 record_video_output_color = absolute_path_to.record_video_output_color
+video_output              = absolute_path_to.video_output
 max_number_of_frames      = config.log.max_number_of_frames
 
 # 
 # init
 # 
 video_depth_output_path = None
+video_color_output_path = video_output
 if save_frame_to_file:
     color_frames = []
     depth_frames = []
@@ -63,7 +65,7 @@ def when_finished_processing_frame():
     vertical_stdev     = runtime.aiming.vertical_stdev
     center_point       = runtime.aiming.center_point
     bullet_drop_point  = runtime.aiming.bullet_drop_point
-    kalman_point       = runtime.aiming.kalman_point
+    prediction_point   = runtime.aiming.prediction_point
     
     # 
     # compute loop time
@@ -168,7 +170,7 @@ def generate_image(fps=0):
     vertical_stdev     = runtime.aiming.vertical_stdev
     center_point       = runtime.aiming.center_point
     bullet_drop_point  = runtime.aiming.bullet_drop_point
-    kalman_point       = runtime.aiming.kalman_point
+    prediction_point   = runtime.aiming.prediction_point
 
     image = Image(runtime.color_image)
     if len(bounding_boxes) > 0:
@@ -186,7 +188,7 @@ def generate_image(fps=0):
             image.add_bounding_box(best_bounding_box, color=rgb(240, 113, 120))
             image.add_point(x=center_point.x     , y=center_point.y     , color=rgb(130, 170, 255), radius=10)
             image.add_point(x=bullet_drop_point.x, y=bullet_drop_point.y, color=rgb(137, 221, 255), radius=7)
-            image.add_point(x=kalman_point.x     , y=kalman_point.y     , color=rgb(195, 232, 141), radius=5)
+            image.add_point(x=prediction_point.x , y=prediction_point.y , color=rgb(195, 232, 141), radius=5)
     
     x_location = 30
     y_location = 50

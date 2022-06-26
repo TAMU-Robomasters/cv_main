@@ -6,15 +6,16 @@ import time
 from super_map import LazyDict
 
 # project imports
-from toolbox.globals import path_to, config, print, runtime
+from toolbox.globals import path_to, absolute_path_to, config, print, runtime
 from toolbox.geometry_tools import BoundingBox, Position
 
 # 
 # config
 # 
-hardware_acceleration = config.model.hardware_acceleration
-input_dimension       = config.model.input_dimension
-which_model           = config.model.which_model
+hardware_acceleration         = config.model.hardware_acceleration
+input_dimension               = config.model.input_dimension
+which_model                   = config.model.which_model
+
 # config check
 assert hardware_acceleration in ['tensor_rt', 'gpu', None]
 
@@ -34,7 +35,14 @@ def init_yolo_v5(model):
     if hardware_acceleration == 'tensor_rt':
         print("[modeling]     tensor_rt: ENABLED\n")
         import pycuda.autoinit  # This is needed for initializing CUDA driver
+        try:
+            import ctypes
+            ctypes.cdll.LoadLibrary(absolute_path_to.tensorrt_so_file)
+        except OSError as error:
+            raise SystemExit(f'ERROR: failed to load {absolute_path_to.tensorrt_so_file}  Did you forget to do a "make" in the "./plugins/" subdirectory?') from error
+        
         from subsystems.modeling.yolo_with_plugins import TrtYOLO
+        
         yolo_model = TrtYOLO(
             path_to_model=path_to.yolo_v5.tensor_rt_file,
             input_shape=(input_dimension, input_dimension),
@@ -98,29 +106,27 @@ def yolo_v5_bounding_boxes(model, frame, minimum_confidence, threshold):
         if model.W is None or model.H is None:
             (model.H, model.W) = frame.shape[:2]
         
-        layer_outputs = model.net(frame)
-        labels = layer_outputs.xyxy[0]
+        labels = []
+        try:
+            layer_outputs = model.net(frame)
+            labels = layer_outputs.xyxy[0]
+        except Exception as error:
+            print(error)
 
         # loop over each of the detections
+        labels = labels.cpu()
         for detection in labels:
-            detection = detection.numpy()
-            # extract the class ID and minimum_confidence (i.e., probability)
-            # of the current object detection
-            scores = detection[5:]
-            class_id = np.argmax(scores)
-            this_confidence = scores[class_id]
+            x_top_left, y_top_left, x_bottom_right, y_bottom_right, box_confidence, class_id = detection
 
-            # filter out weak predictions by ensuring the detected
-            # probability is greater than the minimum probability
-            if this_confidence > minimum_confidence:
-                # update our list of bounding box coordinates,
-                # confidences, and class IDs
-                boxes.append(detection[0:4])
-
-                confidences.append(float(this_confidence))
+            # filter out weak predictions
+            if box_confidence > minimum_confidence:
+                boxes.append(
+                    BoundingBox.from_points(
+                        top_left=(x_top_left, y_top_left),
+                        bottom_right=(x_bottom_right, y_bottom_right),
+                    )
+                )
+                confidences.append(float(box_confidence))
                 class_ids.append(class_id)
-    
-    # make each box a proper class instead of just a list
-    boxes = [ BoundingBox(each) for each in boxes ]
     
     return boxes, confidences, class_ids
