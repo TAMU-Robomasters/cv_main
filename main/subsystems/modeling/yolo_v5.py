@@ -68,15 +68,15 @@ def init_yolo_v5(model):
         print("[modeling]     falling back on CPU\n")
         import torch
         from yolov5.models.common import AutoShape
-
-        # normal_model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_to.yolo_v5.pytorch_model)
-        # print(normal_model.__class__)
-        # large_pickle_save(normal_model, 'C:/Users/saiju/Documents/Robotics/cv_main/torch_model.ignore.model')
         
-
-        normal_model = large_pickle_load('C:/Users/saiju/Documents/Robotics/cv_main/torch_model.ignore.model')
-        # AutoShape(model)
-        # weights = load_state_dict()
+        
+        
+        # # generating model pickle file (uncomment to remake pickle file)
+        # normal_model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_to.yolo_v5.pytorch_model)
+        # large_pickle_save(normal_model, absolute_path_to.yolo_v5.pickle)
+        
+        # load model pickle file
+        normal_model = large_pickle_load(absolute_path_to.yolo_v5.pickle)
 
         normal_model.eval()
         torch.no_grad()
