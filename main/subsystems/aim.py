@@ -87,7 +87,7 @@ def when_bounding_boxes_refresh():
     gyro              = runtime.realsense.gyro         if camera == 'realsense' else None
     
     horizontal_angle, vertical_angle, should_shoot, horizonal_stdev, vertical_stdev, depth_amount, pixel_diff = (0, 0, 0, 0, 0, 0, 0)
-    center_point, bullet_drop_point, prediction_point = (None, None, None)
+    center_point, bullet_drop_point, prediction_point = (None, Position([0,0]), None)
     current_time = now()
     point_to_aim_at = Position([0,0])
     
@@ -165,8 +165,8 @@ def when_bounding_boxes_refresh():
         # bullet drop (bandaid method)
         #
         if not disable_bullet_drop:
-            angle_adjustment = bullet_drop_6_bandaid()
-            horizontal_angle += angle_adjustment[0]
+            angle_adjustment = bullet_drop_6_bandaid(depth_amount)
+            # horizontal_angle += angle_adjustment[0]
             vertical_angle += angle_adjustment[1]
         
                 
@@ -517,8 +517,7 @@ def world_coordinate(cam_pos, depth, phi, theta):
 
 
 # returns adjustment to vertical pixels
-def bullet_drop_6_bandaid():
-    depth = get_distance_from_array(runtime.depth_image)
+def bullet_drop_6_bandaid(depth):
     # print(f"DEPTH VALUE {depth}")
     if depth < 1:
         return (0, 0)
