@@ -7,7 +7,7 @@ from super_map import LazyDict
 from statistics import mean as average
 
 from toolbox.globals import path_to, config, print, runtime
-from toolbox.geometry_tools import Position
+from toolbox.geometry_tools import Position, BoundingBox
 from subsystems.aiming.predictor import Predictor
 
 # 
@@ -67,6 +67,7 @@ runtime.aiming = LazyDict(
     depth_amount=0,
     pixel_diff=0,
     predictor=Predictor(linear_buffer_size),
+    should_shoot_box=None,
     predictor_skip_count=0,
     kalman_filter=None,
 )
@@ -187,18 +188,23 @@ def when_bounding_boxes_refresh():
     # 
     if not found_robot: 
         should_shoot = False
+        runtime.aiming.should_shoot_box = None
     else:
         width = runtime.color_image.shape[1]
         height = runtime.color_image.shape[0]
         # print(f"width {width}, height {height}")
         x_top_left = (width - (should_shoot_box_width*width))/2
         y_top_left = (height - (should_shoot_box_height*height))/2
-        should_shoot_box = BoundingBox([ x_top_left, y_top_left, width, height ])
         
-        if should_shoot_box.contains(best_bounding_box.center.x, best_bounding_box.center.y):
-            should_shoot = True
-        else:
-            should_shoot = False
+        should_shoot_box = BoundingBox([
+            x_top_left, 
+            y_top_left,
+            (width-(x_top_left*2)),
+            (height-(y_top_left*2)) + 10,
+        ])
+        runtime.aiming.should_shoot_box = should_shoot_box
+        should_shoot = should_shoot_box.contains(best_bounding_box.center)
+        
 
     # 
     # should_look_around
@@ -223,7 +229,7 @@ def when_bounding_boxes_refresh():
     runtime.aiming.pixel_diff         = pixel_diff
     runtime.aiming.center_point       = center_point
     runtime.aiming.bullet_drop_point  = bullet_drop_point
-    runtime.aiming.prediction_point       = prediction_point
+    runtime.aiming.prediction_point   = prediction_point
 
 # 
 # 
@@ -522,7 +528,6 @@ def world_coordinate(cam_pos, depth, phi, theta):
 
 # returns adjustment to vertical pixels
 def bullet_drop_6_bandaid(depth):
-    # print(f"DEPTH VALUE {depth}")
     if depth < 1:
         return (0, 0)
     elif depth < 2:
@@ -535,10 +540,3 @@ def bullet_drop_6_bandaid(depth):
         return (-0.05, -0.04)
     else:
         return (-0.05, -(depth-1)/100)
-    
-    # elif depth < 1.5:
-    #     return 0.7
-    # elif depth < 2:
-    #     return 0.75
-    # else:
-    #     return 0.8

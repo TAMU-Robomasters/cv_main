@@ -169,8 +169,9 @@ def generate_image(fps=0):
     horizonal_stdev    = runtime.aiming.horizonal_stdev
     vertical_stdev     = runtime.aiming.vertical_stdev
     center_point       = runtime.aiming.center_point
-    # bullet_drop_point  = runtime.aiming.bullet_drop_point
     prediction_point   = runtime.aiming.prediction_point
+    should_shoot_box   = runtime.aiming.should_shoot_box
+    # bullet_drop_point  = runtime.aiming.bullet_drop_point
 
     image = Image(runtime.color_image)
     if len(bounding_boxes) > 0:
@@ -184,6 +185,9 @@ def generate_image(fps=0):
             image.add_bounding_box(each, color=rgb(255, 255, 255))
         for each in enemy_boxes:
             image.add_bounding_box(each, color=rgb(254, 195,  85))
+        # show should_shoot
+        if should_shoot_box:
+            image.add_bounding_box(should_shoot_box, color=rgb(254, 195,  85), thickness=4)
         if found_robot:
             image.add_bounding_box(best_bounding_box, color=rgb(240, 113, 120))
             image.add_point(x=center_point.x     , y=center_point.y     , color=rgb(130, 170, 255), radius=10)
