@@ -64,7 +64,7 @@ def when_finished_processing_frame():
     horizonal_stdev    = runtime.aiming.horizonal_stdev
     vertical_stdev     = runtime.aiming.vertical_stdev
     center_point       = runtime.aiming.center_point
-    bullet_drop_point  = runtime.aiming.bullet_drop_point
+    # bullet_drop_point  = runtime.aiming.bullet_drop_point
     prediction_point   = runtime.aiming.prediction_point
     
     # 
@@ -169,7 +169,7 @@ def generate_image(fps=0):
     horizonal_stdev    = runtime.aiming.horizonal_stdev
     vertical_stdev     = runtime.aiming.vertical_stdev
     center_point       = runtime.aiming.center_point
-    bullet_drop_point  = runtime.aiming.bullet_drop_point
+    # bullet_drop_point  = runtime.aiming.bullet_drop_point
     prediction_point   = runtime.aiming.prediction_point
 
     image = Image(runtime.color_image)
@@ -187,7 +187,7 @@ def generate_image(fps=0):
         if found_robot:
             image.add_bounding_box(best_bounding_box, color=rgb(240, 113, 120))
             image.add_point(x=center_point.x     , y=center_point.y     , color=rgb(130, 170, 255), radius=10)
-            image.add_point(x=bullet_drop_point.x, y=bullet_drop_point.y, color=rgb(137, 221, 255), radius=7)
+            # image.add_point(x=bullet_drop_point.x, y=bullet_drop_point.y, color=rgb(137, 221, 255), radius=7)
             image.add_point(x=prediction_point.x , y=prediction_point.y , color=rgb(195, 232, 141), radius=5)
     
     x_location = 30
