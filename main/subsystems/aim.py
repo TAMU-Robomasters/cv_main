@@ -41,6 +41,8 @@ linear_tracking_confidence_threshold = config.aiming.linear_tracking_confidence_
 linear_buffer_size                   = config.aiming.linear_buffer_size
 skip_allowance                       = config.aiming.skip_allowance
 camera                               = config.hardware.camera
+should_shoot_box_height              = config.aiming.should_shoot_box_height
+should_shoot_box_width               = config.aiming.should_shoot_box_width
 
 # 
 # init
@@ -185,12 +187,14 @@ def when_bounding_boxes_refresh():
     # 
     if not found_robot: # or depth_out_of_bounds
         should_shoot = False
-    elif len(x_circular_buffer) >= min_size_for_stdev:
-        point_to_aim_at_error = average((horizonal_stdev, vertical_stdev))
-        if point_to_aim_at_error < std_error_bound:
-            should_shoot = True
-        else:
-            should_shoot = False
+    else:
+        width, height = color_frame.shape
+        left_side = (width - (should_shoot_box_width*width))/2
+        right_side = width - left_side
+        top_side = (height - (should_shoot_box_height*height))/2
+        bottom_side = height - top_side
+        
+        if 
     
     # 
     # should_look_around
