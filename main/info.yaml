@@ -66,7 +66,11 @@
                 confidence_box_width: 0.3 # percent
                 
                 bullet_drop: # NOTE: override this below with sentry/standard
-                    1: 0.01
+                    1: 0.02 # at <= __ meter (key), adjust the angle by __ in radians (value)
+                    2: 0.01
+                    3: -0.01
+                    4: -0.08 # 0.3 
+                    5: -0.16 # 0.4
                 
                 disable_bullet_drop: false
                 sec_till_lock_lost: 2
@@ -142,6 +146,16 @@
         # 
         # optionals (which are combined/merged with defaults)
         #
+        SENTRY:
+            bot: sentry
+            aiming:
+                bullet_drop:
+                    1: -0.02 # at <= __ meter (key), adjust the angle by __ in radians (value)
+                    2: -0.01
+                    3: 0.01
+                    4: 0.08 # 0.3 
+                    5: 0.16 # 0.4
+        
         STANDARD:
             bot: standard
             aiming:
@@ -151,15 +165,6 @@
                     3: 0.03
                     4: -0.08
                     5: -0.16
-        SENTRY:
-            bot: standard
-            aiming:
-                bullet_drop:
-                    1: 0.02 # at <= __ meter (key), adjust the angle by __ in radians (value)
-                    2: 0.01
-                    3: 0.01
-                    4: -0.03
-                    5: -0.04
         
         GPU=NONE:
             model:
