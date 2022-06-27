@@ -69,8 +69,8 @@
                     1: 0.02 # at <= __ meter (key), adjust the angle by __ in radians (value)
                     2: 0.01
                     3: -0.01
-                    4: -0.06 # 0.3 
-                    5: -0.21 # 0.4
+                    4: -0.04 # 0.3 
+                    5: -0.16 # 0.4
                 
                 disable_bullet_drop: false
                 sec_till_lock_lost: 2
