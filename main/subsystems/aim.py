@@ -13,6 +13,7 @@ from subsystems.aiming.predictor import Predictor
 # 
 # config
 # 
+bot                                  = config.bot
 stream_width                         = config.aiming.stream_width
 stream_height                        = config.aiming.stream_height
 stream_framerate                     = config.aiming.stream_framerate
@@ -41,8 +42,9 @@ linear_tracking_confidence_threshold = config.aiming.linear_tracking_confidence_
 linear_buffer_size                   = config.aiming.linear_buffer_size
 skip_allowance                       = config.aiming.skip_allowance
 camera                               = config.hardware.camera
-confidence_box_height              = config.aiming.confidence_box_height
-confidence_box_width               = config.aiming.confidence_box_width
+confidence_box_height                = config.aiming.confidence_box_height
+confidence_box_width                 = config.aiming.confidence_box_width
+bullet_drop                          = config.aiming.bullet_drop
 
 # 
 # init
@@ -106,54 +108,6 @@ def when_bounding_boxes_refresh():
     # 
     # prediction
     # 
-    if True:
-        if prediction_method == 'linear':
-            # 
-            # skip count
-            # 
-            if not found_robot:
-                runtime.aiming.predictor_skip_count += 1
-            else:
-                runtime.aiming.predictor_skip_count = 0
-            # full reset predictor
-            if runtime.aiming.predictor_skip_count > skip_allowance:
-                runtime.aiming.predictor = Predictor(linear_buffer_size)
-            
-            # 
-            # prediction
-            # 
-            if found_robot:
-                runtime.aiming.predictor.add_data(time=current_time, values=point_to_aim_at) # values can be anything, 3D coords, pixels, etc
-                if len(runtime.aiming.predictor) > 2:
-                    (next_x, next_y), total_confidence, _  = runtime.aiming.predictor.predict_next(timesteps=1)
-                    (next_x, next_y),                _, _  = runtime.aiming.predictor.predict_next(timesteps=total_confidence) # scale by confidence
-                    if total_confidence < linear_tracking_confidence_threshold:
-                        runtime.aiming.predictor.reset() # reset (keeps only the current point)
-                    else:
-                        # update the point to aim at with the prediction
-                        point_to_aim_at = (next_x, next_y)
-        elif prediction_method == 'kalman':
-            if not disable_kalman_filters and found_robot:
-                position_in_space = Position([
-                    point_to_aim_at.x, # x,y value from original kalman code was NOT influcenced by bullet drop, but this one is
-                    point_to_aim_at.y,
-                    depth_amount,
-                ])
-                # create if doesnt exist
-                if runtime.aiming.kalman_filter is None:
-                    runtime.aiming.kalman_filter = KalmanFilter(model_fps)
-                    # TODO: calculate FPS on the fly
-                
-                # FIXME: where is the kalman filter updated? this is only prediciton
-                prediction_point_to_aim_at = runtime.aiming.kalman_filter.predict(
-                    data_for_imu=position_in_space, 
-                    realsense_frame=runtime.realsense.frame,
-                )
-                
-                point_to_aim_at = prediction_point_to_aim_at[0:2]
-            else:
-                # reset whenever robot is lost (maybe make fake boxes for a few frames to prevent easily dropping a lock)
-                runtime.aiming.kalman_filter = None
     prediction_point = Position(point_to_aim_at) # for displaying 
     
     # 
@@ -163,12 +117,17 @@ def when_bounding_boxes_refresh():
         horizontal_angle, vertical_angle = angle_from_center(point_to_aim_at, screen_center)
         
     #
-    # bullet drop (bandaid method)
+    # bullet drop
     #
     if not disable_bullet_drop and found_robot:
-        angle_adjustment = bullet_drop_sentry(depth_amount)
-        # horizontal_angle += angle_adjustment[0]
-        vertical_angle += angle_adjustment[1]
+        depth_int = int(math.floor(depth_amount))
+        if depth_int in bullet_drop:
+            angle_adjustment = bullet_drop[depth_int]
+        else: # more than 5 meters
+            angle_adjustment = -(depth)/100 # negative is aiming higher
+        
+        print(f'''angle_adjustment = {angle_adjustment}''', end=" ")
+        vertical_angle += angle_adjustment
         
                 
     # 
@@ -319,33 +278,3 @@ def angle_from_center(point_to_aim_at, screen_center):
     # print("horizontal_angle:",f"{horizontal_angle:.4f}"," vertical_angle:", f"{vertical_angle:.4f}", end=", ")
 
     return math.radians(horizontal_angle),math.radians(vertical_angle)
-
-# returns adjustment to vertical pixels
-def bullet_drop_sentry(depth):
-    if depth < 1:
-        return (0, 0.02)
-    elif depth < 2:
-        return (-0.07, 0.01)
-    elif depth < 3:
-        return (-0.05, 0.01)
-    elif depth < 4:
-        return (-0.05, -0.03)
-    elif depth < 5:
-        return (-0.05, -0.04)
-    else:
-        return (-0.05, -(depth)/100)
-
-# returns adjustment to vertical pixels
-def bullet_drop_sentry(depth):
-    if depth < 1:
-        return (0, 0.02)
-    elif depth < 2:
-        return (-0.07, 0.01)
-    elif depth < 3:
-        return (-0.05, 0.01)
-    elif depth < 4:
-        return (-0.05, -0.03)
-    elif depth < 5:
-        return (-0.05, -0.04)
-    else:
-        return (-0.05, -(depth)/100)

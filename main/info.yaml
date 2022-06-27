@@ -40,6 +40,7 @@
             filter_team_color: true
             mode: development
             process_name: cv_main
+            bot: sentry # sentry or standard
             hardware:
                 board: laptop
                 camera: null # "realsense" or "zed"
@@ -59,6 +60,13 @@
                 
                 confidence_box_height: 0.3 # 0.4 = 40% percent of image height
                 confidence_box_width: 0.3 # percent
+                
+                bullet_drop:
+                    1: 0.01 # at <= __ meter (key), adjust the angle by __ in radians (value)
+                    2: 0.01
+                    3: 0.01
+                    4: -0.03
+                    5: -0.04
                 
                 disable_bullet_drop: false
                 sec_till_lock_lost: 2
