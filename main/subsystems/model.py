@@ -54,8 +54,7 @@ else:
 # 
 # 
 def when_frame_arrives():
-    # img = runtime.color_image 
-    # runtime.color_image = Image(runtime.color_image).shift_hue(82).in_cv2_format
+    runtime.color_image = Image(runtime.color_image).shift_hue(72).in_cv2_format
     
     # 
     # all boxes

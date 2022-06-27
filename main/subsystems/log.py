@@ -172,8 +172,9 @@ def generate_image(fps=0):
     prediction_point   = runtime.aiming.prediction_point
     confidence_box   = runtime.aiming.confidence_box
     # bullet_drop_point  = runtime.aiming.bullet_drop_point
-
+    
     image = Image(runtime.color_image)
+
     if len(bounding_boxes) > 0:
         white  = rgb(255, 255, 255)
         red    = rgb(240, 113, 120)
@@ -191,7 +192,6 @@ def generate_image(fps=0):
         if found_robot:
             image.add_bounding_box(best_bounding_box, color=rgb(240, 113, 120))
             image.add_point(x=center_point.x     , y=center_point.y     , color=rgb(130, 170, 255), radius=10)
-            # image.add_point(x=bullet_drop_point.x, y=bullet_drop_point.y, color=rgb(137, 221, 255), radius=7)
             image.add_point(x=prediction_point.x , y=prediction_point.y , color=rgb(195, 232, 141), radius=5)
     
     x_location = 30
