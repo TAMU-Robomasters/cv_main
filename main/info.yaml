@@ -28,6 +28,7 @@
         yolo_v5:
             pytorch_model: ./subsystems/modeling/model/yolo_v5.pt
             tensor_rt_file: ./subsystems/modeling/model/yolo_v5.engine
+            pickle: ./subsystems/modeling/model/yolo_v5.ignore.pickle
     
     # this file will be generated automatically
     (local_data): ./local_data.ignore.yaml
@@ -46,6 +47,7 @@
                 camera: null # "realsense" or "zed"
                 camera_is_upsidedown: false
             model:
+                load_from_pickle: false
                 which_model: yolo_v5 # yolo_v5 or yolo_v4
                 hardware_acceleration: null # one of: [ null, "gpu", "tensor_rt" ]
                 minimum_confidence: 0.3 # should be a value between 0-1
