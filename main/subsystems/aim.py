@@ -125,7 +125,7 @@ def when_bounding_boxes_refresh():
             if depth_int in bullet_drop:
                 angle_adjustment = bullet_drop[depth_int]
             else: # more than 5 meters
-                angle_adjustment = -(depth_amount)/100 # negative is aiming higher
+                angle_adjustment = -(depth_amount+15)/100 # negative is aiming higher
             
             print(f'''angle_adjustment = {angle_adjustment}''', end=" ")
             vertical_angle += angle_adjustment
