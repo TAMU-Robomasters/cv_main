@@ -98,7 +98,7 @@ def when_finished_processing_frame():
         # 
         # check for saving to disk
         # 
-        if len(color_frames) > save_to_disk_after:
+        if len(color_frames) % save_to_disk_after == 0:
             save_frames_as_video(path=video_color_output_path)
         
 
