@@ -13,7 +13,7 @@
         { sleep 30 && python3 "/home/$username/repos/cv_main/main/main.py" } &
         export PID_OF_MAIN_PY=$!
         
-        { sleep 40 && bash "/home/$username/repos/cv_main/commands/xavier/restart_wifi.sh" &> "/home/$username/.wifi.log" } &
+        # { sleep 40 && bash "/home/$username/repos/cv_main/commands/xavier/restart_wifi.sh" &> "/home/$username/.wifi.log" } &
         
         echo "python stuff is running on: $PID_OF_MAIN_PY"
         # see: https://lwn.net/Articles/317814/
