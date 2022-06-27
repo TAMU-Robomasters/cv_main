@@ -120,14 +120,17 @@ def when_bounding_boxes_refresh():
     # bullet drop
     #
     if not disable_bullet_drop and found_robot:
-        depth_int = int(math.floor(depth_amount))
-        if depth_int in bullet_drop:
-            angle_adjustment = bullet_drop[depth_int]
-        else: # more than 5 meters
-            angle_adjustment = -(depth)/100 # negative is aiming higher
-        
-        print(f'''angle_adjustment = {angle_adjustment}''', end=" ")
-        vertical_angle += angle_adjustment
+        try:
+            depth_int = int(math.floor(depth_amount))
+            if depth_int in bullet_drop:
+                angle_adjustment = bullet_drop[depth_int]
+            else: # more than 5 meters
+                angle_adjustment = -(depth_amount)/100 # negative is aiming higher
+            
+            print(f'''angle_adjustment = {angle_adjustment}''', end=" ")
+            vertical_angle += angle_adjustment
+        except Exception as error:
+            print(error)
         
                 
     # 
