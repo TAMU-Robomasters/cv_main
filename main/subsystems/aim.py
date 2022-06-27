@@ -162,13 +162,13 @@ def when_bounding_boxes_refresh():
     if found_robot:
         horizontal_angle, vertical_angle = angle_from_center(point_to_aim_at, screen_center)
         
-        #
-        # bullet drop (bandaid method)
-        #
-        if not disable_bullet_drop:
-            angle_adjustment = bullet_drop_6_bandaid(depth_amount)
-            # horizontal_angle += angle_adjustment[0]
-            vertical_angle += angle_adjustment[1]
+    #
+    # bullet drop (bandaid method)
+    #
+    if not disable_bullet_drop and found_robot:
+        angle_adjustment = bullet_drop_sentry(depth_amount)
+        # horizontal_angle += angle_adjustment[0]
+        vertical_angle += angle_adjustment[1]
         
                 
     # 
@@ -289,126 +289,6 @@ def get_distance_from_array(depth_frame_array, bbox):
         print(f'''[aiming:get_distance_from_array] error/warning = {error}''')
         return 1
 
-def bullet_drop_compensation_0(depth_amount):
-    """
-    Determines the bullet offset due to bullet drop and camera offset from shooter.
-    Utilizes a function fitted from varying depth amounts.
-
-    Input: Depth Amount of Bounding Box.
-    Output: Offset in Pixels.
-    """
-    if depth_amount < 1:
-        return 0
-    elif depth_amount < 2:
-        return 0
-    elif depth_amount < 3:
-        return 0
-    elif depth_amount < 4:
-        return 0
-    elif depth_amount < 5: # units = meters?
-        return 0
-    else: # really far away
-        return 0
-
-def bullet_drop_compensation_1(depth_amount):
-    """
-    Determines the bullet offset due to bullet drop and camera offset from shooter.
-    Utilizes a function fitted from varying depth amounts.
-
-    Input: Depth Amount of Bounding Box.
-    Output: Offset in Pixels.
-    """
-    if depth_amount > 1 and depth_amount < 5:
-        return (1.11208 * depth_amount ** 2) + (.1152 * depth_amount) + (-17.7672)
-    else:
-        return 0
-
-def bullet_drop_core(radius, total_angle, proj_velocity, gimbal_pitch, time_interval):    
-    """
-    Determines the bullet offset due to bullet drop and camera offset from shooter.
-    Fails due to not including all variables.
-
-    Input: Depth Amount of Bounding Box.
-    Output: Offset in Pixels.
-    """
-    geometric_height = radius * math.sin(total_angle)
-    physical_height = proj_velocity * math.sin(gimbal_pitch) * time_interval + 0.5 * -9.8 * time_interval**2
-    drop = geometric_height - physical_height   # drop is a POSITIVE VALUE
-    return drop
-
-def bullet_drop_compensation_2(depth_image, best_bounding_box, depth_amount, center, phi):
-    """
-    Determines the bullet offset due to bullet drop and camera offset from shooter.
-    Utilizes theory and math.
-
-    Input: Depth Amount of Bounding Box.
-    Output: Offset in Pixels.
-    """
-    if phi is None:
-        return 0
-
-    diff_c =   stream_height/2  - (best_bounding_box[1] + 0.5* best_bounding_box[3])# pixels
-    theta = math.atan((diff_c/stream_height/2) * math.tan(vertical_fov/2 * math.pi/180)) # theta in 
-    diff_c = depth_amount * math.tan(theta) # convert diff_c to meters
-
-    depth_from_pivot = length_barrel + depth_amount
-
-    diff_p = float(diff_c) + float(camera_gap)
-    rho = math.atan(diff_p/depth_from_pivot)
-    psi = phi + rho
-    range_p = depth_from_pivot/math.cos(rho)
-    i = range_p * math.cos(psi)
-    j = range_p * math.sin(psi)
-    c = length_barrel * math.sin(psi)
-    e = length_barrel * math.cos(psi)
-    # t = 1.05*range_p/bullet_velocity
-    t = (i - e)/(bullet_velocity * math.cos(psi))
-
-
-    psi_f = math.asin((j-c-4.9*t**2) / (bullet_velocity*t) )
-    # c = length_barrel * math.sin(psi_f)
-    # e = length_barrel * math.cos(psi_f)
-    # t_f = (i - e)/(bullet_velocity * math.cos(psi_f))
-    # psi_f = math.asin((j-c-4.9*t_f**2) / (bullet_velocity*t_f) )
-
-    j_check = (length_barrel * math.sin(psi_f)) + ((i - (length_barrel * math.cos(psi_f)))/(math.cos(psi_f))) * math.sin(psi_f) + 4.9 * ((i - (length_barrel * math.cos(psi_f)))/(bullet_velocity * math.cos(psi_f)))**2
-    print("j: ", j, " j_check: ", j_check)
-    change_psi = psi_f - psi
-    change_p = stream_height/2/math.tan(vertical_fov/2*math.pi/180)*math.tan(change_psi)
-    
-    return change_p
-
-def bullet_drop_compensation_3(depth_amount, gimbal_pitch, v_angle, proj_velocity = bullet_velocity):
-    """
-    Determines the bullet offset due to bullet drop and camera offset from shooter.
-    Utilizes theory and math.
-
-    Input: Depth Amount of Bounding Box.
-    Output: Offset in Pixels.
-    """
-    radius = math.sqrt(depth_amount ** 2 + (depth_amount * math.tan(v_angle) + barrel_camera_gap) ** 2)
-    total_angle = gimbal_pitch + math.atan2(depth_amount * math.tan(v_angle) + barrel_camera_gap, depth_amount)
-    time_interval = (radius * math.cos(total_angle)) / (proj_velocity * math.cos(gimbal_pitch))
-    geometric_height = radius * math.sin(total_angle)
-
-    current_drop = bullet_drop_core(radius, total_angle, proj_velocity, gimbal_pitch, time_interval)
-
-    new_height = geometric_height + current_drop
-    horizontal_dist = radius * math.cos(total_angle)
-    new_gimbal_pitch = math.atan2(new_height, horizontal_dist)
-
-    new_radius = math.sqrt(new_height ** 2 + horizontal_dist ** 2)
-    new_total_angle = math.atan2(horizontal_dist * math.tan(total_angle) + new_height, horizontal_dist)
-    new_time_interval = (new_radius * math.cos(new_total_angle)) / (proj_velocity * math.cos(new_gimbal_pitch))
-
-    future_drop = bullet_drop_core(new_radius, new_total_angle, proj_velocity, new_gimbal_pitch, new_time_interval)
-
-    error = geometric_height - (new_height - future_drop)   # future drop is + and new_height is -
-    final_height = new_height - error
-
-    final_gimbal_pitch = math.atan2(final_height, horizontal_dist)
-    return final_gimbal_pitch
-
 def distance(point_1: tuple, point_2: tuple):
     """
     Returns the distance between two points.
@@ -440,94 +320,23 @@ def angle_from_center(point_to_aim_at, screen_center):
 
     return math.radians(horizontal_angle),math.radians(vertical_angle)
 
-
-def angles_to_shoot(depth_frame, bbox, vx, vy, vz, ax, ay, az, phi, theta ):
-
-    # constants
-    L = 0
-    v0 = 0
-    x, y, z = world_coordinate(bbox, relative_coordinate(depth_frame, bbox)[0], phi, theta)
-    
-    # solving for t
-    c4 = 0.25*ax**2 + (0.5*ay)**2 + (0.5*az+g)**2   # For for coefficient of t^4
-    c3 = vx*ax + vy*ay + 2*vz*(0.5*az+g)   # For coefficient of t^3 
-    c2 = (vx**2 +ax*x) + (vy**2 +ay*y) + (vz**2 + 2*(az+g)*z) - v0**2    # For coefficient of t^2
-    c1 = 2*x*vx + 2*y*vy + 2*z*vz - 2*v0*l   # For coefficient of t
-    c0 = x**2 + y**2 + z**2 - l**2   # Just Standalone numbers
-    equation_coef = [c4, c3, c2, c1, c0] # listing all coefficients
-    roots = np.roots(equation_coef)
-    result = [elem for elem in roots if elem > 0]
-    t = min(result)
-
-    # solving for phee
-    phee = np.arcsin((y + vy*t + 0.5*ay*(t**2) - g*(t**2))/(L + v0*t))
-
-    # solving for theta
-    theta = np.arcsin((x + vx*t + 0.5*ax*(t**2))/(l + v0*t))/np.cos(p)
-
-    return (theta, phee)
-
-
-# bbox[x coordinate of the top left of the bounding box, y coordinate of the top left of the bounding box, width of box, height of box]
-def relative_coordinate(depth_frame, bbox):
-    """
-    Returns an estimate in position relative to the world.
-
-    Input: Bounding Box and Depth Frame.
-    Output: 3D point in space.
-    """
-    if not depth_frame:                     # if there is no aligned_depth_frame or color_frame then leave the loop
-        return None
-
-    depth_value = get_distance_from_array(depth_frame)
-    depth_point = rs.deproject_pixel_to_point(runtime.realsense.intrins ,bbox, depth_value)
-    return depth_point
-
-def pixel_coordinate(point):
-    return rs.project_point_to_pixel(point)
-
-
-def world_coordinate(cam_pos, depth, phi, theta):
-    c_vec = np.array([
-        (bar_len2 + cam_gap2)*0.5 * np.cos(np.arctan(cam_gap/bar_len) + phi) * np.sin(theta),
-        (bar_len2 + cam_gap2)*0.5 * np.cos(np.arctan(cam_gap/bar_len) + phi) * np.cos(theta),
-        (bar_len2 + cam_gap2)*0.5 * np.sin(np.arctan(cam_gap/bar_len) + phi)
-    ]).reshape(-1, 1)
-
-    print(f"CAMERA VECTOR:\n{c_vec}\n")
-
-    d_vec = np.array([
-        depth * np.cos(phi) * np.sin(theta),
-        depth * np.cos(phi) * np.cos(theta),
-        depth * np.sin(phi)
-    ]).reshape(-1, 1)
-
-    print(f"DISTANCE VECTOR:\n{d_vec}\n")
-
-    p_vec = np.array([
-        2 * depth * np.tan(np.radians(fov[0])/2) * (cam_pos[0]/cam_dims[0] - 0.5),
-        0,
-        2 * depth * np.tan(np.radians(fov[1])/2) * (cam_pos[1]/cam_dims[1] - 0.5)
-    ]).reshape(-1, 1)
-
-    print(f"POSITION VECTOR (CAMERA FRAME):\n{p_vec}\n")
-
-    R = np.array([
-        [np.cos(theta), np.cos(phi) *np.sin(theta), -np.sin(phi)*np.sin(theta)],
-        [-np.sin(theta), np.cos(phi) *np.cos(theta), -np.sin(phi)*np.cos(theta)],
-        [0, np.sin(phi), np.cos(phi)]
-    ])
-
-    print(f"POSITION VECTOR (ROBOT FRAME):\n{R @ p_vec}\n")
-    print(f"OUTPUT VECTOR:\n{c_vec + d_vec + (R@p_vec)}")
-
-    return tuple((c_vec + d_vec + (R@p_vec)).flatten())
-
-
-
+# returns adjustment to vertical pixels
+def bullet_drop_sentry(depth):
+    if depth < 1:
+        return (0, 0.02)
+    elif depth < 2:
+        return (-0.07, 0.01)
+    elif depth < 3:
+        return (-0.05, 0.01)
+    elif depth < 4:
+        return (-0.05, -0.03)
+    elif depth < 5:
+        return (-0.05, -0.04)
+    else:
+        return (-0.05, -(depth)/100)
 
 # returns adjustment to vertical pixels
-def bullet_drop_6_bandaid(depth):
+def bullet_drop_sentry(depth):
     if depth < 1:
         return (0, 0.02)
     elif depth < 2:
