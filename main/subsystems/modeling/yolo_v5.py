@@ -8,8 +8,6 @@ from super_map import LazyDict
 # project imports
 from toolbox.globals import path_to, absolute_path_to, config, print, runtime
 from toolbox.geometry_tools import BoundingBox, Position
-from toolbox.file_system_tools import FS
-from toolbox.pickle_tools import large_pickle_save, large_pickle_load
 
 # 
 # config
@@ -17,7 +15,6 @@ from toolbox.pickle_tools import large_pickle_save, large_pickle_load
 hardware_acceleration         = config.model.hardware_acceleration
 input_dimension               = config.model.input_dimension
 which_model                   = config.model.which_model
-load_from_pickle              = config.model.load_from_pickle
 
 # config check
 assert hardware_acceleration in ['tensor_rt', 'gpu', None]
@@ -58,12 +55,7 @@ def init_yolo_v5(model):
     elif hardware_acceleration == 'gpu':
         print("[modeling]     gpu: ENABLED\n")
         import torch
-        if not load_from_pickle or not FS.is_file(absolute_path_to.yolo_v5.pickle):
-            normal_model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_to.yolo_v5.pytorch_model)
-            large_pickle_save(normal_model, absolute_path_to.yolo_v5.pickle)
-        else:
-            print("[modeling]    loading from pickle file")
-            normal_model = large_pickle_load(absolute_path_to.yolo_v5.pickle)
+        normal_model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_to.yolo_v5.pytorch_model)
         normal_model = normal_model.to(torch.device("cuda"))
         normal_model.eval()
         torch.no_grad()
@@ -73,12 +65,7 @@ def init_yolo_v5(model):
     else:
         print("[modeling]     falling back on CPU\n")
         import torch
-        if not load_from_pickle or not FS.is_file(absolute_path_to.yolo_v5.pickle):
-            normal_model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_to.yolo_v5.pytorch_model)
-            large_pickle_save(normal_model, absolute_path_to.yolo_v5.pickle)
-        else:
-            print("[modeling]    loading from pickle file")
-            normal_model = large_pickle_load(absolute_path_to.yolo_v5.pickle)
+        normal_model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_to.yolo_v5.pytorch_model)
         normal_model.eval()
         torch.no_grad()
     
