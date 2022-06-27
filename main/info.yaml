@@ -54,6 +54,8 @@
                 threshold: 0.3  # should be a value between 0-1
                 frequency: 30
                 input_dimension: 416
+                hue_shift_amount: 75 # DONT CHANGE unless you really know what you're doing
+                                     # this is the amount that an image needs to be hue shifted to make blue armor panels look like they're red
             aiming:
                 prediction_method: null # null, linear, kalman
                 linear_tracking_confidence_threshold: 0.80 # 0=dont_care 1=must be a perfect line
