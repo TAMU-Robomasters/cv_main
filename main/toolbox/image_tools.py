@@ -142,130 +142,70 @@ class Image(object):
         self.img = cv2.putText(self.img, text, location, font, size, color, line_type)
         return self
 
-# def is_iterable(thing):
-#     # https://stackoverflow.com/questions/1952464/in-python-how-do-i-determine-if-an-object-is-iterable
-#     try:
-#         iter(thing)
-#     except TypeError:
-#         return False
-#     else:
-#         return True
+# import Image
+# import numpy as np
 
-# import torch
-# import numpy    
-# def to_tensor(an_object):
-#     # if already a tensor, just return
-#     if isinstance(an_object, torch.Tensor):
-#         return an_object
-#     # if numpy, just convert
-#     if numpy and isinstance(an_object, numpy.ndarray):
-#         return torch.from_numpy(an_object).float()
-    
-#     # if scalar, wrap it with a tensor
-#     if not is_iterable(an_object):
-#         return torch.tensor(an_object)
-#     else:
-#         # fastest (by a lot) way to convert list of numpy elements to torch tensor
-#         try:
-#             return torch.from_numpy(numpy.stack(an_object)).float()
-#         except Exception as error:
-#             pass
-#         # if all tensors of the same shape
-#         try:
-#             return torch.stack(tuple(an_object), dim=0)
-#         except Exception as error:
-#             pass
-#         # if all scalar tensors
-#         try:
-#             return torch.tensor(tuple(an_object))
-#         except Exception as error:
-#             pass
-        
-#         # 
-#         # convert each element, and make sure its not a generator
-#         # 
-#         converted_data = tuple(to_tensor(each) for each in an_object)
-#         # now try try again 
-        
-#         # if all tensors of the same shape
-#         try:
-#             return torch.stack(tuple(an_object), dim=0)
-#         except Exception as error:
-#             pass
-#         # if all scalar tensors
-#         try:
-#             return torch.tensor(tuple(an_object))
-#         except Exception as error:
-#             pass
-#         # 
-#         # fallback: reshape to fit (give error if too badly mishapen)
-#         # 
-#         size_mismatch = False
-#         biggest_number_of_dimensions = 0
-#         non_one_dimensions = None
-#         # check the shapes of everything
-#         for tensor in converted_data:
-#             skipping = True
-#             each_non_one_dimensions = []
-#             for index, each_dimension in enumerate(tensor.shape):
-#                 # keep track of number of dimensions
-#                 if index+1 > biggest_number_of_dimensions:
-#                     biggest_number_of_dimensions += 1
-                    
-#                 if each_dimension != 1:
-#                     skipping = False
-#                 if skipping and each_dimension == 1:
-#                     continue
-#                 else:
-#                     each_non_one_dimensions.append(each_dimension)
-            
-#             # if uninitilized
-#             if non_one_dimensions is None:
-#                 non_one_dimensions = list(each_non_one_dimensions)
-#             # if dimension already exists
-#             else:
-#                 # make sure its the correct shape
-#                 if non_one_dimensions != each_non_one_dimensions:
-#                     size_mismatch = True
-#                     break
-        
-#         if size_mismatch:
-#             sizes = "\n".join([ f"    {tuple(each.shape)}" for each in converted_data])
-#             raise Exception(f'When converting an object to a torch tensor, there was an issue with the shapes not being uniform. All shapes need to be the same, but instead the shapes were:\n {sizes}')
-        
-#         # make all the sizes the same by filling in the dimensions with a size of one
-#         reshaped_list = []
-#         for each in converted_data:
-#             shape = tuple(each.shape)
-#             number_of_dimensions = len(shape)
-#             number_of_missing_dimensions = biggest_number_of_dimensions - number_of_dimensions 
-#             missing_dimensions_tuple = (1,)*number_of_missing_dimensions
-#             reshaped_list.append(torch.reshape(each, (*missing_dimensions_tuple, *shape)))
-        
-#         return torch.stack(reshaped_list).type(torch.float)
+# def rgb_to_hsv(rgb):
+#     # Translated from source of colorsys.rgb_to_hsv
+#     # r,g,b should be a numpy arrays with values between 0 and 255
+#     # rgb_to_hsv returns an array of floats between 0.0 and 1.0.
+#     rgb = rgb.astype('float')
+#     hsv = np.zeros_like(rgb)
+#     # in case an RGBA array was passed, just copy the A channel
+#     hsv[..., 3:] = rgb[..., 3:]
+#     r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+#     maxc = np.max(rgb[..., :3], axis=-1)
+#     minc = np.min(rgb[..., :3], axis=-1)
+#     hsv[..., 2] = maxc
+#     mask = maxc != minc
+#     hsv[mask, 1] = (maxc - minc)[mask] / maxc[mask]
+#     rc = np.zeros_like(r)
+#     gc = np.zeros_like(g)
+#     bc = np.zeros_like(b)
+#     rc[mask] = (maxc - r)[mask] / (maxc - minc)[mask]
+#     gc[mask] = (maxc - g)[mask] / (maxc - minc)[mask]
+#     bc[mask] = (maxc - b)[mask] / (maxc - minc)[mask]
+#     hsv[..., 0] = np.select(
+#         [r == maxc, g == maxc], [bc - gc, 2.0 + rc - bc], default=4.0 + gc - rc)
+#     hsv[..., 0] = (hsv[..., 0] / 6.0) % 1.0
+#     return hsv
 
-# def opencv_image_to_torch_image(array):
-#     # 1, 210, 160, 3 => 1, 3, 210, 160
-#     tensor = to_tensor(array)
-#     dimension_count = len(tensor.shape)
-#     new_shape = [ each for each in range(dimension_count) ]
-#     height = new_shape[-3]
-#     width = new_shape[-2]
-#     channels = new_shape[-1]
-#     new_shape[-3] = channels
-#     new_shape[-2] = height
-#     new_shape[-1] = width
-#     return tensor.permute(*new_shape)
+# def hsv_to_rgb(hsv):
+#     # Translated from source of colorsys.hsv_to_rgb
+#     # h,s should be a numpy arrays with values between 0.0 and 1.0
+#     # v should be a numpy array with values between 0.0 and 255.0
+#     # hsv_to_rgb returns an array of uints between 0 and 255.
+#     rgb = np.empty_like(hsv)
+#     rgb[..., 3:] = hsv[..., 3:]
+#     h, s, v = hsv[..., 0], hsv[..., 1], hsv[..., 2]
+#     i = (h * 6.0).astype('uint8')
+#     f = (h * 6.0) - i
+#     p = v * (1.0 - s)
+#     q = v * (1.0 - s * f)
+#     t = v * (1.0 - s * (1.0 - f))
+#     i = i % 6
+#     conditions = [s == 0.0, i == 1, i == 2, i == 3, i == 4, i == 5]
+#     rgb[..., 0] = np.select(conditions, [v, q, p, p, t, v], default=v)
+#     rgb[..., 1] = np.select(conditions, [v, v, v, q, p, p], default=t)
+#     rgb[..., 2] = np.select(conditions, [v, p, t, v, v, q], default=p)
+#     return rgb.astype('uint8')
 
-# def torch_image_to_opencv_image(array):
-#     # 1, 3, 210, 160 => 1, 210, 160, 3
-#     tensor = to_tensor(array)
-#     dimension_count = len(tensor.shape)
-#     new_shape = [ each for each in range(dimension_count) ]
-#     channels = new_shape[-3]
-#     height = new_shape[-2]
-#     width = new_shape[-1]
-#     new_shape[-3] = height  
-#     new_shape[-2] = width   
-#     new_shape[-1] = channels
-#     return tensor.permute(*new_shape)
+
+# def shift_hue(arr,hout):
+#     hsv=rgb_to_hsv(arr)
+#     hsv[...,0]=hout
+#     rgb=hsv_to_rgb(hsv)
+#     return rgb
+
+# img = Image.open('tweeter.png').convert('RGBA')
+# arr = np.array(img)
+
+# if __name__=='__main__':
+#     green_hue = (180-78)/360.0
+#     red_hue = (180-180)/360.0
+
+#     new_img = Image.fromarray(shift_hue(arr,red_hue), 'RGBA')
+#     new_img.save('tweeter_red.png')
+
+#     new_img = Image.fromarray(shift_hue(arr,green_hue), 'RGBA')
+#     new_img.save('tweeter_green.png')
