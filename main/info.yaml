@@ -50,7 +50,7 @@
                 load_from_pickle: false
                 which_model: yolo_v5 # yolo_v5 or yolo_v4
                 hardware_acceleration: null # one of: [ null, "gpu", "tensor_rt" ]
-                minimum_confidence: 0.1 # should be a value between 0-1
+                minimum_confidence: 0.3 # should be a value between 0-1
                 threshold: 0.3  # should be a value between 0-1
                 frequency: 30
                 input_dimension: 416
