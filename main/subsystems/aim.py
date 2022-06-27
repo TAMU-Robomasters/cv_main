@@ -79,7 +79,7 @@ runtime.aiming = LazyDict(
 # main
 # 
 # 
-lookback_size = 1
+lookback_size = 5
 last_boxes = []
 def when_bounding_boxes_refresh():
     global last_boxes
@@ -129,7 +129,7 @@ def when_bounding_boxes_refresh():
                 angle_adjustment = bullet_drop[depth_int]
             # else: # more than 5 meters
             if depth_amount > 5:
-                angle_adjustment = -(depth_amount+48)/100 # negative is aiming higher
+                angle_adjustment = -(depth_amount+38)/100 # negative is aiming higher
                 print(f'''HERE''')
             
             print(f'''angle_adjustment = {angle_adjustment:.4f}''', end=" ")
