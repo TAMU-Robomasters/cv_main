@@ -61,12 +61,8 @@
                 confidence_box_height: 0.3 # 0.4 = 40% percent of image height
                 confidence_box_width: 0.3 # percent
                 
-                bullet_drop:
-                    1: 0.01 # at <= __ meter (key), adjust the angle by __ in radians (value)
-                    2: 0.01
-                    3: 0.01
-                    4: -0.03
-                    5: -0.04
+                bullet_drop: # NOTE: override this below with sentry/standard
+                    1: 0.01
                 
                 disable_bullet_drop: false
                 sec_till_lock_lost: 2
@@ -139,7 +135,25 @@
         
         # 
         # optionals (which are combined/merged with defaults)
-        # 
+        #
+        STANDARD:
+            bot: standard
+            aiming:
+                bullet_drop:
+                    1: 0.02 # at <= __ meter (key), adjust the angle by __ in radians (value)
+                    2: 0.01
+                    3: 0.01
+                    4: -0.03
+                    5: -0.04
+        SENTRY:
+            bot: standard
+            aiming:
+                bullet_drop:
+                    1: 0.02 # at <= __ meter (key), adjust the angle by __ in radians (value)
+                    2: 0.01
+                    3: 0.01
+                    4: -0.03
+                    5: -0.04
         
         GPU=NONE:
             model:
