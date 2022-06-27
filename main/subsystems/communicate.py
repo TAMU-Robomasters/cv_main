@@ -27,9 +27,10 @@ class Message(Structure):
         ("magic_number"    , c_uint8   ),
         ("horizontal_angle", c_float   ),
         ("vertical_angle"  , c_float   ),
+        ("depth"           , c_float   ),
         ("status"          , c_uint8   ),
     ]
-message = Message(ord('a'), 0.0, 0.0, 0)
+message = Message(ord('a'), 0.0, 0.0, 0.0, 0)
 
 action = LazyDict(
     LOOK_AROUND=0,
@@ -49,6 +50,7 @@ def when_aiming_refreshes():
     
     message.horizontal_angle = float(runtime.aiming.horizontal_angle)
     message.vertical_angle   = float(runtime.aiming.vertical_angle)
+    message.depth            = float(runtime.aiming.depth_amount)
     message.status           = action.FIRE if should_shoot else (action.LOOK_AROUND if should_look_around else action.LOOK_AT_COORDS)
     # UP = negative (for some reason)
     # LEFT = negative

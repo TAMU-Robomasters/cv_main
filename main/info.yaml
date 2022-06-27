@@ -148,9 +148,9 @@
                 bullet_drop:
                     1: 0.02 # at <= __ meter (key), adjust the angle by __ in radians (value)
                     2: 0.01
-                    3: 0.01
-                    4: -0.03
-                    5: -0.04
+                    3: 0.03
+                    4: -0.08
+                    5: -0.16
         SENTRY:
             bot: standard
             aiming:
