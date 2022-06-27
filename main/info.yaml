@@ -132,6 +132,8 @@
                     gamma:       7
                     gain:       50
                     exposure:    3
+            
+            realsense_settings: null
         
         # 
         # optionals (which are combined/merged with defaults)

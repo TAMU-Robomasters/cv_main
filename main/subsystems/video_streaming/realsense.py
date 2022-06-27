@@ -1,8 +1,9 @@
-# relative imports
-from toolbox.video_tools import Video
-from toolbox.globals import path_to, config, print, runtime
+import json
 
 from super_map import LazyDict
+
+from toolbox.video_tools import Video
+from toolbox.globals import path_to, config, print, runtime
 
 videostream     = config.videostream
 aiming          = config.aiming
@@ -14,6 +15,21 @@ runtime.realsense = LazyDict(
     gyro=LazyDict(x=0,y=0,z=0),
     intrins=None
 )
+
+
+DS5_product_ids = ["0AD1", "0AD2", "0AD3", "0AD4", "0AD5", "0AF6", "0AFE", "0AFF", "0B00", "0B01", "0B03", "0B07", "0B3A", "0B5C"]
+
+def find_device_that_supports_advanced_mode():
+    # from: https://github.com/IntelRealSense/librealsense/blob/master/wrappers/python/examples/python-rs400-advanced-mode-example.py
+    ctx = rs.context()
+    ds5_dev = rs.device()
+    devices = ctx.query_devices()
+    for dev in devices:
+        if dev.supports(rs.camera_info.product_id) and str(dev.get_info(rs.camera_info.product_id)) in DS5_product_ids:
+            if dev.supports(rs.camera_info.name):
+                print("Found device that supports advanced mode:", dev.get_info(rs.camera_info.name))
+            return dev
+    raise Exception("No D400 product line device that supports advanced mode was found")
 
 class VideoStream:
     def __init__(self):
@@ -28,11 +44,15 @@ class VideoStream:
             self.video_output = self.begin_video_recording()
 
         self.pipeline = rs.pipeline()                                                               # declares and initializes the pipeline variable
+        if config.realsense_settings:
+            device = find_device_that_supports_advanced_mode() # self.pipeline.get_active_profile().get_device()
+            rs.rs400_advanced_mode(device).load_json(json.dumps(config.realsense_settings))
         conf = rs.config()
         conf.enable_stream(rs.stream.depth, stream_width, stream_height, rs.format.z16, framerate)  # this starts the depth stream and sets the size and format
         conf.enable_stream(rs.stream.color, stream_width, stream_height, rs.format.bgr8, framerate) # this starts the color stream and set the size and format
         conf.enable_stream(rs.stream.accel)
         conf.enable_stream(rs.stream.gyro)
+        
         # config.enable_stream(rs.stream.pose,rs.format.motion_xyz32f,200)
         
         while True:
