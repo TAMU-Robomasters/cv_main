@@ -35,8 +35,8 @@ with open(absolute_path_to.permanent_storage, 'w') as outfile: json.dump(permane
 
 # create incremented storage path
 video_count = permanent_storage["video_count"]
-video_color_output_path = f'{absolute_path_to.record_video_output_color}{video_count}.mp4'
-video_depth_output_path = f'{absolute_path_to.record_video_output_color}{video_count}.depth.pickle'
+video_color_output_path = f'{absolute_path_to.record_video_output_color}{video_count}.ignore.mp4'
+video_depth_output_path = f'{absolute_path_to.record_video_output_color}{video_count}.depth.ignore.pickle'
 
 # 
 # 

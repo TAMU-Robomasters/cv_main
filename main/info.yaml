@@ -189,6 +189,9 @@
                 # serial_port: "/dev/ttyACM0" # USB serial
                 serial_port: "/dev/ttyTHS2" # UART serial
         BOARD=XAVIER:
+            hardware:
+                camera: realsense
+                camera_is_upsidedown: true
             model:
                 hardware_acceleration: "gpu"
             communication:
