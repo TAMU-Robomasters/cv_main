@@ -1,0 +1,22 @@
+
+        # give self access to port (which resets on boot for some reason)
+        echo "trying to give myself access to the port"
+        pass="$(cat '/home/xavier4/'/.pass)"
+        sudo -S usermod -a -G dialout xavier4 <<< "$pass" && echo "gave self access"
+
+        # then run main file
+        echo "trying to load zshrc"
+        . '/home/xavier4/'"/.zshrc"
+        echo "trying to run cv_main"
+        { sleep 30 && ssh -t localhost 'cd "/home/xavier4/repos/cv_main"; python3 "/home/xavier4//repos/cv_main/main/main.py" -- mode:production' } &>"$HOME/.boot.log" &
+        export PID_OF_MAIN_PY=$!
+        
+        echo "python stuff is running on: $PID_OF_MAIN_PY"
+        # see: https://lwn.net/Articles/317814/
+        # if file exists
+        if [ -f "/proc/$PID_OF_MAIN_PY/oom_adj" ]
+        then
+            sudo -S echo -10 > "/proc/$PID_OF_MAIN_PY/oom_adj" <<< "$pass"
+        fi
+         
+    
