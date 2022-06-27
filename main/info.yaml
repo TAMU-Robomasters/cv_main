@@ -37,7 +37,7 @@
     
     (profiles):
         (default):
-            our_team_color: 'red' # 'red' or 'blue'
+            our_team_color: 'blue' # 'red' or 'blue'
             filter_team_color: true
             mode: development
             process_name: cv_main
