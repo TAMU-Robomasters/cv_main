@@ -15,6 +15,7 @@ from toolbox.geometry_tools import BoundingBox, Position
 hardware_acceleration         = config.model.hardware_acceleration
 input_dimension               = config.model.input_dimension
 which_model                   = config.model.which_model
+load_from_pickle              = config.model.load_from_pickle
 
 # config check
 assert hardware_acceleration in ['tensor_rt', 'gpu', None]
@@ -55,8 +56,22 @@ def init_yolo_v5(model):
     elif hardware_acceleration == 'gpu':
         print("[modeling]     gpu: ENABLED\n")
         import torch
-        normal_model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_to.yolo_v5.pytorch_model)
-        normal_model = normal_model.to(torch.device("cuda"))
+        if not load_from_pickle:
+            normal_model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_to.yolo_v5.pytorch_model)
+            normal_model = normal_model.to(torch.device("cuda"))
+        else:
+            from toolbox.dill_tools import large_pickle_save, large_pickle_load
+            from toolbox.file_system_tools import FS
+            if not FS.is_file(absolute_path_to.yolo_v5.pickle):
+                print("[modeling]     saving a pickle file")
+                normal_model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_to.yolo_v5.pytorch_model)
+                large_pickle_save(normal_model, absolute_path_to.yolo_v5.pickle)
+                print("[modeling]     file saved")
+            else:
+                print("[modeling]    loading from pickle file")
+                normal_model = large_pickle_load(absolute_path_to.yolo_v5.pickle)
+            normal_model = normal_model.to(torch.device("cuda"))
+            
         normal_model.eval()
         torch.no_grad()
     # 
