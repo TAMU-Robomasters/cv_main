@@ -79,7 +79,7 @@ runtime.aiming = LazyDict(
 # main
 # 
 # 
-lookback_size = 4
+lookback_size = 5
 last_boxes = []
 def when_bounding_boxes_refresh():
     global last_boxes
