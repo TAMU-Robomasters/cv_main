@@ -67,20 +67,6 @@ load = [ "python38Packages", "virtualenv",]
 [[packages]]
 load = [ "python38Packages", "wheel",]
 
-[[packages]]
-load = [ "python38Packages", "scipy",]
-
-[[packages]]
-load = [ "python38Packages", "pyrealsense2WithoutCuda",]
-
-[[packages]]
-load = [ "python38Packages", "numpy",]
-
-[[packages]]
-load = [ "python38Packages", "matplotlib",]
-
-[[packages]]
-load = [ "python38Packages", "opencv4",]
 
 [[packages]]
 load = [ "poetry",]
@@ -104,11 +90,6 @@ load = [ "poetry",]
 load = [ "pkgconfig",]
 asNativeBuildInput = true
 onlyIf = [ [ "stdenv", "isLinux",],]
-
-# [[packages]]
-# load = [ "pkg-config",]
-# asNativeBuildInput = true
-# onlyIf = [ [ "stdenv", "isLinux",],]
 
 [[packages]]
 load = [ "libconfig",]

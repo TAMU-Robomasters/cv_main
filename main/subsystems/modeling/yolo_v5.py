@@ -129,7 +129,8 @@ def yolo_v5_bounding_boxes(model, frame, minimum_confidence, threshold):
             print(error)
 
         # loop over each of the detections
-        labels = labels.cpu()
+        if not isinstance(labels, list):
+            labels = labels.cpu()
         for detection in labels:
             x_top_left, y_top_left, x_bottom_right, y_bottom_right, box_confidence, class_id = detection
 
