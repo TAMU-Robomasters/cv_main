@@ -9,8 +9,11 @@ Its the home of all Tamu RoboMaster's cool code. (If you're looking for *boring*
 
 ### How does the code work?
 
-- `main/main.py` organizes everything
-- `main/subsystems` are all the key components
-- `./main/info.yaml` is our config. It is imported (indirectly) into basically every python file in the project
-- everything in `main/` basically goes to the `main.py` or one of the tests in `main.py`
-- everything in `toolbox/` is accessible to the python source code
+- `main/main.py` is only ~12 lines of code
+     - These are the 3 core functions in the codebase:
+     - `model.when_frame_arrives()`
+     - `aim.when_bounding_boxes_refresh()`
+     - `communicate.when_aiming_refreshes()`
+- Everything outside of those functions are just helpers for those functions 
+- If you need to set a constant (like IMAGE_DIMENSIONS) do it in the `./main/info.yaml`
+- If a tool/function is generic (used in multiple places) put it in the toolbox folder
