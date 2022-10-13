@@ -15,5 +15,10 @@ Its the home of all Tamu RoboMaster's cool code. (If you're looking for *boring*
      - `aim.when_bounding_boxes_refresh()`
      - `communicate.when_aiming_refreshes()`
 - Everything outside of those functions are just helpers for those functions 
-- If you need to set a constant (like IMAGE_DIMENSIONS) do it in the `./main/info.yaml`
 - If a tool/function is generic (used in multiple places) put it in the toolbox folder
+- If you need to set a constant (like `our_team_color`) do it in the `./main/info.yaml`
+    - To use that value in python do:<br>
+    ```py
+    from toolbox.globals import path_to, config
+    config.our_team_color
+    ```
