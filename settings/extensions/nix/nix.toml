@@ -51,7 +51,6 @@ load = [ "graphviz",] # for yolov5 training
 # 
 # Python
 # 
-
 [[packages]]
 load = [ "python38",]
 
@@ -69,7 +68,14 @@ load = [ "python38Packages", "wheel",]
 
 
 [[packages]]
-load = [ "poetry",]
+load = [ "cmake",]
+
+[[packages]]
+load = [ "pkg-config",]
+
+[[packages]]
+load = [ "libffi",]
+
 
 
 # 
