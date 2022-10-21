@@ -6,7 +6,6 @@ authors = [""]
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.10"
-pip = "20.1.1"
 PyYAML = "^5.1.2"
 regex = ">=2022.3.2"
 filterpy = "1.4.4"
