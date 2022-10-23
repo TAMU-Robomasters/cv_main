@@ -124,9 +124,8 @@ def when_bounding_boxes_refresh():
         if depth_int in bullet_drop:
             angle_adjustment = bullet_drop[depth_int]
         else: # more than 5 meters
-            angle_adjustment = -(depth)/100 # negative is aiming higher
+            angle_adjustment = -(depth_amount)/100 # negative is aiming higher
         
-        print(f'''angle_adjustment = {angle_adjustment}''', end=" ")
         vertical_angle += angle_adjustment
         
                 
@@ -139,8 +138,11 @@ def when_bounding_boxes_refresh():
     else:
         x_circular_buffer.append(point_to_aim_at[0])
         y_circular_buffer.append(point_to_aim_at[1])
-        horizonal_stdev = np.std(x_circular_buffer)
-        vertical_stdev = np.std(y_circular_buffer)
+        try:
+            horizonal_stdev = np.std(x_circular_buffer)
+            vertical_stdev = np.std(y_circular_buffer)
+        except Exception as error:
+            pass
         
     # 
     # should_shoot
@@ -151,7 +153,6 @@ def when_bounding_boxes_refresh():
     else:
         width = runtime.color_image.shape[1]
         height = runtime.color_image.shape[0]
-        # print(f"width {width}, height {height}")
         x_top_left = (width - (confidence_box_width*width))/2
         y_top_left = (height - (confidence_box_height*height))/2
         
