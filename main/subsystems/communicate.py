@@ -27,9 +27,10 @@ class Message(Structure):
         ("magic_number"    , c_uint8   ),
         ("horizontal_angle", c_float   ),
         ("vertical_angle"  , c_float   ),
+        ("depth"           , c_float   ),
         ("status"          , c_uint8   ),
     ]
-message = Message(ord('a'), 0.0, 0.0, 0)
+message = Message(ord('a'), 0.0, 0.0, 0.0, 0)
 
 action = LazyDict(
     LOOK_AROUND=0,
@@ -49,11 +50,12 @@ def when_aiming_refreshes():
     
     message.horizontal_angle = float(runtime.aiming.horizontal_angle)
     message.vertical_angle   = float(runtime.aiming.vertical_angle)
+    message.depth            = float(runtime.aiming.depth_amount)
     message.status           = action.FIRE if should_shoot else (action.LOOK_AROUND if should_look_around else action.LOOK_AT_COORDS)
     # UP = negative (for sentry because technically the sentry's camera is upsidedown)
     # LEFT = negative
     # values are in radians
-    print(f'''msg({f"horizontal:{message.horizontal_angle:.4f}".rjust(7)},{f"vertical:{message.vertical_angle:.4f}".rjust(7)}, {message.status})''', end=", ")
+    print(f'''msg({f"horizontal:{message.horizontal_angle:.4f}".rjust(7)},{f"vertical:{message.vertical_angle:.4f}".rjust(7)},{f"depth:{message.depth:.2f}".rjust(7)}, {message.status})''', end=", ")
     
     try:
         port.write(bytes(message))

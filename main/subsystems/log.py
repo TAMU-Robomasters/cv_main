@@ -22,23 +22,21 @@ max_number_of_frames      = config.log.max_number_of_frames
 # 
 video_depth_output_path = None
 video_color_output_path = video_output
-if save_frame_to_file:
-    color_frames = []
-    depth_frames = []
-    
-    # use different output for competiion
-    if config.mode == 'production':
-        # read json
-        with open(absolute_path_to.permanent_storage, 'r') as in_file:    permanent_storage = json.load(in_file)
-        # increment
-        permanent_storage["video_count"] += 1
-        # write json
-        with open(absolute_path_to.permanent_storage, 'w') as outfile: json.dump(permanent_storage, outfile)
-        
-        # create incremented storage path
-        video_count = permanent_storage["video_count"]
-        video_color_output_path = f'{absolute_path_to.record_video_output_color}{video_count}.mp4'
-        video_depth_output_path = f'{absolute_path_to.record_video_output_color}{video_count}.depth.pickle'
+
+color_frames = []
+depth_frames = []
+
+# read json
+with open(absolute_path_to.permanent_storage, 'r') as in_file:    permanent_storage = json.load(in_file)
+# increment
+permanent_storage["video_count"] += 1
+# write json
+with open(absolute_path_to.permanent_storage, 'w') as outfile: json.dump(permanent_storage, outfile)
+
+# create incremented storage path
+video_count = permanent_storage["video_count"]
+video_color_output_path = f'{absolute_path_to.record_video_output_color}{video_count}.ignore.mp4'
+video_depth_output_path = f'{absolute_path_to.record_video_output_color}{video_count}.depth.ignore.pickle'
 
 # 
 # 
@@ -88,10 +86,10 @@ def when_finished_processing_frame():
     if display_live_frames:
         image.show()
     
-    if save_frame_to_file and (frame_number % save_rate == 0):
+    if (frame_number % save_rate == 0):
         global color_frames
         global depth_frames
-        color_frames.append(image.in_cv2_format)
+        color_frames.append(runtime.color_image)
         color_frames = color_frames[-config.log.max_number_of_frames:] # hard limit the number of color_frames in ram
         
         depth_frames.append(runtime.depth_image)
@@ -100,7 +98,7 @@ def when_finished_processing_frame():
         # 
         # check for saving to disk
         # 
-        if len(color_frames) > save_to_disk_after:
+        if len(color_frames) % save_to_disk_after == 0:
             save_frames_as_video(path=video_color_output_path)
         
 
@@ -123,13 +121,15 @@ if config.log.disable_all_logging:
 # 
 # 
 def save_frames_as_video(path):
-    if save_frame_to_file:
+    try:
         # save all the color_frames as a video
         Video.create_from_frames(color_frames, save_to=path)
         print(f"\n\nvideo output has been saved to {path}")
         
         if video_depth_output_path:
             large_pickle_save(variable=depth_frames, file_path=video_depth_output_path)
+    except Exception as error:
+        pass
 
 def visualize_depth_frame(depth_frame_array):
     """
@@ -172,8 +172,9 @@ def generate_image(fps=0):
     prediction_point   = runtime.aiming.prediction_point
     confidence_box   = runtime.aiming.confidence_box
     # bullet_drop_point  = runtime.aiming.bullet_drop_point
-
+    
     image = Image(runtime.color_image)
+
     if len(bounding_boxes) > 0:
         white  = rgb(255, 255, 255)
         red    = rgb(240, 113, 120)
@@ -191,7 +192,6 @@ def generate_image(fps=0):
         if found_robot:
             image.add_bounding_box(best_bounding_box, color=rgb(240, 113, 120))
             image.add_point(x=center_point.x     , y=center_point.y     , color=rgb(130, 170, 255), radius=10)
-            # image.add_point(x=bullet_drop_point.x, y=bullet_drop_point.y, color=rgb(137, 221, 255), radius=7)
             image.add_point(x=prediction_point.x , y=prediction_point.y , color=rgb(195, 232, 141), radius=5)
     
     x_location = 30

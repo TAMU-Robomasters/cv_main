@@ -8,8 +8,6 @@ from super_map import LazyDict
 # project imports
 from toolbox.globals import path_to, absolute_path_to, config, print, runtime
 from toolbox.geometry_tools import BoundingBox, Position
-from toolbox.file_system_tools import FS
-from toolbox.pickle_tools import large_pickle_save, large_pickle_load
 
 # 
 # config
@@ -58,13 +56,22 @@ def init_yolo_v5(model):
     elif hardware_acceleration == 'gpu':
         print("[modeling]     gpu: ENABLED\n")
         import torch
-        if not load_from_pickle or not FS.is_file(absolute_path_to.yolo_v5.pickle):
+        if not load_from_pickle:
             normal_model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_to.yolo_v5.pytorch_model)
-            large_pickle_save(normal_model, absolute_path_to.yolo_v5.pickle)
+            normal_model = normal_model.to(torch.device("cuda"))
         else:
-            print("[modeling]    loading from pickle file")
-            normal_model = large_pickle_load(absolute_path_to.yolo_v5.pickle)
-        normal_model = normal_model.to(torch.device("cuda"))
+            from toolbox.dill_tools import large_pickle_save, large_pickle_load
+            from toolbox.file_system_tools import FS
+            if not FS.is_file(absolute_path_to.yolo_v5.pickle):
+                print("[modeling]     saving a pickle file")
+                normal_model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_to.yolo_v5.pytorch_model)
+                large_pickle_save(normal_model, absolute_path_to.yolo_v5.pickle)
+                print("[modeling]     file saved")
+            else:
+                print("[modeling]    loading from pickle file")
+                normal_model = large_pickle_load(absolute_path_to.yolo_v5.pickle)
+            normal_model = normal_model.to(torch.device("cuda"))
+            
         normal_model.eval()
         torch.no_grad()
     # 
@@ -73,12 +80,7 @@ def init_yolo_v5(model):
     else:
         print("[modeling]     falling back on CPU\n")
         import torch
-        if not load_from_pickle or not FS.is_file(absolute_path_to.yolo_v5.pickle):
-            normal_model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_to.yolo_v5.pytorch_model)
-            large_pickle_save(normal_model, absolute_path_to.yolo_v5.pickle)
-        else:
-            print("[modeling]    loading from pickle file")
-            normal_model = large_pickle_load(absolute_path_to.yolo_v5.pickle)
+        normal_model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_to.yolo_v5.pytorch_model)
         normal_model.eval()
         torch.no_grad()
     
@@ -127,7 +129,8 @@ def yolo_v5_bounding_boxes(model, frame, minimum_confidence, threshold):
             print(error)
 
         # loop over each of the detections
-        labels = labels.cpu()
+        if not isinstance(labels, list):
+            labels = labels.cpu()
         for detection in labels:
             x_top_left, y_top_left, x_bottom_right, y_bottom_right, box_confidence, class_id = detection
 

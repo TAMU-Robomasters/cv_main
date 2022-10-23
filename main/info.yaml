@@ -37,7 +37,7 @@
     
     (profiles):
         (default):
-            our_team_color: 'red' # 'red' or 'blue'
+            our_team_color: 'blue' # 'red' or 'blue'
             filter_team_color: true
             mode: development
             process_name: cv_main
@@ -54,17 +54,23 @@
                 threshold: 0.3  # should be a value between 0-1
                 frequency: 30
                 input_dimension: 416
+                hue_shift_amount: 75 # DONT CHANGE unless you really know what you're doing
+                                     # this is the amount that an image needs to be hue shifted to make blue armor panels look like they're red
             aiming:
                 prediction_method: null # null, linear, kalman
                 linear_tracking_confidence_threshold: 0.80 # 0=dont_care 1=must be a perfect line
                 linear_buffer_size: 30
                 skip_allowance: 2 # number of frames that can be skipped/missed
                 
-                confidence_box_height: 0.3 # 0.4 = 40% percent of image height
-                confidence_box_width: 0.3 # percent
+                confidence_box_height: 0.5 # 0.4 = 40% percent of image height
+                confidence_box_width: 0.4 # percent
                 
                 bullet_drop: # NOTE: override this below with sentry/standard
-                    1: 0.01
+                    1: 0.02 # at <= __ meter (key), adjust the angle by __ in radians (value)
+                    2: 0.01
+                    3: -0.01
+                    4: -0.08 # 0.3 
+                    5: -0.20 # 0.4
                 
                 disable_bullet_drop: false
                 sec_till_lock_lost: 2
@@ -114,7 +120,7 @@
                 save_frame_to_file: true
                 display_live_frames: false
                 save_rate: 25 # once every __ frames
-                save_to_disk_after: 350 # 1200 frames is about 20 min at 1 frame per second
+                save_to_disk_after: 150 # 1200 frames is about 20 min at 1 frame per second
                 max_number_of_frames: 4000 # 5000 is consumes about 6GB of ram
             communication:
                 timeout: 0.05
@@ -140,24 +146,25 @@
         # 
         # optionals (which are combined/merged with defaults)
         #
+        SENTRY:
+            bot: sentry
+            aiming:
+                bullet_drop:
+                    1: -0.02 # at <= __ meter (key), adjust the angle by __ in radians (value)
+                    2: -0.01
+                    3: 0.01
+                    4: 0.08 # 0.3 
+                    5: 0.16 # 0.4
+        
         STANDARD:
             bot: standard
             aiming:
                 bullet_drop:
                     1: 0.02 # at <= __ meter (key), adjust the angle by __ in radians (value)
                     2: 0.01
-                    3: 0.01
-                    4: -0.03
-                    5: -0.04
-        SENTRY:
-            bot: standard
-            aiming:
-                bullet_drop:
-                    1: 0.02 # at <= __ meter (key), adjust the angle by __ in radians (value)
-                    2: 0.01
-                    3: 0.01
-                    4: -0.03
-                    5: -0.04
+                    3: 0.03
+                    4: -0.08
+                    5: -0.16
         
         GPU=NONE:
             model:
@@ -187,6 +194,9 @@
                 # serial_port: "/dev/ttyACM0" # USB serial
                 serial_port: "/dev/ttyTHS2" # UART serial
         BOARD=XAVIER:
+            hardware:
+                camera: realsense
+                camera_is_upsidedown: true
             model:
                 hardware_acceleration: "gpu"
             communication:

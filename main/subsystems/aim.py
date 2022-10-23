@@ -79,7 +79,10 @@ runtime.aiming = LazyDict(
 # main
 # 
 # 
+lookback_size = 5
+last_boxes = []
 def when_bounding_boxes_refresh():
+    global last_boxes
     # import data
     found_robot       = runtime.modeling.found_robot
     best_bounding_box = runtime.modeling.best_bounding_box
@@ -120,14 +123,18 @@ def when_bounding_boxes_refresh():
     # bullet drop
     #
     if not disable_bullet_drop and found_robot:
-        depth_int = int(math.floor(depth_amount))
-        if depth_int in bullet_drop:
-            angle_adjustment = bullet_drop[depth_int]
-        else: # more than 5 meters
-            angle_adjustment = -(depth_amount)/100 # negative is aiming higher
-        
-        vertical_angle += angle_adjustment
-        
+        try:
+            depth_int = int(math.floor(depth_amount))
+            if depth_int in bullet_drop:
+                angle_adjustment = bullet_drop[depth_int]
+            # else: # more than 5 meters
+            if depth_amount > 5:
+                angle_adjustment = -(depth_amount+38)/100 # negative is aiming higher, 38 was hand-tuned and needs to be re-tuned
+            
+            print(f'''angle_adjustment = {angle_adjustment:.4f}''', end=" ")
+            vertical_angle += angle_adjustment
+        except Exception as error:
+            print(error)
                 
     # 
     # update circular buffers
@@ -150,6 +157,7 @@ def when_bounding_boxes_refresh():
     if not found_robot: 
         should_shoot = False
         runtime.aiming.confidence_box = None
+        last_boxes.append(0)
     else:
         width = runtime.color_image.shape[1]
         height = runtime.color_image.shape[0]
@@ -164,6 +172,15 @@ def when_bounding_boxes_refresh():
         ])
         runtime.aiming.confidence_box = confidence_box
         should_shoot = confidence_box.contains(best_bounding_box.center)
+        
+        last_boxes.append(1)
+        
+    last_boxes = last_boxes[-lookback_size:]
+    time_sum = sum(last_boxes)
+    if time_sum:
+        should_shoot = True
+        
+            
         
 
     # 
