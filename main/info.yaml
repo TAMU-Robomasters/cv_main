@@ -57,6 +57,7 @@
                 hue_shift_amount: 75 # DONT CHANGE unless you really know what you're doing
                                      # this is the amount that an image needs to be hue shifted to make blue armor panels look like they're red
             aiming:
+                lookback_size: 5 # for confidence about should-shoot or not
                 prediction_method: null # null, linear, kalman
                 linear_tracking_confidence_threshold: 0.80 # 0=dont_care 1=must be a perfect line
                 linear_buffer_size: 30
@@ -65,7 +66,7 @@
                 confidence_box_height: 0.5 # 0.4 = 40% percent of image height
                 confidence_box_width: 0.4 # percent
                 
-                bullet_drop: # NOTE: override this below with sentry/standard
+                bullet_drop: # NOTE: override these values using profiles below (because they need to be different with sentry/standard)
                     1: 0.02 # at <= __ meter (key), adjust the angle by __ in radians (value)
                     2: 0.01
                     3: -0.01

@@ -14,6 +14,7 @@ from subsystems.aiming.predictor import Predictor
 # config
 # 
 bot                                  = config.bot
+lookback_size                        = config.aiming.lookback_size
 stream_width                         = config.aiming.stream_width
 stream_height                        = config.aiming.stream_height
 stream_framerate                     = config.aiming.stream_framerate
@@ -79,7 +80,6 @@ runtime.aiming = LazyDict(
 # main
 # 
 # 
-lookback_size = 5
 last_boxes = []
 def when_bounding_boxes_refresh():
     global last_boxes
@@ -125,6 +125,7 @@ def when_bounding_boxes_refresh():
     if not disable_bullet_drop and found_robot:
         try:
             depth_int = int(math.floor(depth_amount))
+            angle_adjustment = 0
             if depth_int in bullet_drop:
                 angle_adjustment = bullet_drop[depth_int]
             # else: # more than 5 meters
