@@ -65,9 +65,11 @@ After you've finished working and close the terminal, you can always return to p
 
 # Manual Setup (Alternative to Project Environment)
 * install python3
-* install the pip modules in `requirements.txt`
+* `python3 -m pip install poetry`
+* `poetry install`
 * add the project directory to your `PYTHONPATH` env variable
-* try running `python source/main.py`
+    * On Mac/Linux/WSL `export PYTHONPATH="$PWD"`
+* try running `python main/main.py`
 
 # Advanced Setup
 
