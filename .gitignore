@@ -1,6 +1,7 @@
 # 
 # Custom
 # 
+*.pt
 \.idea
 *.nosync*
 **/*.dont-sync

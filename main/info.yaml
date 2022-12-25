@@ -29,6 +29,8 @@
             pytorch_model: ./subsystems/modeling/model/yolo_v5.pt
             tensor_rt_file: ./subsystems/modeling/model/yolo_v5.engine
             pickle: ./subsystems/modeling/model/yolo_v5.ignore.pickle
+        yolo_v7:
+            pytorch_model: ./subsystems/modeling/model/yolov7.pt
     
     # this file will be generated automatically
     (local_data): ./local_data.ignore.yaml
@@ -48,7 +50,7 @@
                 camera_is_upsidedown: false
             model:
                 load_from_pickle: false
-                which_model: yolo_v5 # yolo_v5 or yolo_v4
+                which_model: yolo_v7 # yolo_v5 or yolo_v4
                 hardware_acceleration: null # one of: [ null, "gpu", "tensor_rt" ]
                 minimum_confidence: 0.3 # should be a value between 0-1
                 threshold: 0.3  # should be a value between 0-1
@@ -186,6 +188,9 @@
         V5:
             model:
                 which_model: yolo_v5
+        V7:
+            model:
+                which_model: yolo_v7
         
         
         BOARD=TX2:
