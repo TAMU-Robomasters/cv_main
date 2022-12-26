@@ -35,6 +35,11 @@ def init_yolo_v7(model):
     print("[modeling]   Running on CPU\n")
     import torch
 
+    if not os.path.exists(path_to.yolo_v7.path_to_folder):
+        raise Exception(f"yolov7 repo not found at {path_to.yolo_v7.path_to_folder}")
+    elif not os.path.exists(path_to.yolo_v7.pytorch_model):
+        raise Exception(f"model not found at {path_to.yolo_v7.pytorch_model}")
+
     # load model locally
     normal_model = torch.hub.load(path_to.yolo_v7.path_to_folder, 'custom', path_to.yolo_v7.pytorch_model, source='local')
 
