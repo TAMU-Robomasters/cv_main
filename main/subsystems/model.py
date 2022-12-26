@@ -44,12 +44,18 @@ model = LazyDict(
     W=None,
     H=None,
 )
+
 if which_model == 'yolo_v4':
     from subsystems.modeling.yolo_v4 import init_yolo_v4
     init_yolo_v4(model)
-else:
+elif which_model == 'yolo_v5':
     from subsystems.modeling.yolo_v5 import init_yolo_v5
     init_yolo_v5(model)
+elif which_model == 'yolo_v7':
+    from subsystems.modeling.yolo_v7 import init_yolo_v7
+    init_yolo_v7(model)
+else:
+    raise Exception("Model specified under /'model.which_model/' is not supported")
 
 # 
 # 
