@@ -34,9 +34,9 @@ def init_yolo_v7(model):
     # 
     print("[modeling]   Running on CPU\n")
     import torch
-    # normal_model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_to.yolo_v5.pytorch_model)
+
     # load model locally
-    normal_model = torch.hub.load(path_to.yolo_v7.path_to_folder, 'custom', path_to.yolo_v7.path_to_model, source='local')
+    normal_model = torch.hub.load(path_to.yolo_v7.path_to_folder, 'custom', path_to.yolo_v7.pytorch_model, source='local')
 
     normal_model.eval()
     torch.no_grad()
