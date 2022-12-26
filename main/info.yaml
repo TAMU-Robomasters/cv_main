@@ -29,6 +29,10 @@
             pytorch_model: ./subsystems/modeling/model/yolo_v5.pt
             tensor_rt_file: ./subsystems/modeling/model/yolo_v5.engine
             pickle: ./subsystems/modeling/model/yolo_v5.ignore.pickle
+        yolo_v7:
+            pytorch_model: ./subsystems/modeling/model/yolo_v7.pt
+            tensor_rt_file: ./subsystems/modeling/model/yolo_v7.ignore.engine
+            pickle: ./subsystems/modeling/model/yolo_v7.ignore.pickle
     
     # this file will be generated automatically
     (local_data): ./local_data.ignore.yaml
