@@ -4,6 +4,7 @@ import cv2
 import os
 import time
 from super_map import LazyDict
+import torch
 
 # project imports
 from toolbox.globals import path_to, absolute_path_to, config, print, runtime
@@ -26,31 +27,34 @@ assert hardware_acceleration in ['tensor_rt', 'gpu', None]
 # 
 def init_yolo_v7(model):
     print("\n[modeling] YOLO v7 loading")
-    yolo_model   = None
-    normal_model = None
-    
-    # 
-    # cpu
-    # 
-    print("[modeling]   Running on CPU\n")
-    import torch
+    loaded_model = None
 
-    if not os.path.exists(path_to.yolo_v7.path_to_folder):
-        raise Exception(f"yolov7 repo not found at {path_to.yolo_v7.path_to_folder}")
-    elif not os.path.exists(path_to.yolo_v7.pytorch_model):
-        raise Exception(f"model not found at {path_to.yolo_v7.pytorch_model}")
+    if hardware_acceleration == 'tensor_rt':
+        print("[modeling]   tensor_rt: ENABLED\n")
+    else:
+        if not os.path.exists(path_to.yolo_v7.path_to_folder):
+            raise Exception(f"yolov7 repo not found at {path_to.yolo_v7.path_to_folder}")
+        elif not os.path.exists(path_to.yolo_v7.pytorch_model):
+            raise Exception(f"model not found at {path_to.yolo_v7.pytorch_model}")
 
-    # load model locally
-    normal_model = torch.hub.load(path_to.yolo_v7.path_to_folder, 'custom', path_to.yolo_v7.pytorch_model, source='local')
+        # load model locally
+        loaded_model = torch.hub.load(path_to.yolo_v7.path_to_folder, 'custom', path_to.yolo_v7.pytorch_model, source='local')
 
-    normal_model.eval()
-    torch.no_grad()
-    
+        if hardware_acceleration == 'gpu' and torch.cuda.is_available():
+            print(torch.cuda.is_available())
+            print("[modeling]   gpu_acceleration: ENABLED\n")
+            # loaded_model = loaded_model.to(torch.device("cuda"))
+        else:
+            print("[modeling]   Running on CPU\n")
+
+        loaded_model.zero_grad(set_to_none=True)
+        loaded_model.eval()
+        torch.no_grad()
+        
     # 
     # export data
     # 
-    model.trt_yolo           = yolo_model
-    model.net                = normal_model
+    model.net                = loaded_model
     model.get_bounding_boxes = lambda *args, **kwargs: yolo_v7_bounding_boxes(model, *args, **kwargs)
 
 def yolo_v7_bounding_boxes(model, frame, minimum_confidence, threshold):
@@ -71,21 +75,21 @@ def yolo_v7_bounding_boxes(model, frame, minimum_confidence, threshold):
     except Exception as error:
         print(error)
 
-    # loop over each of the detections
-    if not isinstance(labels, list):
-        labels = labels.cpu()
-    for detection in labels:
-        x_top_left, y_top_left, x_bottom_right, y_bottom_right, box_confidence, class_id = detection
+    # # loop over each of the detections
+    # if not isinstance(labels, list):
+    #     labels = labels.cpu()
+    # for detection in labels:
+    #     x_top_left, y_top_left, x_bottom_right, y_bottom_right, box_confidence, class_id = detection
 
-        # filter out weak predictions
-        if box_confidence > minimum_confidence:
-            boxes.append(
-                BoundingBox.from_points(
-                    top_left=(x_top_left, y_top_left),
-                    bottom_right=(x_bottom_right, y_bottom_right),
-                )
-            )
-            confidences.append(float(box_confidence))
-            class_ids.append(class_id)
+    #     # filter out weak predictions
+    #     if box_confidence > minimum_confidence:
+    #         boxes.append(
+    #             BoundingBox.from_points(
+    #                 top_left=(x_top_left, y_top_left),
+    #                 bottom_right=(x_bottom_right, y_bottom_right),
+    #             )
+    #         )
+    #         confidences.append(float(box_confidence))
+    #         class_ids.append(class_id)
     
     return boxes, confidences, class_ids
