@@ -31,6 +31,7 @@
             pickle: ./subsystems/modeling/model/yolo_v5.ignore.pickle
         yolo_v7:
             pytorch_model: ./subsystems/modeling/model/yolo_v7.pt
+            tensor_rt_file: ./subsystems/modeling/model/yolo_v7.trt
             path_to_folder: "./../yolov7"
     
     # this file will be generated automatically
@@ -51,7 +52,7 @@
                 camera_is_upsidedown: false
             model:
                 load_from_pickle: false
-                which_model: yolo_v5 # yolo_v5 or yolo_v4
+                which_model: yolo_v7 # yolo_v5 or yolo_v4
                 hardware_acceleration: null # one of: [ null, "gpu", "tensor_rt" ]
                 minimum_confidence: 0.3 # should be a value between 0-1
                 threshold: 0.3  # should be a value between 0-1
@@ -203,9 +204,9 @@
         BOARD=XAVIER:
             hardware:
                 camera: realsense
-                camera_is_upsidedown: true
+                camera_is_upsidedown: false
             model:
-                hardware_acceleration: "gpu"
+                hardware_acceleration: "tensor_rt"
             communication:
                 serial_port: "/dev/ttyTHS0" # UART serial 0 works but try 1
             log:

@@ -2,6 +2,7 @@
 # Custom
 # 
 *.pt
+*.trt
 \.idea
 *.nosync*
 **/*.dont-sync

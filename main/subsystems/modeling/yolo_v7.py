@@ -8,6 +8,7 @@ import torch
 
 # project imports
 from toolbox.globals import path_to, absolute_path_to, config, print, runtime
+from toolbox.onnx_helper import *
 from toolbox.geometry_tools import BoundingBox, Position
 
 # 
@@ -30,7 +31,18 @@ def init_yolo_v7(model):
     loaded_model = None
 
     if hardware_acceleration == 'tensor_rt':
+        PRECISION = np.float16
+        N_CLASSES = 2
+        BATCH_SIZE = 32
+
         print("[modeling]   tensor_rt: ENABLED\n")
+        import pycuda.autoinit  # This is needed for initializing CUDA driver
+        from onnx_helper import ONNXClassifierWrapper
+
+        # trt_model = ONNXClassifierWrapper(path_to.yolo_v7.tensor_rt_file, precision=PRECISION, batch_size=BATCH_SIZE, n_classes=N_CLASSES)
+
+        model.get_bounding_boxes = lambda *args, **kwargs: yolo_v7_tensor_rt_bounding_boxes(model, *args, **kwargs)
+
     else:
         if not os.path.exists(path_to.yolo_v7.path_to_folder):
             raise Exception(f"yolov7 repo not found at {path_to.yolo_v7.path_to_folder}")
@@ -50,12 +62,10 @@ def init_yolo_v7(model):
         loaded_model.zero_grad(set_to_none=True)
         loaded_model.eval()
         torch.no_grad()
-        
-    # 
-    # export data
-    # 
-    model.net                = loaded_model
-    model.get_bounding_boxes = lambda *args, **kwargs: yolo_v7_bounding_boxes(model, *args, **kwargs)
+
+        # export data
+        model.net                = loaded_model
+        model.get_bounding_boxes = lambda *args, **kwargs: yolo_v7_bounding_boxes(model, *args, **kwargs)
 
 def yolo_v7_bounding_boxes(model, frame, minimum_confidence, threshold):
     # NOTE: this code is derived from https://www.pyimagesearch.com/2018/11/12/yolo-object-detection-with-opencv/
@@ -75,21 +85,31 @@ def yolo_v7_bounding_boxes(model, frame, minimum_confidence, threshold):
     except Exception as error:
         print(error)
 
-    # # loop over each of the detections
-    # if not isinstance(labels, list):
-    #     labels = labels.cpu()
-    # for detection in labels:
-    #     x_top_left, y_top_left, x_bottom_right, y_bottom_right, box_confidence, class_id = detection
+    # loop over each of the detections
+    if not isinstance(labels, list):
+        labels = labels.cpu()
+    for detection in labels:
+        x_top_left, y_top_left, x_bottom_right, y_bottom_right, box_confidence, class_id = detection
 
-    #     # filter out weak predictions
-    #     if box_confidence > minimum_confidence:
-    #         boxes.append(
-    #             BoundingBox.from_points(
-    #                 top_left=(x_top_left, y_top_left),
-    #                 bottom_right=(x_bottom_right, y_bottom_right),
-    #             )
-    #         )
-    #         confidences.append(float(box_confidence))
-    #         class_ids.append(class_id)
+        # filter out weak predictions
+        if box_confidence > minimum_confidence:
+            boxes.append(
+                BoundingBox.from_points(
+                    top_left=(x_top_left, y_top_left),
+                    bottom_right=(x_bottom_right, y_bottom_right),
+                )
+            )
+            confidences.append(float(box_confidence))
+            class_ids.append(class_id)
+    
+    return boxes, confidences, class_ids
+
+def yolo_v7_tensor_rt_bounding_boxes(model, frame, minimum_confidence, threshold):
+    # NOTE: this code is derived from https://www.pyimagesearch.com/2018/11/12/yolo-object-detection-with-opencv/
+
+    # initialize our lists of detected bounding boxes, confidences, and class IDs, respectively
+    boxes       = []
+    confidences = []
+    class_ids   = []
     
     return boxes, confidences, class_ids
