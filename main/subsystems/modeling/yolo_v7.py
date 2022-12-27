@@ -31,6 +31,22 @@ def init_yolo_v7(model):
 
     if hardware_acceleration == 'tensor_rt':
         print("[modeling]   tensor_rt: ENABLED\n")
+        print("[modeling]     tensor_rt: ENABLED\n")
+        import pycuda.autoinit  # This is needed for initializing CUDA driver
+        try:
+            import ctypes
+            ctypes.cdll.LoadLibrary(absolute_path_to.tensorrt_so_file)
+        except OSError as error:
+            raise SystemExit(f'ERROR: failed to load {absolute_path_to.tensorrt_so_file}  Did you forget to do a "make" in the "./plugins/" subdirectory?') from error
+        
+        from subsystems.modeling.yolo_with_plugins import TrtYOLO
+        
+        yolo_model = TrtYOLO(
+            path_to_model=path_to.yolo_v7.tensor_rt_file,
+            input_shape=(input_dimension, input_dimension),
+            category_num=3, # what is the 3? -- Jeff
+            letter_box=False
+        )
     else:
         if not os.path.exists(path_to.yolo_v7.path_to_folder):
             raise Exception(f"yolov7 repo not found at {path_to.yolo_v7.path_to_folder}")

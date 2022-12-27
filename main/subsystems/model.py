@@ -55,7 +55,7 @@ elif which_model == 'yolo_v7':
     from subsystems.modeling.yolo_v7 import init_yolo_v7
     init_yolo_v7(model)
 else:
-    raise Exception("Model specified under /'model.which_model/' is not supported")
+    raise Exception("IDK what which_model={which_model} is. I only know about: yolo_v4, yolo_v5, yolo_v7")
 
 # 
 # 
@@ -144,7 +144,12 @@ if which_model == 'yolo_v5':
         blue=0,
         red=1,
     )
-else:
+elif which_model == 'yolo_v7':
+    color_to_class_id = dict(
+        blue=0,
+        red=1,
+    )
+elif which_model == 'yolo_v4':
     color_to_class_id = dict(
         red=0,
         blue=1,
