@@ -1,5 +1,6 @@
 import argparse
 import os
+import subprocess
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -7,10 +8,12 @@ if __name__ == "__main__":
     parser.add_argument("--conf", type=float, default=0.25, help="confidence threshold for NMS")
     parser.add_argument("--img-size", type=int, default=416, help="image size")
 
-    args = parser.parse_args()
-    model_path = args.model_path
-    conf = args.conf
-    img_size = args.img_size
+    args        = parser.parse_args()
+    model_path  = args.model_path
+    conf        = args.conf
+    img_size    = args.img_size
+    python      = sys.executable
+    this_folder = os.path.dirname(__file__)
 
     # split extension from model path
     model_path, ext = os.path.splitext(model_path)
@@ -30,8 +33,13 @@ if __name__ == "__main__":
     # except Exception as e:
     #     raise e
     
-    try:
-        print("Converting ONNX to TensorRT...")
-        os.system(f"python3 ./TensorRT-For-YOLO-Series/export.py -o {model_path}.onnx -e {model_path}.trt -p fp16 --verbose")
-    except Exception as e:
-        raise e
+    
+    print("Converting ONNX to TensorRT...")
+    print(subprocess.check_output([
+        python,
+        f"{this_folder}/TensorRT-For-YOLO-Series/export.py",
+        f"{model_path}.onnx",
+        "-e", f"{model_path}.trt",
+        "-p", "fp16",
+        "--verbose",
+    ]).decode('utf-8')[0:-1])
