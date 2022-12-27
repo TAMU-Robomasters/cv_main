@@ -55,7 +55,7 @@ elif which_model == 'yolo_v7':
     from subsystems.modeling.yolo_v7 import init_yolo_v7
     init_yolo_v7(model)
 else:
-    raise Exception("IDK what which_model={which_model} is. I only know about: yolo_v4, yolo_v5, yolo_v7")
+    raise Exception(f"IDK what which_model={which_model} is. I only know about: yolo_v4, yolo_v5, yolo_v7")
 
 # 
 # 
