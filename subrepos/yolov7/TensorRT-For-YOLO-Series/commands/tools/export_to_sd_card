@@ -1,0 +1,64 @@
+# 
+# 
+# get input file
+# 
+# 
+
+echo "Where is the GOOD .img file (from another SD Card)"
+read ANSWER
+# check if file exists
+if ! [ -f "$ANSWER" ]
+then
+    echo "The system is saying thats not a file"
+    echo "Please re-run the script and try again"
+    exit
+fi
+target_path="$ANSWER"
+
+echo "Please check the size of that file"
+question="is it large? like >32Gb? [y/n]";answer=''
+while true; do
+    echo "$question"; read response
+    case "$response" in
+        [Yy]* ) answer='yes'; break;;
+        [Nn]* ) answer='no'; break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+
+if ! [ "$answer" = 'yes' ]; then
+    echo "Okay thats probably not the correct file then"
+    echo "(aborting)"
+    exit
+fi
+
+# 
+# 
+#  get target disk
+# 
+# 
+
+# 
+# list disks
+# 
+echo "I'm going to show you the available disks, okay?";read ANSWER;echo
+if [ "$(uname)" = "Darwin" ] 
+then
+    diskutil list | cat
+else
+    sudo fdisk -l
+fi
+
+echo "What is the disk that will be DESTROYED (overwritten)"
+echo "(should be something like '/dev/disk4')"
+read ANSWER
+
+if [ -n "$ANSWER" ]
+then
+    output_disk="$ANSWER"
+    echo ""
+    echo "Alright, $output_disk is about to be overwritten with $target_path"
+    echo "Press enter to continue, CTRL+C to cancel";read ANSWER;echo
+    sudo umount "$output_disk" 2>/dev/null
+    sudo dd if="$target_path" of="$output_disk" bs=1M status=progress
+fi

@@ -1,0 +1,251 @@
+# NOTE: names in parentheses are special, all other names are not!
+(project):
+    ToDo:
+        - fix zed camera calibration
+        - tensor_rt with zed
+        - install python 3.7 using the deadsnakes source, then retry yolov5
+        - have better team detection (manually compute color) so we can lower the minimum_confidence for further recognition
+    
+    # a central place for filepaths
+    (path_to):
+        main_folder:  ./
+        project_root: ../
+        main_test_video: &main_test_video ../data/test.avi
+        video_output:              ../result.do_not_sync.mp4
+        permanent_storage:         ./subsystems/log/permanent_storage.json
+        record_video_output_color: ./subsystems/log/videos/competition_2022_
+        kalman_video:              ./kalman_video.do_not_sync.mp4
+        npy_frames:                ./scripts/data1 # replace with whichever frame set you want to use in the source/scripts/data<num> directory
+        # model
+        datasets: ./subsystems/modeling/datasets.ignore/
+        model: ./subsystems/modeling/model/yolov4-tiny-416
+        yolo_to_onnx: ./subsystems/modeling/model/yolo_to_onnx.py
+        tensorrt_so_file: ./subsystems/modeling/plugins/libyolo_layer.so
+        yolo_v4:
+            model_weights: ./subsystems/modeling/model/yolov4-tiny-416.weights
+            model_config: ./subsystems/modeling/model/yolov4-tiny-416.cfg
+            tensor_rt_file: ./subsystems/modeling/model/yolov4-tiny-416.do_not_sync.trt
+        yolo_v5:
+            pytorch_model: ./subsystems/modeling/model/yolo_v5.pt
+            tensor_rt_file: ./subsystems/modeling/model/yolo_v5.engine
+            pickle: ./subsystems/modeling/model/yolo_v5.ignore.pickle
+        yolo_v7:
+            pytorch_model: ./subsystems/modeling/model/yolo_v7.pt
+            tensor_rt_file: ./subsystems/modeling/model/yolo_v7.ignore.engine
+            pickle: ./subsystems/modeling/model/yolo_v7.ignore.pickle
+    
+    # this file will be generated automatically
+    (local_data): ./local_data.ignore.yaml
+            # this^ is where you choose which profile(s)
+            # and is where to store auth tokens and other secrets
+    
+    (profiles):
+        (default):
+            our_team_color: 'blue' # 'red' or 'blue'
+            filter_team_color: true
+            mode: development
+            process_name: cv_main
+            bot: sentry # sentry or standard
+            hardware:
+                board: laptop
+                camera: null # "realsense" or "zed"
+                camera_is_upsidedown: false
+            model:
+                load_from_pickle: false
+                which_model: yolo_v7 # yolo_v7, yolo_v5, yolo_v4
+                hardware_acceleration: null # one of: [ null, "gpu", "tensor_rt" ]
+                minimum_confidence: 0.3 # should be a value between 0-1
+                threshold: 0.3  # should be a value between 0-1
+                frequency: 30
+                input_dimension: 416
+                hue_shift_amount: 75 # DONT CHANGE unless you really know what you're doing
+                                     # this is the amount that an image needs to be hue shifted to make blue armor panels look like they're red
+            aiming:
+                lookback_size: 5 # for confidence about should-shoot or not
+                prediction_method: null # null, linear, kalman
+                linear_tracking_confidence_threshold: 0.80 # 0=dont_care 1=must be a perfect line
+                linear_buffer_size: 30
+                skip_allowance: 2 # number of frames that can be skipped/missed
+                
+                confidence_box_height: 0.5 # 0.4 = 40% percent of image height
+                confidence_box_width: 0.4 # percent
+                
+                bullet_drop: # NOTE: override these values using profiles below (because they need to be different with sentry/standard)
+                    1: 0.02 # at <= __ meter (key), adjust the angle by __ in radians (value)
+                    2: 0.01
+                    3: -0.01
+                    4: -0.08 # 0.3 
+                    5: -0.20 # 0.4
+                
+                disable_bullet_drop: false
+                sec_till_lock_lost: 2
+                prediction_time: 2 # time interval in seconds to predict using kalman filters
+                
+                # depth camera
+                stream_width: 848
+                stream_height: 480
+                stream_framerate: 60
+                grid_size: 4
+                horizontal_fov: 87
+                vertical_fov: 57
+                model_fps: 30
+                bullet_velocity: 26
+                length_barrel: .22
+                camera_gap: -.034
+
+                # Shooting Logic
+                min_size_for_stdev: 5
+                std_error_bound: 60
+                min_range: 1 # units? meters?
+                max_range: 5
+
+                #power rune
+                blue_light: [50,40,230]
+                blue_dark: [130,255,255]
+                area_arrow_bound: [30,500]
+                center_image_offset: 20
+                min_area: 400
+                r_timer: 10
+
+                #bullet drop
+                barrel_camera_gap: 0.0364   # in meters
+                
+            videostream:
+                simulation:
+                    grab_method: 'next_frame' # 'next_frame', or 'latest_frame'
+                    assumed_framerate: 30 # frames per second
+                    input_file: *main_test_video
+                
+                testing:
+                    record_time: 10 # seconds to record for
+                    record_interval: 0 # records one out of every x frames, <1 to not record
+            log:
+                disable_all_logging: false
+                disable_print: false
+                save_frame_to_file: true
+                display_live_frames: false
+                save_rate: 25 # once every __ frames
+                save_to_disk_after: 150 # 1200 frames is about 20 min at 1 frame per second
+                max_number_of_frames: 4000 # 5000 is consumes about 6GB of ram
+            communication:
+                timeout: 0.05
+                serial_baudrate: 115200
+                serial_port: null
+                
+            zed:
+                resolution: "HD720"       # HD2K, HD1080, HD720, VGA, LAST
+                depth_mode: "PERFORMANCE" # ULTRA, QUALITY, NEURAL, PERFORMANCE, NONE, LAST
+                unit:       "METER"       # CENTIMETER, FOOT, INCH, LAST, METER, MILLIMETER
+                calibration:
+                    brightness:  2
+                    contrast:    8
+                    hue:         0
+                    saturation:  8
+                    sharpness:   8
+                    gamma:       7
+                    gain:       50
+                    exposure:    3
+            
+            realsense_settings: null
+        
+        # 
+        # optionals (which are combined/merged with defaults)
+        #
+        SENTRY:
+            bot: sentry
+            aiming:
+                bullet_drop:
+                    1: -0.02 # at <= __ meter (key), adjust the angle by __ in radians (value)
+                    2: -0.01
+                    3: 0.01
+                    4: 0.08 # 0.3 
+                    5: 0.16 # 0.4
+        
+        STANDARD:
+            bot: standard
+            aiming:
+                bullet_drop:
+                    1: 0.02 # at <= __ meter (key), adjust the angle by __ in radians (value)
+                    2: 0.01
+                    3: 0.03
+                    4: -0.08
+                    5: -0.16
+        
+        GPU=NONE:
+            model:
+                hardware_acceleration: null
+        GPU=TENSOR_RT: &tensor_rt
+            model:
+                hardware_acceleration: "tensor_rt"
+        GPU=REGULAR: &gpu
+            model:
+                hardware_acceleration: "gpu"
+        GPU: *gpu
+        TRT: *tensor_rt
+        
+        
+        V4:
+            model:
+                which_model: yolo_v4
+        V5:
+            model:
+                which_model: yolo_v5
+        V7:
+            model:
+                which_model: yolo_v7
+        
+        
+        BOARD=TX2:
+            model:
+                hardware_acceleration: "tensor_rt"
+            communication:
+                # serial_port: "/dev/ttyACM0" # USB serial
+                serial_port: "/dev/ttyTHS2" # UART serial
+        BOARD=XAVIER:
+            hardware:
+                camera: realsense
+                camera_is_upsidedown: true
+            model:
+                hardware_acceleration: "gpu"
+            communication:
+                serial_port: "/dev/ttyTHS0" # UART serial 0 works but try 1
+            log:
+                save_frame_to_file: false
+        BOARD=LAPTOP:
+            communication:
+                serial_port: null
+            log:
+                save_rate: 1 # every frame (1 frame per frame)
+                save_frame_to_file: true
+        
+            
+        CAMERA=ZED:
+            hardware:
+                camera: zed
+        CAMERA=REALSENSE:
+            hardware:
+                camera: realsense
+                camera_is_upsidedown: true
+        CAMERA=NONE:
+            hardware:
+                camera: null
+        
+        
+        GUI:
+            log:
+                display_live_frames: true
+        
+        
+        SHOWTIME:
+            mode: production
+            log:
+                disable_all_logging: false
+                disable_print: true
+                save_frame_to_file: true
+                display_live_frames: false
+        
+        
+        WE_RED:
+            our_team_color: 'red'
+        WE_BLUE:
+            our_team_color: 'blue'

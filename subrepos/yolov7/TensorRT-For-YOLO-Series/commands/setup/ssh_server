@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# setup ssh connection
+echo '
+#
+# setting up ssh
+#'
+nix-env -iA nixpkgs.openssh
+sudo systemctl enable ssh
+sudo systemctl start ssh

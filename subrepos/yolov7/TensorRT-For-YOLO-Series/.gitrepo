@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/bid-p/TensorRT-For-YOLO-Series.git
+	branch = main
+	commit = 23533f54dcb6083ad38c251dcfd93be35a3942a5
+	parent = 8ca889e807a2f63e4e4c2e23cd976cb39cf654ba
+	method = merge
+	cmdver = 0.4.1

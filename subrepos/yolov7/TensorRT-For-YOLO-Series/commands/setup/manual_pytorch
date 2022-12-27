@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+# previous method:
+sudo apt-get install -y python3-pip libjpeg-dev libopenblas-dev libopenmpi-dev libomp-dev
+sudo -H python3 -m pip install future
+sudo python3 -m pip install -U --user wheel mock pillow
+sudo -H python3 -m pip install testresources
+# above 58.3.0 you get version issues
+sudo -H python3 -m pip install setuptools==58.3.0
+sudo -H python3 -m pip install Cython
+# install gdown to download from Google drive
+sudo -H python3 -m pip install gdown
+# download the wheel
+gdown 'https://drive.google.com/uc?id=1TqC6_2cwqiYacjoLhLgrZoap6-sVL2sd'
+# install PyTorch 1.10.0
+pip3 uninstall torch
+sudo -H python3 -m pip install torch-1.10.0a0+git36449ea-cp36-cp36m-linux_aarch64.whl
+# clean up
+rm torch-1.10.0a0+git36449ea-cp36-cp36m-linux_aarch64.whl
+
+
+sudo apt-get install libjpeg-dev zlib1g-dev libpython3-dev
+sudo apt-get install libavcodec-dev libavformat-dev libswscale-dev
+sudo pip3 install -U pillow
+# install gdown to download from Google drive, if not done yet
+sudo -H pip3 install gdown
+# download TorchVision 0.11.0
+gdown https://drive.google.com/uc?id=1C7y6VSIBkmL2RQnVy8xF9cAnrrpJiJ-K
+# install TorchVision 0.11.0
+pip3 uninstall torchvision
+sudo -H pip3 install torchvision-0.11.0a0+fa347eb-cp36-cp36m-linux_aarch64.whl
+# clean up
+rm torchvision-0.11.0a0+fa347eb-cp36-cp36m-linux_aarch64.whl
