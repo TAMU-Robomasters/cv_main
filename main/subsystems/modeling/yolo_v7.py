@@ -8,7 +8,6 @@ import torch
 
 # project imports
 from toolbox.globals import path_to, absolute_path_to, config, print, runtime
-from toolbox.onnx_helper import *
 from toolbox.geometry_tools import BoundingBox, Position
 
 # 
@@ -37,11 +36,11 @@ def init_yolo_v7(model):
 
         print("[modeling]   tensor_rt: ENABLED\n")
         import pycuda.autoinit  # This is needed for initializing CUDA driver
-        from onnx_helper import ONNXClassifierWrapper
+        from toolbox.onnx_helper import ONNXClassifierWrapper
 
-        # trt_model = ONNXClassifierWrapper(path_to.yolo_v7.tensor_rt_file, precision=PRECISION, batch_size=BATCH_SIZE, n_classes=N_CLASSES)
+        trt_model = ONNXClassifierWrapper(path_to.yolo_v7.tensor_rt_file, [BATCH_SIZE, N_CLASSES], target_dtype=PRECISION)
 
-        model.get_bounding_boxes = lambda *args, **kwargs: yolo_v7_tensor_rt_bounding_boxes(model, *args, **kwargs)
+        model.get_bounding_boxes = lambda *args, **kwargs: yolo_v7_bounding_boxes(model, *args, **kwargs)
 
     else:
         if not os.path.exists(path_to.yolo_v7.path_to_folder):
