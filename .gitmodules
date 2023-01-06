@@ -1,3 +1,6 @@
 [submodule "yolov7"]
 	path = yolov7
 	url = https://github.com/bid-p/yolov7.git
+[submodule "tensorrtx"]
+	path = tensorrtx
+	url = https://github.com/wang-xinyu/tensorrtx.git

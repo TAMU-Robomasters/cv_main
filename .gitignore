@@ -3,6 +3,8 @@
 # 
 *.pt
 *.trt
+*.engine
+
 \.idea
 *.nosync*
 **/*.dont-sync

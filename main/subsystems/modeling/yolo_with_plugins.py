@@ -236,8 +236,6 @@ def do_inference_v2(context, bindings, inputs, outputs, stream):
     # Return only the host outputs.
     return [out.host for out in outputs]
 
-
-
 class TrtYOLO(object):
     """TrtYOLO class encapsulates things needed to run TRT YOLO."""
 

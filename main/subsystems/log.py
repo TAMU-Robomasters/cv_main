@@ -183,6 +183,7 @@ def generate_image(fps=0):
         green  = rgb(195, 232, 141)
         yellow = rgb(254, 195,  85)
         for each in bounding_boxes:
+            # print(f"visual bounding_box: {each}")
             image.add_bounding_box(each, color=rgb(255, 255, 255))
         for each in enemy_boxes:
             image.add_bounding_box(each, color=rgb(254, 195,  85))
