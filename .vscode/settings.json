@@ -14,5 +14,7 @@
         "**/venv": true,
         "**/dist": true,
         "**/.cache": true
-    }
+    },
+    "python.linting.enabled": false,
+    "python.linting.pylintEnabled": false
 }

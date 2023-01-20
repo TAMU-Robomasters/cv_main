@@ -30,7 +30,8 @@
             tensor_rt_file: ./subsystems/modeling/model/yolo_v5.engine
             pickle: ./subsystems/modeling/model/yolo_v5.ignore.pickle
         yolo_v7:
-            pytorch_model: ./subsystems/modeling/model/yolo_v7.pt
+            # pytorch_model: ./subsystems/modeling/model/011023_yolov7_TINY.pt
+            pytorch_model: ./subsystems/modeling/model/REP_122222_yolov7.pt
             tensor_rt_engine: ./subsystems/modeling/model/yolo_v7.engine
             tensor_rt_plugin: ./subsystems/modeling/plugins/libmyplugins.so
             path_to_folder: "./../yolov7"
