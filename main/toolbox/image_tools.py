@@ -1,7 +1,7 @@
 import numpy
 import cv2
 # project imports 
-from toolbox.globals import path_to, config, print
+from toolbox.globals import print
 from toolbox.file_system_tools import FS
 
 rgb = lambda red,blue,green: tuple((red, green, blue))
