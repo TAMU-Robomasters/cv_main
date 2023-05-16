@@ -79,6 +79,22 @@ if [ "$FORNIX_DEBUG" = "true" ]; then
     echo "switching from Bash to Zsh"
     echo "changing HOME to temp folder for nix-shell"
 fi
+
+# get cachix if needed
+if [ -z "$(command -v "cachix")" ]
+then
+    nix-env -iA cachix -f https://cachix.org/api/v1/install
+fi
+
+# FIXME: technially this will fail if the username contains regex chars
+if ! { cat /etc/nix/nix.conf | grep "trusted-users = \([^a]\|[a]\)*$(whoami)" 1>&2 2>/dev/null; }
+then
+    echo "Looks like you don't have yourself listed as a trusted user in /etc/nix/nix.conf"
+    echo "You can either add yourself and re-run this command"
+    echo "or enter your password below and I'll attempt to do it manually"
+    echo "trusted-users = root $(whoami)" | sudo tee -a /etc/nix/nix.conf && sudo pkill nix-daemon
+fi
+
 export TMPDIR="/tmp" # fixes some build problems (workaround for a bug in Nix)
 export SSL_CERT_FILE="$(python3 -c 'import ssl; print(ssl.get_default_verify_paths().openssl_cafile)')"  
 __temp_var__nix_shell_file="$FORNIX_FOLDER/settings/extensions/nix/shell.nix"
@@ -89,7 +105,22 @@ then
     HOME="$FORNIX_HOME" nix-shell --pure --keep SSL_CERT_FILE --show-trace --run "zsh -c '$FORNIX_ARGS'" "$__temp_var__nix_shell_file" -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/a7ecde854aee5c4c7cd6177f54a99d2c1ff28a31.tar.gz --keep __FORNIX_NIX_SETTINGS_PATH --keep __FORNIX_NIX_MAIN_CODE_PATH --keep __FORNIX_NIX_PACKAGES_FILE_PATH --keep __FORNIX_NIX_PATH_EXPORT_FILE --keep __FORNIX_NIX_COMMANDS --keep FORNIX_FOLDER
 else
     # HOME="$FORNIX_HOME" nix-build --show-trace "$__temp_var__nix_shell_file" | cachix push tamucv
-    HOME="$FORNIX_HOME" nix-shell --pure --keep SSL_CERT_FILE --show-trace --command "zsh" "$__temp_var__nix_shell_file" -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/a7ecde854aee5c4c7cd6177f54a99d2c1ff28a31.tar.gz --keep __FORNIX_NIX_SETTINGS_PATH --keep __FORNIX_NIX_MAIN_CODE_PATH --keep __FORNIX_NIX_PACKAGES_FILE_PATH --keep __FORNIX_NIX_PATH_EXPORT_FILE --keep __FORNIX_NIX_COMMANDS --keep FORNIX_FOLDER
+    # nix-store --query --references $(nix-instantiate shell.nix) | xargs nix-store --realise | xargs nix-store --query --requisites | cachix push tamucv
+    HOME="$FORNIX_HOME" nix-shell \
+        --pure \
+        --keep SSL_CERT_FILE \
+        --show-trace \
+        --command "zsh" \
+        --option substituters "https://cache.nixos.org https://tamucv.cachix.org" \
+        --option trusted-public-keys "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= tamucv.cachix.org-1:Ua/Ig654o2SFn6rYFXgtt5Kn886CAfJPDbBVEZg+HPM=" \
+        "$__temp_var__nix_shell_file" \
+        -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/a7ecde854aee5c4c7cd6177f54a99d2c1ff28a31.tar.gz \
+        --keep __FORNIX_NIX_SETTINGS_PATH \
+        --keep __FORNIX_NIX_MAIN_CODE_PATH \
+        --keep __FORNIX_NIX_PACKAGES_FILE_PATH \
+        --keep __FORNIX_NIX_PATH_EXPORT_FILE \
+        --keep __FORNIX_NIX_COMMANDS \
+        --keep FORNIX_FOLDER
 fi
 if [ "$FORNIX_DEBUG" = "true" ]; then
     echo "exited the nix-shell environment"
