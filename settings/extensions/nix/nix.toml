@@ -48,6 +48,9 @@ load = [ "screen",] # for yolov5 training
 [[packages]]
 load = [ "graphviz",] # for yolov5 training
 
+[[packages]]
+load = [ "nodePackages", "ungit" ] # for visulizing git
+
 # 
 # Python
 # 
