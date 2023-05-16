@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+# First uninstall any old versions of TensorRT
+sudo apt-get purge "libnvinfer*"
+sudo apt-get purge graphsurgeon-tf onnx-graphsurgeon
+sudo pip3 uninstall tensorrt
+sudo pip3 uninstall uff
+sudo pip3 uninstall graphsurgeon
+sudo pip3 uninstall onnx-graphsurgeon
+
+# Now Install TensorRT
+os="ubuntu1x04" # MODIFY
+tag="cudax.x-trt7.x.x.x-ga-yyyymmdd" #MODIFY 
+sudo dpkg -i nv-tensorrt-repo-${os}-${tag}_1-1_amd64.deb
+sudo apt-key add /var/nv-tensorrt-repo-${tag}/7fa2af80.pub
+
+sudo apt-get update
+sudo apt-get install -y tensorrt
+
+sudo apt-get install -y python3-libnvinfer-dev
+sudo apt-get install -y onnx-graphsurgeon
+
+dpkg -l | grep TensorRT

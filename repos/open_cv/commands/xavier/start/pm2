@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+pm2 start cv
+pm2 save

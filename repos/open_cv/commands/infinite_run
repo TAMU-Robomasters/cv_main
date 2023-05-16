@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+while true
+do
+	python3 "/home/xavier4/repos/cv_main/main/main.py"
+done
