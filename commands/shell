@@ -87,7 +87,7 @@ then
 fi
 
 # FIXME: technially this will fail if the username contains regex chars
-if ! { cat /etc/nix/nix.conf | grep "trusted-users = \([^a]\|[a]\)*$(whoami)" 1>&2 2>/dev/null; }
+if ! { cat /etc/nix/nix.conf | grep "trusted-users = \([^a]\|[a]\)*$(whoami)" 1>/dev/null; }
 then
     echo "Looks like you don't have yourself listed as a trusted user in /etc/nix/nix.conf"
     echo "You can either add yourself and re-run this command"
