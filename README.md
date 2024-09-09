@@ -1,3 +1,7 @@
+### This Repo Has Been Archived
+
+If you are apart of the team do not use this repo
+
 ### How do I get this code to run?
 
 Set [documentation/setup.md](https://github.com/TAMU-Robomasters/cv_main/blob/master/documentation/setup.md)
